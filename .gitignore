@@ -1,0 +1,39 @@
+# Operating-system and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Local configuration, credentials, and secrets
+.env
+.env.*
+!.env.example
+credentials/
+secrets/
+*.pem
+*.key
+
+# Temporary and generated files
+tmp/
+temp/
+*.tmp
+*.log
+*.zip
+__pycache__/
+*.py[cod]
+node_modules/
+
+# Export backups (canonical JSON sources remain tracked)
+backups/
+exports/
+source-exports/
+/*.json
+/*.py
+/README 2.md
+/README (1).md
+*.bak
+*.backup
+*.orig
