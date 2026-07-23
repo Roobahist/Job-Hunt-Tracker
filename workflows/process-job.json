@@ -1,0 +1,343 @@
+{
+  "name": "Job Search - 2. Job Processor (LLM Match + CV)",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            { "name": "recordId" },
+            { "name": "jobId" },
+            { "name": "title" },
+            { "name": "company" },
+            { "name": "description" },
+            { "name": "companyInfo" },
+            { "name": "url" },
+            { "name": "salaryInfo" },
+            { "name": "experienceLevel" },
+            { "name": "sector" },
+            { "name": "resumeMatchScore" },
+            { "name": "matchedKeywords" },
+            { "name": "unmatchedKeywords" },
+            { "name": "preferences" }
+          ]
+        }
+      },
+      "id": "b2000000-0000-0000-0000-000000000001",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1400,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build the prompt sent to the LLM: it needs the job description plus the\n// user's stated preferences / base resume so it can judge fit and write a summary.\nconst d = $json;\nconst prefs = d.preferences || {};\n\nconst systemPrompt = `You are an assistant that screens job postings for a job seeker.\nYou will be given the seeker's preferences/resume and a single job posting.\nRespond with ONLY a raw JSON object (no markdown fences, no extra text) with this exact shape:\n{\n  \"is_good_match\": boolean,\n  \"match_score\": number, // 0-100\n  \"summary\": string, // 2-4 sentence summary of the role\n  \"key_requirements\": string[], // top requirements extracted from the posting\n  \"reasoning\": string // short explanation of why it is or isn't a good match\n}`;\n\nconst userPrompt = `SEEKER PREFERENCES / RESUME:\nKeywords: ${prefs.keywords || ''}\nDesired locations: ${(prefs.locations || []).join(', ')}\nDesired work type: ${(prefs.workType || []).join(', ')}\nDesired employment type: ${(prefs.employmentType || []).join(', ')}\nMinimum salary: ${prefs.minSalary || 'n/a'}\nExcluded companies: ${(prefs.excludedCompanies || []).join(', ') || 'none'}\nMatch threshold (score needed to count as good match): ${prefs.matchThreshold || 70}\n\nBase resume / background:\n${prefs.baseResumeText || '(not provided)'}\n\n---\nJOB POSTING\nTitle: ${d.title}\nCompany: ${d.company}\nURL: ${d.url}\nSalary info (as listed, may be empty): ${d.salaryInfo || 'n/a'}\nExperience level (as listed): ${d.experienceLevel || 'n/a'}\nSector: ${d.sector || 'n/a'}\nCompany info: ${d.companyInfo || 'n/a'}\n\nAutomatic resume-keyword pre-score from the scraper (0-100, informational only - use your own judgment on the full description, don't just defer to this number): ${d.resumeMatchScore ?? 'n/a'}\nKeywords already matched: ${d.matchedKeywords || 'none'}\nKeywords not found: ${d.unmatchedKeywords || 'none'}\n\nDescription:\n${d.description}`;\n\nreturn [\n  {\n    json: {\n      ...d,\n      systemPrompt,\n      userPrompt\n    }\n  }\n];"
+      },
+      "id": "b2000000-0000-0000-0000-000000000002",
+      "name": "Build LLM Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1180,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  model: \"meta-llama/llama-3.3-70b-instruct:free\",\n  messages: [\n    { role: \"system\", content: $json.systemPrompt },\n    { role: \"user\", content: $json.userPrompt }\n  ],\n  temperature: 0.2\n}) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "b2000000-0000-0000-0000-000000000003",
+      "name": "OpenRouter - Analyze Match",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -960,
+        0
+      ],
+      "notes": "Uses an HTTP Header Auth credential for 'Authorization: Bearer <OPENROUTER_API_KEY>' - create that credential in n8n and select it, key left empty for you to fill in. Model is a free OpenRouter model; swap for any other ':free' model slug from openrouter.ai/models if this one is unavailable/rate-limited."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse the LLM's JSON reply defensively (strip markdown fences if present).\nconst raw = $json.choices?.[0]?.message?.content || '{}';\nconst cleaned = raw.replace(/```json|```/g, '').trim();\n\nlet parsed;\ntry {\n  parsed = JSON.parse(cleaned);\n} catch (e) {\n  parsed = {\n    is_good_match: false,\n    match_score: 0,\n    summary: 'Could not parse LLM response.',\n    key_requirements: [],\n    reasoning: `Parse error: ${e.message}. Raw: ${raw.slice(0, 300)}`\n  };\n}\n\nconst job = $('Build LLM Prompt').first().json;\n\nreturn [\n  {\n    json: {\n      ...job,\n      is_good_match: !!parsed.is_good_match,\n      match_score: parsed.match_score || 0,\n      summary: parsed.summary || '',\n      key_requirements: (parsed.key_requirements || []).join('; '),\n      reasoning: parsed.reasoning || ''\n    }\n  }\n];"
+      },
+      "id": "b2000000-0000-0000-0000-000000000004",
+      "name": "Parse LLM Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -740,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.is_good_match }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "b2000000-0000-0000-0000-000000000005",
+      "name": "IF Good Match",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -520,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:5000/generate-cv",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  job_title: $json.title,\n  company: $json.company,\n  job_description: $json.description,\n  base_resume_text: ($json.preferences && $json.preferences.baseResumeText) || ''\n}) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "b2000000-0000-0000-0000-000000000006",
+      "name": "Generate Tailored CV (PLACEHOLDER)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -300,
+        -120
+      ],
+      "notes": "PLACEHOLDER: point this at wherever your Python CV-generation script is served (e.g. a small Flask/FastAPI service, an n8n Execute Command node running a local script, or a webhook). Expected request: {job_title, company, job_description, base_resume_text}. Expected response: {cv_text: string}. Replace the URL and, if needed, add auth headers."
+    },
+    {
+      "parameters": {
+        "jsCode": "const cvResponse = $json;\nconst job = $('Parse LLM Response').first().json;\n\nreturn [\n  {\n    json: {\n      ...job,\n      cv_text: cvResponse.cv_text || cvResponse.text || JSON.stringify(cvResponse)\n    }\n  }\n];"
+      },
+      "id": "b2000000-0000-0000-0000-000000000007",
+      "name": "Attach CV Text",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -80,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appXXXXXXXXXXXXXX",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "Jobs",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Build LLM Prompt').first().json.recordId }}",
+            "Status": "CV Generated",
+            "Is Good Match": true,
+            "Match Score": "={{ $json.match_score }}",
+            "LLM Summary": "={{ $json.summary }}",
+            "Key Requirements": "={{ $json.key_requirements }}",
+            "LLM Reasoning": "={{ $json.reasoning }}",
+            "Generated CV": "={{ $json.cv_text }}",
+            "Date Processed": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [
+            "id"
+          ]
+        },
+        "options": {}
+      },
+      "id": "b2000000-0000-0000-0000-000000000008",
+      "name": "Update Airtable - Matched",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        140,
+        -120
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "",
+          "name": "Airtable account"
+        }
+      },
+      "notes": "Updates the row created in Workflow 1 with the match verdict, LLM summary/reasoning and generated CV text."
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appXXXXXXXXXXXXXX",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "Jobs",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.recordId }}",
+            "Status": "Not a Match",
+            "Is Good Match": false,
+            "Match Score": "={{ $json.match_score }}",
+            "LLM Summary": "={{ $json.summary }}",
+            "Key Requirements": "={{ $json.key_requirements }}",
+            "LLM Reasoning": "={{ $json.reasoning }}",
+            "Date Processed": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [
+            "id"
+          ]
+        },
+        "options": {}
+      },
+      "id": "b2000000-0000-0000-0000-000000000009",
+      "name": "Update Airtable - Not Matched",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -300,
+        120
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "",
+          "name": "Airtable account"
+        }
+      },
+      "notes": "No CV is generated for jobs the LLM flags as a poor match - row is just updated with the verdict for your records."
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build LLM Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build LLM Prompt": {
+      "main": [
+        [
+          {
+            "node": "OpenRouter - Analyze Match",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter - Analyze Match": {
+      "main": [
+        [
+          {
+            "node": "Parse LLM Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse LLM Response": {
+      "main": [
+        [
+          {
+            "node": "IF Good Match",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Good Match": {
+      "main": [
+        [
+          {
+            "node": "Generate Tailored CV (PLACEHOLDER)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Airtable - Not Matched",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Tailored CV (PLACEHOLDER)": {
+      "main": [
+        [
+          {
+            "node": "Attach CV Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach CV Text": {
+      "main": [
+        [
+          {
+            "node": "Update Airtable - Matched",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

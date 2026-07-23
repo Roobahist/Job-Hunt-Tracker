@@ -1,0 +1,509 @@
+{
+  "name": "Job Search - 1. Main Orchestrator",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1,
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "id": "a1000000-0000-0000-0000-000000000001",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1600,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appXXXXXXXXXXXXXX",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "Config",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "id": "a1000000-0000-0000-0000-000000000002",
+      "name": "Get Preferences (Airtable)",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -1380,
+        0
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "",
+          "name": "Airtable account"
+        }
+      },
+      "notes": "Reads a single row from a 'Config' table: Keywords, Locations, DatePosted, WorkType, EmploymentType, ExperienceLevel, MinSalary, ExcludedCompanies, JobTitleExclude, MaxItems, ResumeKeywords (JSON), MatchThreshold, BaseResumeText."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build the exact input object for cheap_scraper/linkedin-job-scraper\n// (actor id 2rJKkhh7vjpX7pvjg), based on its real input schema.\n\nconst pref = items[0]?.json || {};\n\nfunction splitList(v) {\n  return (v || '').split(',').map(s => s.trim()).filter(Boolean);\n}\n\n// Map friendly Config values to what the actor expects\nconst datePostedMap = {\n  'any': '',\n  'past 24 hours': 'r86400',\n  'past day': 'r86400',\n  'past week': 'r604800',\n  'past month': 'r2592000'\n};\n\nconst workTypeMap = {\n  'remote': 'remote',\n  'hybrid': 'hybrid',\n  'onsite': 'on-site',\n  'on-site': 'on-site'\n};\n\nconst preferences = {\n  keywords: pref.Keywords || 'Software Engineer',\n  locations: splitList(pref.Locations || pref.Location || 'Remote'),\n  datePosted: pref.DatePosted || 'past week',\n  workType: splitList(pref.WorkType || 'remote'),\n  employmentType: splitList(pref.EmploymentType || 'full-time'),\n  experienceLevel: splitList(pref.ExperienceLevel || ''),\n  minSalary: pref.MinSalary || null,\n  excludedCompanies: splitList(pref.ExcludedCompanies || ''),\n  jobTitleExclude: splitList(pref.JobTitleExclude || ''),\n  maxItems: Number(pref.MaxItems) || 150, // pay-per-result billing requires >= 150\n  matchThreshold: pref.MatchThreshold || 70,\n  baseResumeText: pref.BaseResumeText || '',\n  resumeKeywordsRaw: pref.ResumeKeywords || '[]'\n};\n\nlet resumeKeywords = [];\ntry {\n  resumeKeywords = JSON.parse(preferences.resumeKeywordsRaw);\n} catch (e) {\n  resumeKeywords = [];\n}\n\nconst apifyInput = {\n  keyword: splitList(preferences.keywords),\n  locations: preferences.locations,\n  publishedAt: datePostedMap[preferences.datePosted.toLowerCase()] ?? preferences.datePosted,\n  jobType: preferences.employmentType,\n  workType: preferences.workType.map(w => workTypeMap[w.toLowerCase()] || w),\n  experienceLevel: preferences.experienceLevel,\n  companyExclude: preferences.excludedCompanies,\n  jobTitleExclude: preferences.jobTitleExclude,\n  saveOnlyUniqueItems: true,\n  enrichCompanyData: true,\n  maxItems: preferences.maxItems,\n  resumeKeywords: resumeKeywords\n};\n\nif (preferences.minSalary) {\n  apifyInput.salaryBase = String(preferences.minSalary);\n}\n\nreturn [\n  {\n    json: {\n      preferences,\n      apifyInput\n    }\n  }\n];"
+      },
+      "id": "a1000000-0000-0000-0000-000000000003",
+      "name": "Build Apify Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1160,
+        0
+      ],
+      "notes": "Builds the input payload matching cheap_scraper/linkedin-job-scraper's schema: keyword[], locations[], publishedAt (r86400/r604800/r2592000), jobType[], workType[] ('on-site'/'remote'/'hybrid'), experienceLevel[], salaryBase, companyExclude[], jobTitleExclude[], resumeKeywords[], saveOnlyUniqueItems, enrichCompanyData, maxItems."
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.apify.com/v2/acts/2rJKkhh7vjpX7pvjg/run-sync-get-dataset-items",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "token",
+              "value": ""
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.apifyInput) }}",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "id": "a1000000-0000-0000-0000-000000000004",
+      "name": "Run LinkedIn Jobs Scraper",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -940,
+        0
+      ],
+      "notes": "Leave the 'token' query parameter value empty and fill in your Apify API token. Actor: cheap_scraper/linkedin-job-scraper (id 2rJKkhh7vjpX7pvjg). Pay-per-result billing requires maxItems >= 150. run-sync-get-dataset-items blocks for up to 5 min and returns the scraped jobs directly."
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize the actor's real output fields into a consistent job object.\nconst preferences = $('Build Apify Input').first().json.preferences;\n\nconst jobs = items.map(({ json: item }) => {\n  return {\n    json: {\n      jobId: String(item.jobId || item.jobUrl || `${item.jobTitle}-${item.companyName}`),\n      title: item.jobTitle || '',\n      company: item.companyName || '',\n      location: item.location || '',\n      url: item.jobUrl || '',\n      applyUrl: item.applyUrl || '',\n      applyType: item.applyType || '',\n      postedTime: item.postedTime || '',\n      publishedAt: item.publishedAt || '',\n      workType: item.workType || '',\n      employmentType: item.contractType || '',\n      experienceLevel: item.experienceLevel || '',\n      sector: item.sector || '',\n      salaryInfo: Array.isArray(item.salaryInfo) ? item.salaryInfo.join(' - ') : (item.salaryInfo || ''),\n      description: item.jobDescription || '',\n      companyInfo: item.companyDescription || '',\n      companyWebsite: item.companyWebsite || '',\n      companyEmployeeCount: item.companyEmployeeCount || item.companyEmployeeCountRange || '',\n      applicationsCount: item.applicationsCount || '',\n      dynamicFilterMatch: item.dynamicFilterMatch !== false, // true or undefined = pass\n      matchedKeywords: (item.matchedKeywords || []).join(', '),\n      unmatchedKeywords: (item.unmatchedKeywords || []).join(', '),\n      keywordMatchScorePercentage: item.keywordMatchScorePercentage ?? null,\n      preferences\n    }\n  };\n});\n\n// Drop items with no usable ID or description\nreturn jobs.filter(j => j.json.jobId && j.json.description);"
+      },
+      "id": "a1000000-0000-0000-0000-000000000005",
+      "name": "Normalize Jobs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -720,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Optional cheap pre-filter using the actor's own dynamicFilterMatch flag\n// (set by companySize/industry/org-type/etc. filters in 'Build Apify Input',\n// if you configured any there). Jobs that fail are skipped before we ever\n// spend an LLM call on them. If you didn't set any dynamic filters, every\n// job passes through untouched.\nreturn items.filter(i => i.json.dynamicFilterMatch !== false);"
+      },
+      "id": "a1000000-0000-0000-0000-00000000000e",
+      "name": "Pre-filter (Dynamic Match)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -500,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appXXXXXXXXXXXXXX",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "Jobs",
+          "mode": "id"
+        },
+        "options": {
+          "fields": [
+            "Job ID"
+          ]
+        }
+      },
+      "id": "a1000000-0000-0000-0000-000000000006",
+      "name": "Get Existing Job IDs",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -500,
+        180
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "",
+          "name": "Airtable account"
+        }
+      },
+      "notes": "Pulls only the 'Job ID' column from every row already in Airtable, used to deduplicate against newly scraped jobs."
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "id": "a1000000-0000-0000-0000-000000000007",
+      "name": "Merge",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -280,
+        90
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Input 0 = Pre-filter (Dynamic Match) (all scraped jobs that passed dynamic filters)\n// Input 1 = Get Existing Job IDs (already stored jobs)\nconst scraped = $items('Pre-filter (Dynamic Match)');\nconst existingRows = $items('Get Existing Job IDs');\n\nconst existingIds = new Set(\n  existingRows\n    .map(r => r.json['Job ID'])\n    .filter(Boolean)\n    .map(String)\n);\n\nconst newJobs = scraped.filter(j => !existingIds.has(String(j.json.jobId)));\n\nreturn newJobs;"
+      },
+      "id": "a1000000-0000-0000-0000-000000000008",
+      "name": "Filter New (Dedupe)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -60,
+        90
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $items().length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a1000000-0000-0000-0000-000000000009",
+      "name": "IF Has New Jobs",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        160,
+        90
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appXXXXXXXXXXXXXX",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "Jobs",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Job ID": "={{ $json.jobId }}",
+            "Title": "={{ $json.title }}",
+            "Company": "={{ $json.company }}",
+            "Location": "={{ $json.location }}",
+            "URL": "={{ $json.url }}",
+            "Apply URL": "={{ $json.applyUrl }}",
+            "Apply Type": "={{ $json.applyType }}",
+            "Posted Time": "={{ $json.postedTime }}",
+            "Published At": "={{ $json.publishedAt }}",
+            "Work Type": "={{ $json.workType }}",
+            "Employment Type": "={{ $json.employmentType }}",
+            "Experience Level": "={{ $json.experienceLevel }}",
+            "Sector": "={{ $json.sector }}",
+            "Salary Info": "={{ $json.salaryInfo }}",
+            "Description": "={{ $json.description }}",
+            "Company Info": "={{ $json.companyInfo }}",
+            "Company Website": "={{ $json.companyWebsite }}",
+            "Company Employee Count": "={{ $json.companyEmployeeCount }}",
+            "Applications Count": "={{ $json.applicationsCount }}",
+            "Resume Match Score": "={{ $json.keywordMatchScorePercentage }}",
+            "Matched Keywords": "={{ $json.matchedKeywords }}",
+            "Unmatched Keywords": "={{ $json.unmatchedKeywords }}",
+            "Status": "New",
+            "Date Added": "={{ $now.toISO() }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "a1000000-0000-0000-0000-00000000000a",
+      "name": "Create Job Records",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        380,
+        0
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "",
+          "name": "Airtable account"
+        }
+      },
+      "notes": "Creates one row per new job with Status = New. Column names here must match your Airtable 'Jobs' table exactly (see README)."
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "a1000000-0000-0000-0000-00000000000b",
+      "name": "Loop Over New Jobs",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        600,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "",
+          "mode": "list"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "recordId": "={{ $json.id }}",
+            "jobId": "={{ $json.fields['Job ID'] }}",
+            "title": "={{ $json.fields['Title'] }}",
+            "company": "={{ $json.fields['Company'] }}",
+            "description": "={{ $json.fields['Description'] }}",
+            "companyInfo": "={{ $json.fields['Company Info'] }}",
+            "url": "={{ $json.fields['URL'] }}",
+            "salaryInfo": "={{ $json.fields['Salary Info'] }}",
+            "experienceLevel": "={{ $json.fields['Experience Level'] }}",
+            "sector": "={{ $json.fields['Sector'] }}",
+            "resumeMatchScore": "={{ $json.fields['Resume Match Score'] }}",
+            "matchedKeywords": "={{ $json.fields['Matched Keywords'] }}",
+            "unmatchedKeywords": "={{ $json.fields['Unmatched Keywords'] }}",
+            "preferences": "={{ $('Build Apify Input').first().json.preferences }}"
+          }
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "a1000000-0000-0000-0000-00000000000c",
+      "name": "Process Job (Sub-workflow)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        820,
+        0
+      ],
+      "notes": "Point 'workflowId' at the '2. Job Processor' workflow after you import it. This calls it once per new job: runs the LLM match/summary check, generates the tailored CV, and updates the Airtable row."
+    },
+    {
+      "parameters": {},
+      "id": "a1000000-0000-0000-0000-00000000000d",
+      "name": "No New Jobs",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        380,
+        220
+      ]
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get Preferences (Airtable)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Preferences (Airtable)": {
+      "main": [
+        [
+          {
+            "node": "Build Apify Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Apify Input": {
+      "main": [
+        [
+          {
+            "node": "Run LinkedIn Jobs Scraper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run LinkedIn Jobs Scraper": {
+      "main": [
+        [
+          {
+            "node": "Normalize Jobs",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Existing Job IDs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Jobs": {
+      "main": [
+        [
+          {
+            "node": "Pre-filter (Dynamic Match)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pre-filter (Dynamic Match)": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Existing Job IDs": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Filter New (Dedupe)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter New (Dedupe)": {
+      "main": [
+        [
+          {
+            "node": "IF Has New Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Has New Jobs": {
+      "main": [
+        [
+          {
+            "node": "Create Job Records",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No New Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Job Records": {
+      "main": [
+        [
+          {
+            "node": "Loop Over New Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over New Jobs": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Process Job (Sub-workflow)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Job (Sub-workflow)": {
+      "main": [
+        [
+          {
+            "node": "Loop Over New Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
