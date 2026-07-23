@@ -1,0 +1,1166 @@
+{
+  "name": "Tailor Complete CV - Production Subworkflow",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1700,
+        120
+      ],
+      "id": "179e333d-a46d-4b76-92b4-e51e6c47e71f",
+      "name": "When clicking Execute workflow",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "return [\n    {\n        \"json\": {\n            \"job_description\": \"Machine Learning Engineer responsible for Python-based machine learning systems, data pipelines, APIs, deep learning, computer vision, statistical modeling, Docker, and workflow automation.\",\n            \"project_selection_count\": 3,\n            \"work_experience_selection_count\": 2,\n            \"master_cv\": {\n                \"summary\": [\n                    \"Computer Science graduate and MSc in Statistics with experience in machine learning, statistical modeling, biomedical data analysis, automation, teaching, and software development.\"\n                ],\n                \"skills\": [\n                    {\"label\": \"Programming\", \"value\": \"Python, R, SQL, JavaScript\"},\n                    {\"label\": \"Machine Learning\", \"value\": \"PyTorch, TensorFlow, Keras, scikit-learn\"},\n                    {\"label\": \"Data and Statistics\", \"value\": \"Pandas, NumPy, statistical modeling, regression, survival analysis\"},\n                    {\"label\": \"Tools\", \"value\": \"Docker, Git, n8n, REST APIs, Airtable\"}\n                ],\n                \"projects\": [\n                    {\n                        \"title\": \"Multimodal Fatigue Detection\",\n                        \"secondary\": \"Python, PyTorch, OpenCV\",\n                        \"organization\": \"University of Calgary\",\n                        \"date\": \"2024 to 2026\",\n                        \"description\": \"A multimodal deep learning pipeline for fatigue detection using facial video and EEG-derived supervision.\",\n                        \"content\": [\n                            \"Developed a modular fatigue-detection pipeline using facial video and EEG-derived signals.\",\n                            \"Built temporal models from pretrained visual embeddings and handcrafted facial indicators.\"\n                        ]\n                    },\n                    {\n                        \"title\": \"Job Application Automation Platform\",\n                        \"secondary\": \"Python, n8n, LLMs, APIs, Airtable\",\n                        \"organization\": \"Independent Project\",\n                        \"date\": \"2026\",\n                        \"description\": \"An automation platform that collects jobs, evaluates relevance, and generates tailored application content.\",\n                        \"content\": [\n                            \"Built modular n8n workflows for job collection and evaluation.\",\n                            \"Integrated LLMs and APIs with structured CV data.\"\n                        ]\n                    },\n                    {\n                        \"title\": \"Drug Response Prediction\",\n                        \"secondary\": \"Python, Keras, biomedical data\",\n                        \"organization\": \"University of Calgary\",\n                        \"date\": \"2025\",\n                        \"description\": \"A neural-network project predicting drug response from gene expression and molecular fingerprints.\",\n                        \"content\": [\n                            \"Combined gene-expression profiles with molecular fingerprints.\",\n                            \"Trained Keras neural networks for drug-response prediction.\"\n                        ]\n                    }\n                ],\n                \"work_experience\": [\n                    {\n                        \"title\": \"Teaching Assistant\",\n                        \"secondary\": \"Statistics and Data Science\",\n                        \"organization\": \"University of Calgary\",\n                        \"date\": \"2023 to 2026\",\n                        \"description\": \"Delivered tutorials and academic support in statistics, data science, and linear algebra.\",\n                        \"content\": [\n                            \"Led tutorials and office hours for statistics and data science courses.\",\n                            \"Explained quantitative concepts and graded technical assignments.\"\n                        ]\n                    },\n                    {\n                        \"title\": \"Graduate Researcher\",\n                        \"secondary\": \"Machine Learning and Statistics\",\n                        \"organization\": \"University of Calgary\",\n                        \"date\": \"2024 to 2026\",\n                        \"description\": \"Conducted research in statistical machine learning and biomedical data analysis.\",\n                        \"content\": [\n                            \"Developed reproducible Python workflows for biomedical modeling.\",\n                            \"Evaluated statistical and neural-network methods.\"\n                        ]\n                    }\n                ],\n                \"awards\": []\n            }\n        }\n    }\n]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1480,
+        120
+      ],
+      "id": "c1da9b08-56a0-442c-9b7e-6995e2325b57",
+      "name": "Sample Job and Master CV"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1700,
+        -160
+      ],
+      "id": "66f295ca-3a69-46b5-837e-f770c7311110",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appEmht1pP7RwL17w",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblZmqBJOeQxbVTrh",
+          "mode": "id"
+        },
+        "filterByFormula": "AND({Enabled}=TRUE(),{Status}='Active',OR({Prompt Key}='cv_project_selection',{Prompt Key}='cv_project_rewrite',{Prompt Key}='cv_work_experience_selection',{Prompt Key}='cv_work_experience_rewrite',{Prompt Key}='cv_skills_tailoring',{Prompt Key}='cv_summary_rewrite'))",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -1440,
+        -40
+      ],
+      "id": "9bdef087-a4bd-47ba-b744-9de6be0e7e54",
+      "name": "Read Six Prompt Settings from Airtable"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "if not _items:\n    raise ValueError(\"Airtable returned no active prompt records.\")\n\ndef fields_of(item):\n    data = item.get(\"json\", {})\n    nested = data.get(\"fields\")\n    return nested if isinstance(nested, dict) else data\n\ndef get_value(fields, names):\n    for name in names:\n        if name in fields and fields[name] is not None:\n            return fields[name]\n    return None\n\nrequired = {\n    \"cv_project_selection\": \"project_selection\",\n    \"cv_project_rewrite\": \"project_rewrite\",\n    \"cv_work_experience_selection\": \"work_experience_selection\",\n    \"cv_work_experience_rewrite\": \"work_experience_rewrite\",\n    \"cv_skills_tailoring\": \"skills_tailoring\",\n    \"cv_summary_rewrite\": \"summary_rewrite\",\n}\n\nconfigs = {}\n\nfor item in _items:\n    fields = fields_of(item)\n    prompt_key = get_value(fields, [\"Prompt Key\", \"Key\", \"prompt_key\"])\n    version = get_value(fields, [\"Version\", \"Prompt Version\", \"version\"])\n    template = get_value(\n        fields,\n        [\"Prompt Template\", \"Prompt\", \"Template\", \"prompt_template\"],\n    )\n    temperature = get_value(fields, [\"Temperature\", \"temperature\"])\n\n    if not isinstance(prompt_key, str):\n        continue\n\n    prompt_key = prompt_key.strip()\n    if prompt_key not in required:\n        continue\n\n    short_key = required[prompt_key]\n    if short_key in configs:\n        raise ValueError(\n            f\"More than one active prompt exists for '{prompt_key}'.\"\n        )\n\n    if not isinstance(template, str) or not template.strip():\n        raise ValueError(f\"Prompt '{prompt_key}' has no template.\")\n\n    try:\n        version_value = float(version)\n    except (TypeError, ValueError) as exc:\n        raise ValueError(\n            f\"Prompt '{prompt_key}' must have a numeric version.\"\n        ) from exc\n\n    try:\n        temperature_value = float(temperature)\n    except (TypeError, ValueError) as exc:\n        raise ValueError(\n            f\"Prompt '{prompt_key}' must have a numeric temperature.\"\n        ) from exc\n\n    configs[short_key] = {\n        \"key\": prompt_key,\n        \"version\": version_value,\n        \"template\": template.strip(),\n        \"temperature\": temperature_value,\n    }\n\nmissing = [key for key in required.values() if key not in configs]\nif missing:\n    raise ValueError(\n        \"Missing active prompts: \" + \", \".join(missing)\n    )\n\noutput = {}\nfor short_key, config in configs.items():\n    output[f\"{short_key}_prompt_key\"] = config[\"key\"]\n    output[f\"{short_key}_prompt_version\"] = config[\"version\"]\n    output[f\"{short_key}_prompt_template\"] = config[\"template\"]\n    output[f\"{short_key}_temperature\"] = config[\"temperature\"]\n\nreturn [{\"json\": output}]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1200,
+        -40
+      ],
+      "id": "761392b9-b925-418c-b33c-82c696136c5a",
+      "name": "Validate Six Prompt Settings"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -960,
+        0
+      ],
+      "id": "82261bf9-2c93-4cb2-8573-11fa97dabda5",
+      "name": "Merge Input with Prompt Settings"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "import json\n\ndata = _items[0][\"json\"]\njob_description = data.get(\"job_description\")\nmaster_cv = data.get(\"master_cv\")\ncount = data.get(\"project_selection_count\", data.get(\"selection_count\", 4))\ntemplate = data.get(\"project_selection_prompt_template\")\n\nif not isinstance(job_description, str) or not job_description.strip():\n    raise ValueError(\"job_description must be a non-empty string.\")\nif not isinstance(master_cv, dict):\n    raise ValueError(\"master_cv must be an object.\")\nif not isinstance(template, str):\n    raise ValueError(\"Project selection prompt is missing.\")\n\nprojects = master_cv.get(\"projects\")\nif not isinstance(projects, list):\n    raise ValueError(\"master_cv.projects must be an array.\")\n\nsummaries = []\nfor index, project in enumerate(projects):\n    description = project.get(\"description\")\n    if not isinstance(description, str) or not description.strip():\n        content = project.get(\"content\", [])\n        description = \" \".join(\n            bullet for bullet in content[:2] if isinstance(bullet, str)\n        )\n\n    summaries.append({\n        \"index\": index,\n        \"title\": project.get(\"title\", \"\"),\n        \"secondary\": project.get(\"secondary\", \"\"),\n        \"description\": description,\n    })\n\nprompt = template\nprompt = prompt.replace(\"[[selection_count]]\", str(count))\nprompt = prompt.replace(\"[[job_description]]\", job_description)\nprompt = prompt.replace(\n    \"[[project_summaries_json]]\",\n    json.dumps(summaries, ensure_ascii=False, separators=(\",\", \":\")),\n)\n\nreturn [{\"json\": {**data, \"project_selection_prompt\": prompt}}]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -700,
+        -640
+      ],
+      "id": "abb6468a-e430-4b3f-a389-14249e883845",
+      "name": "Build Project Selection Prompt"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.project_selection_prompt }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -440,
+        -780
+      ],
+      "id": "6a21e5b3-a839-4a96-855b-a209a0bb34e0",
+      "name": "Select Projects"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b:free",
+        "options": {
+          "temperature": "={{ $json.project_selection_temperature }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -440,
+        -540
+      ],
+      "id": "5bf540d0-fea4-4e91-98d7-7beee84eb55a",
+      "name": "Project Selection Model"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "import json\nimport re\n\ndef extract_text(root):\n    try:\n        value = root[\"response\"][\"generations\"][0][0][\"text\"]\n        if isinstance(value, str):\n            return value\n    except (KeyError, IndexError, TypeError):\n        pass\n\n    for key in (\"text\", \"output\", \"content\"):\n        value = root.get(key)\n        if isinstance(value, str):\n            return value\n\n    raise ValueError(\"Could not locate the project selection model output.\")\n\nif not _items:\n    raise ValueError(\"The project selection model returned no items.\")\n\ntext = extract_text(_items[0][\"json\"]).strip()\ntext = re.sub(r\"^```(?:json)?\\s*\", \"\", text, flags=re.IGNORECASE)\ntext = re.sub(r\"\\s*```$\", \"\", text, flags=re.IGNORECASE).strip()\n\ntry:\n    parsed = json.loads(text)\nexcept json.JSONDecodeError as exc:\n    raise ValueError(\"The project selection model output must be valid JSON.\") from exc\n\nif not isinstance(parsed, dict):\n    raise ValueError(\"The project selection model output must be a JSON object.\")\n\nvalue = parsed.get(\"selected_indices\")\nif not isinstance(value, list):\n    raise ValueError(\"The model output must contain selected_indices.\")\nif any(not isinstance(index, int) or isinstance(index, bool) for index in value):\n    raise ValueError(\"Every selected index must be an integer.\")\n\nreturn [\n    {\n        \"json\": {\n            \"project_selection_response\": json.dumps(\n                parsed,\n                ensure_ascii=False,\n                separators=(\",\", \":\"),\n            )\n        }\n    }\n]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -200,
+        -780
+      ],
+      "id": "4b1adf1e-9e25-4810-99d6-f91f80ba26ac",
+      "name": "Prepare Project Selection Response"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        40,
+        -640
+      ],
+      "id": "d2b8c933-53c9-4d8e-b143-8518809b57bd",
+      "name": "Merge Project Selection with Source"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "import json\n\ndata = _items[0][\"json\"]\nparsed = json.loads(data[\"project_selection_response\"])\nindices = parsed.get(\"selected_indices\")\n\nif not isinstance(indices, list):\n    raise ValueError(\"Project selection must contain selected_indices.\")\nif any(not isinstance(i, int) or isinstance(i, bool) for i in indices):\n    raise ValueError(\"Every selected project index must be an integer.\")\n\nprojects = data[\"master_cv\"].get(\"projects\", [])\nfor index in indices:\n    if index < 0 or index >= len(projects):\n        raise ValueError(f\"Invalid project index: {index}\")\n\nreturn [{\n    \"json\": {\n        **data,\n        \"selected_project_indices\": indices,\n        \"selected_projects\": [projects[i] for i in indices],\n    }\n}]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        280,
+        -640
+      ],
+      "id": "9edb8fea-5e9b-401a-ad00-78c31e71eb7c",
+      "name": "Parse Project Selection"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "import json\n\ndata = _items[0][\"json\"]\ntemplate = data.get(\"project_rewrite_prompt_template\")\nselected = data.get(\"selected_projects\")\n\nif not isinstance(template, str):\n    raise ValueError(\"Project rewrite prompt is missing.\")\nif not isinstance(selected, list):\n    raise ValueError(\"selected_projects must be an array.\")\n\ninputs = []\nfor project in selected:\n    content = project.get(\"content\")\n    if not isinstance(content, list):\n        raise ValueError(\"Each selected project needs a content array.\")\n    inputs.append({\n        \"title\": project.get(\"title\", \"\"),\n        \"content\": content,\n    })\n\ncompact = json.dumps(inputs, ensure_ascii=False, separators=(\",\", \":\"))\nprompt = template\nprompt = prompt.replace(\"[[job_description]]\", data[\"job_description\"])\nprompt = prompt.replace(\"[[selected_projects_json]]\", compact)\nprompt = prompt.replace(\"[[rewrite_inputs_json]]\", compact)\n\nreturn [{\"json\": {**data, \"project_rewrite_prompt\": prompt}}]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        520,
+        -640
+      ],
+      "id": "78404273-0ade-4a35-99f9-2df327a0018a",
+      "name": "Build Project Rewrite Prompt"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.project_rewrite_prompt }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        780,
+        -780
+      ],
+      "id": "98d77bec-41f8-4567-85ad-1d5d8f7360f6",
+      "name": "Rewrite Project Content"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b:free",
+        "options": {
+          "temperature": "={{ $json.project_rewrite_temperature }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        780,
+        -540
+      ],
+      "id": "cf28a579-1893-4a21-a3ea-3e4b09389256",
+      "name": "Project Rewrite Model"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "import json\nimport re\n\ndef extract_text(root):\n    try:\n        value = root[\"response\"][\"generations\"][0][0][\"text\"]\n        if isinstance(value, str):\n            return value\n    except (KeyError, IndexError, TypeError):\n        pass\n\n    for key in (\"text\", \"output\", \"content\"):\n        value = root.get(key)\n        if isinstance(value, str):\n            return value\n\n    raise ValueError(\"Could not locate the project rewrite model output.\")\n\nif not _items:\n    raise ValueError(\"The project rewrite model returned no items.\")\n\ntext = extract_text(_items[0][\"json\"]).strip()\ntext = re.sub(r\"^```(?:json)?\\s*\", \"\", text, flags=re.IGNORECASE)\ntext = re.sub(r\"\\s*```$\", \"\", text, flags=re.IGNORECASE).strip()\n\ntry:\n    parsed = json.loads(text)\nexcept json.JSONDecodeError as exc:\n    raise ValueError(\"The project rewrite model output must be valid JSON.\") from exc\n\nif not isinstance(parsed, dict):\n    raise ValueError(\"The project rewrite model output must be a JSON object.\")\n\nvalue = parsed.get(\"contents\")\nif not isinstance(value, list):\n    raise ValueError(\"The model output must contain contents.\")\nfor content in value:\n    if not isinstance(content, list):\n        raise ValueError(\"Every contents item must be an array.\")\n    if any(not isinstance(bullet, str) for bullet in content):\n        raise ValueError(\"Every bullet must be a string.\")\n\nreturn [\n    {\n        \"json\": {\n            \"project_rewrite_response\": json.dumps(\n                parsed,\n                ensure_ascii=False,\n                separators=(\",\", \":\"),\n            )\n        }\n    }\n]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1020,
+        -780
+      ],
+      "id": "a6f991f5-52c7-4ef9-8e2f-d41414995eb1",
+      "name": "Prepare Project Rewrite Response"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1260,
+        -640
+      ],
+      "id": "760c77e7-24b6-4723-b032-140a4c453004",
+      "name": "Merge Project Rewrite with Source"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "import json\n\ndata = _items[0][\"json\"]\ncontents = json.loads(data[\"project_rewrite_response\"]).get(\"contents\")\nindices = data.get(\"selected_project_indices\")\n\nif not isinstance(contents, list):\n    raise ValueError(\"Project rewrite must contain contents.\")\nif len(contents) != len(indices):\n    raise ValueError(\"Project contents count does not match selected projects.\")\n\nsource = data[\"master_cv\"][\"projects\"]\ntailored = []\n\nfor position, index in enumerate(indices):\n    bullets = contents[position]\n    if not isinstance(bullets, list) or any(\n        not isinstance(bullet, str) for bullet in bullets\n    ):\n        raise ValueError(\"Each project content must be an array of strings.\")\n\n    rebuilt = {\n        key: value\n        for key, value in source[index].items()\n        if key != \"description\"\n    }\n    rebuilt[\"content\"] = bullets\n    tailored.append(rebuilt)\n\nreturn [{\"json\": {**data, \"tailored_projects\": tailored}}]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1500,
+        -640
+      ],
+      "id": "d96b5556-309e-49d6-b833-7adb25089bf8",
+      "name": "Apply Project Rewrite"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "import json\n\ndata = _items[0][\"json\"]\ntemplate = data.get(\"work_experience_selection_prompt_template\")\ncount = data.get(\"work_experience_selection_count\", 3)\nexperiences = data[\"master_cv\"].get(\"work_experience\", [])\n\nif not isinstance(template, str):\n    raise ValueError(\"Work-experience selection prompt is missing.\")\nif not isinstance(experiences, list):\n    raise ValueError(\"master_cv.work_experience must be an array.\")\n\nsummaries = []\nfor index, experience in enumerate(experiences):\n    description = experience.get(\"description\")\n    if not isinstance(description, str) or not description.strip():\n        content = experience.get(\"content\", [])\n        description = \" \".join(\n            bullet for bullet in content[:2] if isinstance(bullet, str)\n        )\n\n    summaries.append({\n        \"index\": index,\n        \"title\": experience.get(\"title\", \"\"),\n        \"organization\": experience.get(\"organization\", \"\"),\n        \"secondary\": experience.get(\"secondary\", \"\"),\n        \"description\": description,\n    })\n\ncompact = json.dumps(summaries, ensure_ascii=False, separators=(\",\", \":\"))\nprompt = template\nprompt = prompt.replace(\"[[selection_count]]\", str(count))\nprompt = prompt.replace(\"[[job_description]]\", data[\"job_description\"])\nprompt = prompt.replace(\"[[work_experience_summaries_json]]\", compact)\nprompt = prompt.replace(\"[[experience_summaries_json]]\", compact)\n\nreturn [{\"json\": {**data, \"work_experience_selection_prompt\": prompt}}]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -700,
+        0
+      ],
+      "id": "57c28cd5-c3dc-4fb0-915c-1e2acf050512",
+      "name": "Build Work Selection Prompt"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.work_experience_selection_prompt }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -440,
+        -140
+      ],
+      "id": "59d21d30-04c4-4637-b3ff-12599aab5815",
+      "name": "Select Work Experiences"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b:free",
+        "options": {
+          "temperature": "={{ $json.work_experience_selection_temperature }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -440,
+        100
+      ],
+      "id": "e4acfd1f-39c8-4092-a887-442045c8e14a",
+      "name": "Work Selection Model"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "import json\nimport re\n\ndef extract_text(root):\n    try:\n        value = root[\"response\"][\"generations\"][0][0][\"text\"]\n        if isinstance(value, str):\n            return value\n    except (KeyError, IndexError, TypeError):\n        pass\n\n    for key in (\"text\", \"output\", \"content\"):\n        value = root.get(key)\n        if isinstance(value, str):\n            return value\n\n    raise ValueError(\"Could not locate the work-experience selection model output.\")\n\nif not _items:\n    raise ValueError(\"The work-experience selection model returned no items.\")\n\ntext = extract_text(_items[0][\"json\"]).strip()\ntext = re.sub(r\"^```(?:json)?\\s*\", \"\", text, flags=re.IGNORECASE)\ntext = re.sub(r\"\\s*```$\", \"\", text, flags=re.IGNORECASE).strip()\n\ntry:\n    parsed = json.loads(text)\nexcept json.JSONDecodeError as exc:\n    raise ValueError(\"The work-experience selection model output must be valid JSON.\") from exc\n\nif not isinstance(parsed, dict):\n    raise ValueError(\"The work-experience selection model output must be a JSON object.\")\n\nvalue = parsed.get(\"selected_indices\")\nif not isinstance(value, list):\n    raise ValueError(\"The model output must contain selected_indices.\")\nif any(not isinstance(index, int) or isinstance(index, bool) for index in value):\n    raise ValueError(\"Every selected index must be an integer.\")\n\nreturn [\n    {\n        \"json\": {\n            \"work_experience_selection_response\": json.dumps(\n                parsed,\n                ensure_ascii=False,\n                separators=(\",\", \":\"),\n            )\n        }\n    }\n]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -200,
+        -140
+      ],
+      "id": "d56ba3fd-a413-45c9-8d7e-866872761d56",
+      "name": "Prepare Work Selection Response"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        40,
+        0
+      ],
+      "id": "8724ad38-8f6b-4c52-b8b7-a1a71dd6e884",
+      "name": "Merge Work Selection with Source"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "import json\n\ndata = _items[0][\"json\"]\nindices = json.loads(\n    data[\"work_experience_selection_response\"]\n).get(\"selected_indices\")\n\nif not isinstance(indices, list):\n    raise ValueError(\"Work selection must contain selected_indices.\")\nif any(not isinstance(i, int) or isinstance(i, bool) for i in indices):\n    raise ValueError(\"Every selected work-experience index must be an integer.\")\n\nexperiences = data[\"master_cv\"].get(\"work_experience\", [])\nfor index in indices:\n    if index < 0 or index >= len(experiences):\n        raise ValueError(f\"Invalid work-experience index: {index}\")\n\nreturn [{\n    \"json\": {\n        **data,\n        \"selected_work_experience_indices\": indices,\n        \"selected_work_experiences\": [experiences[i] for i in indices],\n    }\n}]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        280,
+        0
+      ],
+      "id": "aeb0bf9d-de54-468f-96f2-f34440a2131e",
+      "name": "Parse Work Selection"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "import json\n\ndata = _items[0][\"json\"]\ntemplate = data.get(\"work_experience_rewrite_prompt_template\")\nselected = data.get(\"selected_work_experiences\")\n\nif not isinstance(template, str):\n    raise ValueError(\"Work-experience rewrite prompt is missing.\")\nif not isinstance(selected, list):\n    raise ValueError(\"selected_work_experiences must be an array.\")\n\ninputs = []\nfor experience in selected:\n    content = experience.get(\"content\")\n    if not isinstance(content, list):\n        raise ValueError(\"Each selected experience needs a content array.\")\n    inputs.append({\n        \"title\": experience.get(\"title\", \"\"),\n        \"organization\": experience.get(\"organization\", \"\"),\n        \"content\": content,\n    })\n\ncompact = json.dumps(inputs, ensure_ascii=False, separators=(\",\", \":\"))\nprompt = template\nprompt = prompt.replace(\"[[job_description]]\", data[\"job_description\"])\nprompt = prompt.replace(\"[[selected_work_experiences_json]]\", compact)\nprompt = prompt.replace(\"[[rewrite_inputs_json]]\", compact)\n\nreturn [{\"json\": {**data, \"work_experience_rewrite_prompt\": prompt}}]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        520,
+        0
+      ],
+      "id": "cadf288a-a02a-437b-a60f-dd95919bb69d",
+      "name": "Build Work Rewrite Prompt"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.work_experience_rewrite_prompt }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        780,
+        -140
+      ],
+      "id": "da9757bd-063e-4b16-9908-b7277f73fd99",
+      "name": "Rewrite Work Content"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b:free",
+        "options": {
+          "temperature": "={{ $json.work_experience_rewrite_temperature }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        780,
+        100
+      ],
+      "id": "739fa910-850b-4033-ba04-cc78c393eb7c",
+      "name": "Work Rewrite Model"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "import json\nimport re\n\ndef extract_text(root):\n    try:\n        value = root[\"response\"][\"generations\"][0][0][\"text\"]\n        if isinstance(value, str):\n            return value\n    except (KeyError, IndexError, TypeError):\n        pass\n\n    for key in (\"text\", \"output\", \"content\"):\n        value = root.get(key)\n        if isinstance(value, str):\n            return value\n\n    raise ValueError(\"Could not locate the work-experience rewrite model output.\")\n\nif not _items:\n    raise ValueError(\"The work-experience rewrite model returned no items.\")\n\ntext = extract_text(_items[0][\"json\"]).strip()\ntext = re.sub(r\"^```(?:json)?\\s*\", \"\", text, flags=re.IGNORECASE)\ntext = re.sub(r\"\\s*```$\", \"\", text, flags=re.IGNORECASE).strip()\n\ntry:\n    parsed = json.loads(text)\nexcept json.JSONDecodeError as exc:\n    raise ValueError(\"The work-experience rewrite model output must be valid JSON.\") from exc\n\nif not isinstance(parsed, dict):\n    raise ValueError(\"The work-experience rewrite model output must be a JSON object.\")\n\nvalue = parsed.get(\"contents\")\nif not isinstance(value, list):\n    raise ValueError(\"The model output must contain contents.\")\nfor content in value:\n    if not isinstance(content, list):\n        raise ValueError(\"Every contents item must be an array.\")\n    if any(not isinstance(bullet, str) for bullet in content):\n        raise ValueError(\"Every bullet must be a string.\")\n\nreturn [\n    {\n        \"json\": {\n            \"work_experience_rewrite_response\": json.dumps(\n                parsed,\n                ensure_ascii=False,\n                separators=(\",\", \":\"),\n            )\n        }\n    }\n]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1020,
+        -140
+      ],
+      "id": "0aaf6027-50c7-4deb-a0de-65a78ecfc8ce",
+      "name": "Prepare Work Rewrite Response"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1260,
+        0
+      ],
+      "id": "27bb5743-5f24-47f9-a169-fd81d5d873f0",
+      "name": "Merge Work Rewrite with Source"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "import json\n\ndata = _items[0][\"json\"]\ncontents = json.loads(\n    data[\"work_experience_rewrite_response\"]\n).get(\"contents\")\nindices = data.get(\"selected_work_experience_indices\")\n\nif not isinstance(contents, list):\n    raise ValueError(\"Work rewrite must contain contents.\")\nif len(contents) != len(indices):\n    raise ValueError(\n        \"Work-experience contents count does not match selected experiences.\"\n    )\n\nsource = data[\"master_cv\"][\"work_experience\"]\ntailored = []\n\nfor position, index in enumerate(indices):\n    bullets = contents[position]\n    if not isinstance(bullets, list) or any(\n        not isinstance(bullet, str) for bullet in bullets\n    ):\n        raise ValueError(\n            \"Each work-experience content must be an array of strings.\"\n        )\n\n    rebuilt = {\n        key: value\n        for key, value in source[index].items()\n        if key != \"description\"\n    }\n    rebuilt[\"content\"] = bullets\n    tailored.append(rebuilt)\n\nreturn [{\"json\": {**data, \"tailored_work_experience\": tailored}}]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1500,
+        0
+      ],
+      "id": "ab841530-de70-42f4-a2fb-b940e912bcbe",
+      "name": "Apply Work Rewrite"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "import json\nimport re\n\ndata = _items[0][\"json\"]\ntemplate = data.get(\"skills_tailoring_prompt_template\")\nskills = data[\"master_cv\"].get(\"skills\", [])\n\nif not isinstance(template, str):\n    raise ValueError(\"Skills prompt is missing.\")\nif not isinstance(skills, list):\n    raise ValueError(\"master_cv.skills must be an array.\")\n\nnormalized = []\ninventory = []\n\nfor group in skills:\n    label = group.get(\"label\", \"\")\n    raw = group.get(\"value\", group.get(\"content\", []))\n\n    if isinstance(raw, str):\n        values = [\n            part.strip()\n            for part in re.split(r\"[,;|]\", raw)\n            if part.strip()\n        ]\n    elif isinstance(raw, list):\n        values = [value.strip() for value in raw if isinstance(value, str) and value.strip()]\n    else:\n        values = []\n\n    normalized.append({\"label\": label, \"skills\": values})\n    inventory.extend(values)\n\ncompact = json.dumps(normalized, ensure_ascii=False, separators=(\",\", \":\"))\nprompt = template\nprompt = prompt.replace(\"[[job_description]]\", data[\"job_description\"])\nprompt = prompt.replace(\"[[original_skills_json]]\", compact)\nprompt = prompt.replace(\"[[skills_json]]\", compact)\n\nreturn [{\n    \"json\": {\n        **data,\n        \"skills_tailoring_prompt\": prompt,\n        \"original_skill_inventory\": inventory,\n    }\n}]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -700,
+        640
+      ],
+      "id": "4f888b90-3848-454d-8251-cf5b380e32fe",
+      "name": "Build Skills Prompt"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.skills_tailoring_prompt }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -440,
+        500
+      ],
+      "id": "f6204174-d428-44ba-99c9-e859020003c9",
+      "name": "Tailor Skills"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b:free",
+        "options": {
+          "temperature": "={{ $json.skills_tailoring_temperature }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -440,
+        740
+      ],
+      "id": "3406b73b-30b7-45c6-841d-e4338c1fb26d",
+      "name": "Skills Model"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "import json\nimport re\n\ndef extract_text(root):\n    try:\n        value = root[\"response\"][\"generations\"][0][0][\"text\"]\n        if isinstance(value, str):\n            return value\n    except (KeyError, IndexError, TypeError):\n        pass\n\n    for key in (\"text\", \"output\", \"content\"):\n        value = root.get(key)\n        if isinstance(value, str):\n            return value\n\n    raise ValueError(\"Could not locate the skills tailoring model output.\")\n\nif not _items:\n    raise ValueError(\"The skills tailoring model returned no items.\")\n\ntext = extract_text(_items[0][\"json\"]).strip()\ntext = re.sub(r\"^```(?:json)?\\s*\", \"\", text, flags=re.IGNORECASE)\ntext = re.sub(r\"\\s*```$\", \"\", text, flags=re.IGNORECASE).strip()\n\ntry:\n    parsed = json.loads(text)\nexcept json.JSONDecodeError as exc:\n    raise ValueError(\"The skills tailoring model output must be valid JSON.\") from exc\n\nif not isinstance(parsed, dict):\n    raise ValueError(\"The skills tailoring model output must be a JSON object.\")\n\nvalue = parsed.get(\"groups\")\nif not isinstance(value, list):\n    raise ValueError(\"The model output must contain groups.\")\nfor group in value:\n    if not isinstance(group, dict):\n        raise ValueError(\"Every skill group must be an object.\")\n\nreturn [\n    {\n        \"json\": {\n            \"skills_tailoring_response\": json.dumps(\n                parsed,\n                ensure_ascii=False,\n                separators=(\",\", \":\"),\n            )\n        }\n    }\n]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -200,
+        500
+      ],
+      "id": "5dc21919-a152-4b61-8d4e-17d9d9a3fbd7",
+      "name": "Prepare Skills Response"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        40,
+        640
+      ],
+      "id": "f6b548ef-b9c8-49d1-b19d-0e5d993e4a18",
+      "name": "Merge Skills Response with Source"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "import json\n\ndata = _items[0][\"json\"]\ngroups = json.loads(data[\"skills_tailoring_response\"]).get(\"groups\")\ninventory = data.get(\"original_skill_inventory\", [])\n\nif not isinstance(groups, list) or len(groups) != 3:\n    raise ValueError(\"Skills output must contain exactly three groups.\")\n\nlookup = {\n    skill.strip().casefold(): skill\n    for skill in inventory\n    if isinstance(skill, str) and skill.strip()\n}\n\ntailored = []\nfor group in groups:\n    if not isinstance(group, dict):\n        raise ValueError(\"Each skill group must be an object.\")\n\n    label = group.get(\"label\")\n    returned = group.get(\"skills\")\n\n    if not isinstance(label, str) or not label.strip():\n        raise ValueError(\"Each skill group must have a label.\")\n    if not isinstance(returned, list):\n        raise ValueError(\"Each skill group must have a skills array.\")\n\n    exact_skills = []\n    seen = set()\n\n    for skill in returned:\n        if not isinstance(skill, str):\n            raise ValueError(\"Every returned skill must be a string.\")\n\n        key = skill.strip().casefold()\n        if key not in lookup:\n            raise ValueError(\n                f\"The skills model returned a skill absent from the CV: {skill}\"\n            )\n        if key not in seen:\n            exact_skills.append(lookup[key])\n            seen.add(key)\n\n    tailored.append({\n        \"label\": label.strip(),\n        \"value\": \", \".join(exact_skills),\n    })\n\nreturn [{\"json\": {**data, \"tailored_skills\": tailored}}]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        280,
+        640
+      ],
+      "id": "c8f19245-bf81-421d-a6c0-85aa218353e4",
+      "name": "Apply Tailored Skills"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "import json\n\ndata = _items[0][\"json\"]\ntemplate = data.get(\"summary_rewrite_prompt_template\")\n\nif not isinstance(template, str):\n    raise ValueError(\"Summary prompt is missing.\")\n\nmaster_cv = data[\"master_cv\"]\noriginal_summary = master_cv.get(\"summary\", [])\nselected_indices = data.get(\"selected_work_experience_indices\", [])\nsource_experiences = master_cv.get(\"work_experience\", [])\n\nexperience_context = []\nfor index in selected_indices:\n    experience = source_experiences[index]\n    description = experience.get(\"description\")\n    if not isinstance(description, str) or not description.strip():\n        content = experience.get(\"content\", [])\n        description = \" \".join(\n            bullet for bullet in content[:2] if isinstance(bullet, str)\n        )\n\n    experience_context.append({\n        \"title\": experience.get(\"title\", \"\"),\n        \"organization\": experience.get(\"organization\", \"\"),\n        \"description\": description,\n    })\n\ncontext = {\n    \"original_summary\": original_summary,\n    \"tailored_skills\": data.get(\"tailored_skills\", []),\n    \"experience_context\": experience_context,\n}\n\ncompact = json.dumps(context, ensure_ascii=False, separators=(\",\", \":\"))\nprompt = template\nprompt = prompt.replace(\"[[job_description]]\", data[\"job_description\"])\nprompt = prompt.replace(\"[[summary_context_json]]\", compact)\nprompt = prompt.replace(\n    \"[[original_summary_json]]\",\n    json.dumps(original_summary, ensure_ascii=False, separators=(\",\", \":\")),\n)\nprompt = prompt.replace(\n    \"[[tailored_skills_json]]\",\n    json.dumps(data.get(\"tailored_skills\", []), ensure_ascii=False, separators=(\",\", \":\")),\n)\nprompt = prompt.replace(\n    \"[[experience_context_json]]\",\n    json.dumps(experience_context, ensure_ascii=False, separators=(\",\", \":\")),\n)\n\nreturn [{\"json\": {**data, \"summary_rewrite_prompt\": prompt}}]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1980,
+        0
+      ],
+      "id": "7710f5f0-f247-41f6-b860-bfbe5609ec2d",
+      "name": "Build Summary Prompt"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.summary_rewrite_prompt }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        2220,
+        -140
+      ],
+      "id": "ebcfacfa-d14e-4999-9315-fe4b93cb05fa",
+      "name": "Rewrite Summary"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b:free",
+        "options": {
+          "temperature": "={{ $json.summary_rewrite_temperature }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        2220,
+        100
+      ],
+      "id": "17041ed8-cafd-4e93-a7d2-17f8ed222c27",
+      "name": "Summary Model"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "import json\nimport re\n\ndef extract_text(root):\n    try:\n        value = root[\"response\"][\"generations\"][0][0][\"text\"]\n        if isinstance(value, str):\n            return value\n    except (KeyError, IndexError, TypeError):\n        pass\n\n    for key in (\"text\", \"output\", \"content\"):\n        value = root.get(key)\n        if isinstance(value, str):\n            return value\n\n    raise ValueError(\"Could not locate the summary rewrite model output.\")\n\nif not _items:\n    raise ValueError(\"The summary rewrite model returned no items.\")\n\ntext = extract_text(_items[0][\"json\"]).strip()\ntext = re.sub(r\"^```(?:json)?\\s*\", \"\", text, flags=re.IGNORECASE)\ntext = re.sub(r\"\\s*```$\", \"\", text, flags=re.IGNORECASE).strip()\n\ntry:\n    parsed = json.loads(text)\nexcept json.JSONDecodeError as exc:\n    raise ValueError(\"The summary rewrite model output must be valid JSON.\") from exc\n\nif not isinstance(parsed, dict):\n    raise ValueError(\"The summary rewrite model output must be a JSON object.\")\n\nvalue = parsed.get(\"summary\")\nif not isinstance(value, list):\n    raise ValueError(\"The model output must contain summary.\")\nif any(not isinstance(line, str) for line in value):\n    raise ValueError(\"Every summary item must be a string.\")\n\nreturn [\n    {\n        \"json\": {\n            \"summary_rewrite_response\": json.dumps(\n                parsed,\n                ensure_ascii=False,\n                separators=(\",\", \":\"),\n            )\n        }\n    }\n]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2460,
+        -140
+      ],
+      "id": "b1c10a8e-abe9-43a0-9952-e6371d4db5d7",
+      "name": "Prepare Summary Response"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2700,
+        0
+      ],
+      "id": "fc75372d-5ce5-4409-91d7-6b71eb8b279b",
+      "name": "Merge Summary Response with Source"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "import json\n\ndata = _items[0][\"json\"]\nsummary = json.loads(data[\"summary_rewrite_response\"]).get(\"summary\")\n\nif not isinstance(summary, list) or any(\n    not isinstance(line, str) for line in summary\n):\n    raise ValueError(\"Summary output must contain a summary array of strings.\")\n\nmaster_cv = data[\"master_cv\"]\n\nfinal_cv = {\n    **master_cv,\n    \"summary\": summary,\n    \"skills\": data[\"tailored_skills\"],\n    \"projects\": data[\"tailored_projects\"],\n    \"work_experience\": data[\"tailored_work_experience\"],\n}\n\nprompt_usage = {}\nfor key in (\n    \"project_selection\",\n    \"project_rewrite\",\n    \"work_experience_selection\",\n    \"work_experience_rewrite\",\n    \"skills_tailoring\",\n    \"summary_rewrite\",\n):\n    prompt_usage[key] = {\n        \"prompt_key\": data.get(f\"{key}_prompt_key\"),\n        \"version\": data.get(f\"{key}_prompt_version\"),\n        \"temperature\": data.get(f\"{key}_temperature\"),\n    }\n\nreturn [{\n    \"json\": {\n        \"cv_json\": final_cv,\n        \"prompt_usage\": prompt_usage,\n        \"selected_project_indices\": data.get(\"selected_project_indices\", []),\n        \"selected_work_experience_indices\": data.get(\n            \"selected_work_experience_indices\",\n            [],\n        ),\n    }\n}]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2940,
+        0
+      ],
+      "id": "971566de-8718-4568-ac86-24471a98df4f",
+      "name": "Build Final CV Output"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1740,
+        0
+      ],
+      "id": "19c52d11-e582-4535-a7cb-cd68bb6bcf5e",
+      "name": "Merge Parallel Branches"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking Execute workflow": {
+      "main": [
+        [
+          {
+            "node": "Sample Job and Master CV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sample Job and Master CV": {
+      "main": [
+        [
+          {
+            "node": "Read Six Prompt Settings from Airtable",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Input with Prompt Settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Read Six Prompt Settings from Airtable",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Input with Prompt Settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Six Prompt Settings from Airtable": {
+      "main": [
+        [
+          {
+            "node": "Validate Six Prompt Settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Six Prompt Settings": {
+      "main": [
+        [
+          {
+            "node": "Merge Input with Prompt Settings",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Input with Prompt Settings": {
+      "main": [
+        [
+          {
+            "node": "Build Project Selection Prompt",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Build Work Selection Prompt",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Build Skills Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Project Selection Prompt": {
+      "main": [
+        [
+          {
+            "node": "Select Projects",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Project Selection with Source",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Project Selection Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Select Projects",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select Projects": {
+      "main": [
+        [
+          {
+            "node": "Prepare Project Selection Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Project Selection Response": {
+      "main": [
+        [
+          {
+            "node": "Merge Project Selection with Source",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Project Selection with Source": {
+      "main": [
+        [
+          {
+            "node": "Parse Project Selection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Project Selection": {
+      "main": [
+        [
+          {
+            "node": "Build Project Rewrite Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Project Rewrite Prompt": {
+      "main": [
+        [
+          {
+            "node": "Rewrite Project Content",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Project Rewrite with Source",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Project Rewrite Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Rewrite Project Content",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rewrite Project Content": {
+      "main": [
+        [
+          {
+            "node": "Prepare Project Rewrite Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Project Rewrite Response": {
+      "main": [
+        [
+          {
+            "node": "Merge Project Rewrite with Source",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Project Rewrite with Source": {
+      "main": [
+        [
+          {
+            "node": "Apply Project Rewrite",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apply Project Rewrite": {
+      "main": [
+        [
+          {
+            "node": "Merge Parallel Branches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Work Selection Prompt": {
+      "main": [
+        [
+          {
+            "node": "Select Work Experiences",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Work Selection with Source",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Work Selection Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Select Work Experiences",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select Work Experiences": {
+      "main": [
+        [
+          {
+            "node": "Prepare Work Selection Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Work Selection Response": {
+      "main": [
+        [
+          {
+            "node": "Merge Work Selection with Source",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Work Selection with Source": {
+      "main": [
+        [
+          {
+            "node": "Parse Work Selection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Work Selection": {
+      "main": [
+        [
+          {
+            "node": "Build Work Rewrite Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Work Rewrite Prompt": {
+      "main": [
+        [
+          {
+            "node": "Rewrite Work Content",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Work Rewrite with Source",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Work Rewrite Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Rewrite Work Content",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rewrite Work Content": {
+      "main": [
+        [
+          {
+            "node": "Prepare Work Rewrite Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Work Rewrite Response": {
+      "main": [
+        [
+          {
+            "node": "Merge Work Rewrite with Source",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Work Rewrite with Source": {
+      "main": [
+        [
+          {
+            "node": "Apply Work Rewrite",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apply Work Rewrite": {
+      "main": [
+        [
+          {
+            "node": "Merge Parallel Branches",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Build Skills Prompt": {
+      "main": [
+        [
+          {
+            "node": "Tailor Skills",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Skills Response with Source",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Skills Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Tailor Skills",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tailor Skills": {
+      "main": [
+        [
+          {
+            "node": "Prepare Skills Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Skills Response": {
+      "main": [
+        [
+          {
+            "node": "Merge Skills Response with Source",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Skills Response with Source": {
+      "main": [
+        [
+          {
+            "node": "Apply Tailored Skills",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apply Tailored Skills": {
+      "main": [
+        [
+          {
+            "node": "Merge Parallel Branches",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Build Summary Prompt": {
+      "main": [
+        [
+          {
+            "node": "Rewrite Summary",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Summary Response with Source",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Summary Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Rewrite Summary",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rewrite Summary": {
+      "main": [
+        [
+          {
+            "node": "Prepare Summary Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Summary Response": {
+      "main": [
+        [
+          {
+            "node": "Merge Summary Response with Source",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Summary Response with Source": {
+      "main": [
+        [
+          {
+            "node": "Build Final CV Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Parallel Branches": {
+      "main": [
+        [
+          {
+            "node": "Build Summary Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e014f537-738e-47a9-b60f-4f5391c268cc",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

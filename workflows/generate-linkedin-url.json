@@ -1,0 +1,90 @@
+{
+  "name": "LinkedIn Job URL from Airtable",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual-trigger",
+      "name": "When clicking 'Execute workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [-200, 300]
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "filterByFormula": "={Generated URL} = ''",
+        "options": {}
+      },
+      "id": "airtable-search",
+      "name": "Airtable - Search Records",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [40, 300],
+      "notes": "Select your Base and Table from the dropdowns after import. The filter formula skips rows that already have a Generated URL."
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "mode": "runOnceForEachItem",
+        "pythonCode": "import urllib.parse\n\nBASE_URL = \"https://www.linkedin.com/jobs/search/\"\n\nEXPERIENCE_LEVELS = {\n    \"internship\": \"1\",\n    \"entry level\": \"2\",\n    \"associate\": \"3\",\n    \"mid-senior\": \"4\",\n    \"director\": \"5\",\n    \"executive\": \"6\",\n}\n\nJOB_TYPES = {\n    \"full-time\": \"F\",\n    \"part-time\": \"P\",\n    \"contract\": \"C\",\n    \"temporary\": \"T\",\n    \"volunteer\": \"V\",\n    \"internship\": \"I\",\n    \"other\": \"O\",\n}\n\nWORKPLACE_TYPES = {\n    \"on-site\": \"1\",\n    \"remote\": \"2\",\n    \"hybrid\": \"3\",\n}\n\nDATE_POSTED_PRESETS = {\n    \"day\": \"r86400\",\n    \"week\": \"r604800\",\n    \"month\": \"r2592000\",\n    \"any\": None,\n}\n\nSORT_BY = {\n    \"relevance\": \"R\",\n    \"date\": \"DD\",\n}\n\n\ndef resolve_posted(value):\n    if not value:\n        return None\n    key = str(value).strip().lower()\n    if key in DATE_POSTED_PRESETS:\n        return DATE_POSTED_PRESETS[key]\n    try:\n        hours = float(key)\n    except ValueError:\n        return None\n    if hours <= 0:\n        return None\n    return f\"r{int(hours * 3600)}\"\n\n\ndef codes_from_list(values, mapping):\n    if not values:\n        return None\n    codes = []\n    for v in values:\n        key = str(v).strip().lower()\n        if key in mapping:\n            codes.append(mapping[key])\n    return \",\".join(codes) if codes else None\n\n\nf = _json\nrecord_id = f.get(\"id\")\nparams = {}\n\nif f.get(\"Keywords\"):\n    params[\"keywords\"] = f[\"Keywords\"]\nif f.get(\"Location\"):\n    params[\"location\"] = f[\"Location\"]\n\nexp = codes_from_list(f.get(\"Experience Level\"), EXPERIENCE_LEVELS)\nif exp:\n    params[\"f_E\"] = exp\n\njt = codes_from_list(f.get(\"Job Type\"), JOB_TYPES)\nif jt:\n    params[\"f_JT\"] = jt\n\nwt = codes_from_list(f.get(\"Workplace Type\"), WORKPLACE_TYPES)\nif wt:\n    params[\"f_WT\"] = wt\n\ntpr = resolve_posted(f.get(\"Date Posted\"))\nif tpr:\n    params[\"f_TPR\"] = tpr\n\nsort_key = str(f.get(\"Sort By\") or \"relevance\").strip().lower()\nparams[\"sortBy\"] = SORT_BY.get(sort_key, \"R\")\n\nif f.get(\"Distance\"):\n    params[\"distance\"] = f[\"Distance\"]\n\nif f.get(\"Company ID\"):\n    params[\"f_C\"] = f[\"Company ID\"]\n\nif f.get(\"Easy Apply\"):\n    params[\"f_AL\"] = \"true\"\n\nquery = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)\nurl = f\"{BASE_URL}?{query}\" if query else BASE_URL\n\nreturn {\n    \"json\": {\n        \"id\": record_id,\n        \"Generated URL\": url\n    }\n}"
+      },
+      "id": "code-build-url",
+      "name": "Build LinkedIn URL",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [280, 300],
+      "notes": "Mirrors the standalone linkedin_job_url.py logic. Reads Airtable fields by name and outputs {id, Generated URL} per record."
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "table": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $json.id }}",
+            "Generated URL": "={{ $json[\"Generated URL\"] }}"
+          },
+          "matchingColumns": ["id"]
+        },
+        "options": {}
+      },
+      "id": "airtable-update",
+      "name": "Airtable - Update Record",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [520, 300],
+      "notes": "Select the same Base and Table as the Search node."
+    }
+  ],
+  "connections": {
+    "When clicking 'Execute workflow'": {
+      "main": [[{ "node": "Airtable - Search Records", "type": "main", "index": 0 }]]
+    },
+    "Airtable - Search Records": {
+      "main": [[{ "node": "Build LinkedIn URL", "type": "main", "index": 0 }]]
+    },
+    "Build LinkedIn URL": {
+      "main": [[{ "node": "Airtable - Update Record", "type": "main", "index": 0 }]]
+    }
+  }
+}
