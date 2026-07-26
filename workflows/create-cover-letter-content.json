@@ -1,15 +1,15 @@
 {
-  "name": "Cover Letter Content Creation",
+  "name": "Cover Letter Content Creation - Parent Context",
   "nodes": [
     {
       "parameters": {},
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        64,
-        288
+        -784,
+        -448
       ],
-      "id": "2c5aee69-72f5-4031-a092-f70867907b93",
+      "id": "c52c73de-b4c2-47a3-921d-ac0b55f60d1e",
       "name": "Manual Trigger",
       "disabled": true
     },
@@ -21,10 +21,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        288,
-        288
+        -560,
+        -448
       ],
-      "id": "b4875f7d-3f36-4228-87b5-6d39e8f5b603",
+      "id": "534d4a7c-e15b-43fc-8046-cbd771ed555d",
       "name": "Sample Job and Master CV"
     },
     {
@@ -34,10 +34,10 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        288,
-        480
+        -560,
+        -256
       ],
-      "id": "9efee0de-90d4-4e1e-82aa-0add5e7802d1",
+      "id": "73af4b9c-ee07-4e42-8ab3-9b5ab289f106",
       "name": "When Executed by Another Workflow"
     },
     {
@@ -68,10 +68,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        512,
-        384
+        -336,
+        -352
       ],
-      "id": "06ab41e2-45a8-4d75-9a06-51debe139773",
+      "id": "bb0bc8b4-6667-4717-91b1-77f7030ed019",
       "name": "Test Mode?"
     },
     {
@@ -82,27 +82,33 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        736,
-        240
+        -112,
+        -496
       ],
-      "id": "cadb9123-8fda-4ca0-af00-dc80809e9743",
+      "id": "4e232250-f778-437c-8793-4287b2e87724",
       "name": "Return Test Cover Letter Output"
     },
     {
       "parameters": {
-        "databaseId": "Job Hunt Tracker",
-        "tableId": "Prompts",
+        "databaseId": 504349,
+        "tableId": 1098023,
         "returnAll": true,
         "additionalOptions": {}
       },
       "type": "n8n-nodes-base.baserow",
       "typeVersion": 1,
       "position": [
-        736,
-        528
+        -112,
+        -208
       ],
-      "id": "0ae0555a-d310-4175-8e00-58bb74711a12",
-      "name": "Read Cover Letter Prompt from Baserow"
+      "id": "f37bbd1e-5f19-4584-a5ae-fe8b189818a9",
+      "name": "Read Cover Letter Prompt from Baserow",
+      "credentials": {
+        "baserowApi": {
+          "id": "6f5zUFzwe8YPXrNX",
+          "name": "Baserow account"
+        }
+      }
     },
     {
       "parameters": {
@@ -112,10 +118,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        960,
-        528
+        112,
+        -208
       ],
-      "id": "97e336f3-ba28-4bba-bac5-da39c11b0009",
+      "id": "315ee6b0-6758-4e12-beca-a20fcadc5035",
       "name": "Validate Cover Letter Prompt"
     },
     {
@@ -127,10 +133,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        1184,
-        464
+        336,
+        -272
       ],
-      "id": "9aad4f19-61bd-4a68-b201-e24bf2f38ca9",
+      "id": "6703c565-b932-44a7-b1af-57de8a39b7ff",
       "name": "Merge Input with Prompt"
     },
     {
@@ -141,10 +147,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1408,
-        464
+        560,
+        -272
       ],
-      "id": "36a2b859-af6e-4caf-ba89-9f6e8d38c8f9",
+      "id": "91e3d542-aa90-4707-a2ab-4e5551a46ea3",
       "name": "Build Cover Letter Prompt"
     },
     {
@@ -157,10 +163,10 @@
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.7,
       "position": [
-        1632,
-        336
+        784,
+        -400
       ],
-      "id": "427f69c2-6bfd-4cad-bd0f-d9e522e26d11",
+      "id": "e7e1aa1f-7a35-45a1-93ae-19dd83563a33",
       "name": "Generate Cover Letter"
     },
     {
@@ -173,10 +179,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
-        1648,
-        560
+        800,
+        -176
       ],
-      "id": "b6fa1e3b-4e1a-41e0-9d57-66f315ff16e3",
+      "id": "90bbfc30-35c5-460a-92ca-ee64bef39fc3",
       "name": "Cover Letter Model",
       "credentials": {
         "openRouterApi": {
@@ -195,10 +201,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
-        1776,
-        560
+        928,
+        -176
       ],
-      "id": "0fd8d45f-8913-4988-b176-a9be64ddb811",
+      "id": "6fcbc12c-53c9-4ec5-8fe8-520bb83a25e3",
       "name": "Cover Letter Fallback Model",
       "credentials": {
         "openRouterApi": {
@@ -215,10 +221,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1984,
-        336
+        1136,
+        -400
       ],
-      "id": "c36be7a6-5d69-403b-94d0-7be362cd145c",
+      "id": "d5aca416-fbf2-4249-b522-4fa01342e125",
       "name": "Prepare Cover Letter Response"
     },
     {
@@ -230,24 +236,24 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        2208,
-        464
+        1360,
+        -272
       ],
-      "id": "bf8a627e-311c-4587-9139-b85caff96b14",
+      "id": "c6931f16-e481-4f23-98da-8bbc928102ac",
       "name": "Merge Response with Source"
     },
     {
       "parameters": {
         "language": "pythonNative",
-        "pythonCode": "import json\n\nif not _items:\n    raise ValueError(\"The workflow received no merged final input.\")\n\ndata = _items[0][\"json\"]\n\nresponse = data.get(\"cover_letter_response\")\nif not isinstance(response, str):\n    raise ValueError(\"cover_letter_response is missing.\")\n\ncover_letter = json.loads(response)\n\ndate_value = cover_letter.get(\"date\")\ncompany_name = cover_letter.get(\"company_name\")\nparagraphs = cover_letter.get(\"paragraphs\")\n\nif not isinstance(date_value, str) or not date_value.strip():\n    raise ValueError(\"date must be a non-empty string.\")\n\nif not isinstance(company_name, str) or not company_name.strip():\n    raise ValueError(\"company_name must be a non-empty string.\")\n\nif not isinstance(paragraphs, list) or len(paragraphs) != 3:\n    raise ValueError(\"paragraphs must contain exactly three strings.\")\n\nif any(\n    not isinstance(paragraph, str) or not paragraph.strip()\n    for paragraph in paragraphs\n):\n    raise ValueError(\"Every paragraph must be a non-empty string.\")\n\nreturn [\n    {\n        \"json\": {\n            \"cover_letter_json\": {\n                \"date\": date_value.strip(),\n                \"company_name\": company_name.strip(),\n                \"paragraphs\": [\n                    paragraph.strip()\n                    for paragraph in paragraphs\n                ],\n            },\n            \"prompt_usage\": {\n                \"cover_letter_generation\": {\n                    \"prompt_key\": data.get(\"cover_letter_prompt_key\"),\n                    \"version\": data.get(\"cover_letter_prompt_version\"),\n                    \"temperature\": data.get(\n                        \"cover_letter_temperature\"\n                    ),\n                }\n            },\n            \"test_mode\": False,\n        }\n    }\n]"
+        "pythonCode": "import json\n\nif not _items:\n    raise ValueError(\"The workflow received no merged final input.\")\n\ndata = _items[0][\"json\"]\n\nresponse = data.get(\"cover_letter_response\")\nif not isinstance(response, str):\n    raise ValueError(\"cover_letter_response is missing.\")\n\ncover_letter = json.loads(response)\n\ndate_value = cover_letter.get(\"date\")\ncompany_name = cover_letter.get(\"company_name\")\nparagraphs = cover_letter.get(\"paragraphs\")\n\nif not isinstance(date_value, str) or not date_value.strip():\n    raise ValueError(\"date must be a non-empty string.\")\n\nif not isinstance(company_name, str) or not company_name.strip():\n    raise ValueError(\"company_name must be a non-empty string.\")\n\nif not isinstance(paragraphs, list) or len(paragraphs) != 3:\n    raise ValueError(\"paragraphs must contain exactly three strings.\")\n\nif any(\n    not isinstance(paragraph, str) or not paragraph.strip()\n    for paragraph in paragraphs\n):\n    raise ValueError(\"Every paragraph must be a non-empty string.\")\n\nreturn [\n    {\n        \"json\": {\n            \"cover_letter_json\": {\n                \"date\": date_value.strip(),\n                \"company_name\": company_name.strip(),\n                \"paragraphs\": [\n                    paragraph.strip()\n                    for paragraph in paragraphs\n                ],\n            },\n            \"prompt_usage\": {\n                \"cover_letter_generation\": {\n                    \"prompt_key\": data.get(\"cover_letter_prompt_key\"),\n                    \"version\": data.get(\"cover_letter_prompt_version\"),\n                    \"temperature\": data.get(\n                        \"cover_letter_temperature\"\n                    ),\n                }\n            },\n            \"test_mode\": False,\n            \"job_id\": data.get(\"job_id\"),\n            \"company_name\": data.get(\"company_name\"),\n            \"job_title\": data.get(\"job_title\"),\n            \"job_description\": data.get(\"job_description\"),\n            \"job_url\": data.get(\"job_url\"),\n            \"application_id\": data.get(\"application_id\"),\n            \"published_at\": data.get(\"published_at\"),\n            \"location\": data.get(\"location\"),\n            \"contract_type\": data.get(\"contract_type\"),\n            \"source_job\": data.get(\"source_job\"),\n        }\n    }\n]"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2432,
-        464
+        1584,
+        -272
       ],
-      "id": "c62bea32-d06b-4ba0-8d31-f254c3b8dfaf",
+      "id": "2e8b1190-822e-495e-ae31-131fe03016cf",
       "name": "Build Final Cover Letter Output"
     }
   ],
@@ -420,12 +426,12 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "56b7a588-dc8d-4e90-bc13-c41c47d8e441",
+  "versionId": "11751f92-bcf1-4b65-9f65-e4d196246fdc",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "2d85b40e2e1a69706b539dc280f2a48f8b70729872141299d251c48887ea4c94"
   },
   "nodeGroups": [],
-  "id": "sKj0AxXk8F0xwuBi",
+  "id": "U1q2LLLGN7WLCYRT",
   "tags": []
 }

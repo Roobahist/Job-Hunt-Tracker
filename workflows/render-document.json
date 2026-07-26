@@ -1,0 +1,364 @@
+{
+  "name": "Render Document and Upload to Cloudinary",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1072,
+        2096
+      ],
+      "id": "865c03d6-1a7e-4f61-9191-796ce01de3d1",
+      "name": "Manual Trigger",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "document_type"
+            },
+            {
+              "name": "document_data",
+              "type": "object"
+            },
+            {
+              "name": "job_id"
+            },
+            {
+              "name": "company_name"
+            },
+            {
+              "name": "job_title"
+            },
+            {
+              "name": "application_id"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -848,
+        2288
+      ],
+      "id": "dffb97e3-c926-4a2f-822f-ef94bb9b6545",
+      "name": "Called by Parent Workflow"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "return [{\n    \"json\": {\n        \"document_type\": \"cv\",\n        \"document_data\": {\n            \"summary\": [\"Sample summary\"],\n            \"skills\": [],\n            \"projects\": [],\n            \"work_experience\": [],\n            \"awards\": []\n        },\n        \"job_id\": \"sample-job-001\",\n        \"company_name\": \"Example Company\",\n        \"job_title\": \"Machine Learning Engineer\",\n        \"application_id\": \"example-company-machine-learning-engineer-sample-job-001\"\n    }\n}]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -848,
+        2096
+      ],
+      "id": "4d7aa01e-029c-4441-9cf1-ecba2d6ff9b8",
+      "name": "Sample Input"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "import re\n\n\ndef required_text(data, key):\n    value = data.get(key)\n    if not isinstance(value, str) or not value.strip():\n        raise ValueError(f\"'{key}' must be a non-empty string.\")\n    return value.strip()\n\n\ndef slugify(value):\n    normalized = value.lower().strip()\n    normalized = re.sub(r\"[^a-z0-9]+\", \"-\", normalized)\n    normalized = re.sub(r\"-+\", \"-\", normalized).strip(\"-\")\n    return normalized or \"unknown\"\n\n\nif not _items:\n    raise ValueError(\"The workflow received no input.\")\n\ndata = dict(_items[0].get(\"json\", {}))\n\ndocument_type = str(data.get(\"document_type\", \"\")).strip().lower()\nif document_type not in {\"cv\", \"cover-letter\"}:\n    raise ValueError(\"'document_type' must be either 'cv' or 'cover-letter'.\")\n\ndocument_data = data.get(\"document_data\")\nif not isinstance(document_data, dict):\n    raise ValueError(\"'document_data' must be an object.\")\n\njob_id = slugify(required_text(data, \"job_id\"))\ncompany_slug = slugify(required_text(data, \"company_name\"))\nrole_slug = slugify(required_text(data, \"job_title\"))\n\napplication_id = data.get(\"application_id\")\nif not isinstance(application_id, str) or not application_id.strip():\n    application_id = f\"{company_slug}-{role_slug}-{job_id}\"\napplication_id = slugify(application_id)\n\nartifact_prefix = \"cv\" if document_type == \"cv\" else \"cover-letter\"\nartifact_base_name = f\"{artifact_prefix}_{application_id}\"\ncloudinary_folder = f\"job-applications/{job_id}\"\n\nreturn [\n    {\n        \"json\": {\n            **data,\n            \"document_type\": document_type,\n            \"document_data\": document_data,\n            \"job_id\": job_id,\n            \"application_id\": application_id,\n            \"artifact_prefix\": artifact_prefix,\n            \"artifact_base_name\": artifact_base_name,\n            \"cloudinary_folder\": cloudinary_folder,\n            \"pdf_public_id\": f\"{artifact_base_name}.pdf\",\n            \"tex_public_id\": f\"{artifact_base_name}.tex\",\n        },\n        \"pairedItem\": {\"item\": 0},\n    }\n]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -624,
+        2192
+      ],
+      "id": "d5a5a76c-a19a-4d1e-b8b9-bf987c13eced",
+      "name": "Normalize Input"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://document-worker:8000/generate",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ document_type: $json.document_type, data: $json.document_data }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        272,
+        2192
+      ],
+      "id": "704b721b-5647-4ec8-9c7d-131ad39a12b6",
+      "name": "Generate Document"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.tex_download_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "tex_file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        496,
+        2096
+      ],
+      "id": "4e8b3569-d92e-4b57-938c-c68a669abe74",
+      "name": "Download Document TEX"
+    },
+    {
+      "parameters": {
+        "operation": "uploadFile",
+        "file": "tex_file",
+        "resource_type_file": "raw",
+        "additionalFieldsFile": {
+          "folder": "={{ $('Normalize Input').first().json.cloudinary_folder }}",
+          "public_id": "={{ $('Normalize Input').first().json.tex_public_id }}",
+          "tags": "job-application,generated-document,tex,{{ $('Normalize Input').first().json.document_type }}"
+        }
+      },
+      "type": "n8n-nodes-cloudinary.cloudinary",
+      "typeVersion": 1,
+      "position": [
+        720,
+        2096
+      ],
+      "id": "ee1678d0-c406-4830-8a6c-069c98f73560",
+      "name": "Upload Document TEX to Cloudinary",
+      "credentials": {
+        "cloudinaryApi": {
+          "id": "si0h1UWsPCBpKFWb",
+          "name": "Cloudinary account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Generate Document').first().json.pdf_download_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "pdf_file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        496,
+        2288
+      ],
+      "id": "da8594ad-6641-4ed0-bed2-cfdd25a7b6c1",
+      "name": "Download Document PDF"
+    },
+    {
+      "parameters": {
+        "operation": "uploadFile",
+        "file": "pdf_file",
+        "resource_type_file": "raw",
+        "additionalFieldsFile": {
+          "folder": "={{ $('Normalize Input').first().json.cloudinary_folder }}",
+          "public_id": "={{ $('Normalize Input').first().json.pdf_public_id }}",
+          "tags": "job-application,generated-document,pdf,{{ $('Normalize Input').first().json.document_type }}"
+        }
+      },
+      "type": "n8n-nodes-cloudinary.cloudinary",
+      "typeVersion": 1,
+      "position": [
+        720,
+        2288
+      ],
+      "id": "7660981c-ccb3-4f60-8263-8c5b3a955a50",
+      "name": "Upload Document PDF to Cloudinary",
+      "credentials": {
+        "cloudinaryApi": {
+          "id": "si0h1UWsPCBpKFWb",
+          "name": "Cloudinary account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "language": "javaScript",
+        "jsCode": "const uploads = $input.all().map((item) => item.json ?? {});\n\nif (uploads.length < 2) {\n  throw new Error(\"Expected two Cloudinary upload items.\");\n}\n\nconst texUpload = uploads.find((item) => {\n  const publicId = String(item.public_id ?? \"\").toLowerCase();\n  const secureUrl = String(item.secure_url ?? \"\").toLowerCase();\n  const url = String(item.url ?? \"\").toLowerCase();\n\n  return (\n    publicId.endsWith(\".tex\") ||\n    secureUrl.endsWith(\".tex\") ||\n    url.endsWith(\".tex\")\n  );\n});\n\nconst pdfUpload = uploads.find((item) => {\n  const format = String(item.format ?? \"\").toLowerCase();\n  const publicId = String(item.public_id ?? \"\").toLowerCase();\n  const secureUrl = String(item.secure_url ?? \"\").toLowerCase();\n  const url = String(item.url ?? \"\").toLowerCase();\n\n  return (\n    format === \"pdf\" ||\n    publicId.endsWith(\".pdf\") ||\n    secureUrl.endsWith(\".pdf\") ||\n    url.endsWith(\".pdf\")\n  );\n});\n\nif (!texUpload) {\n  throw new Error(\"Could not identify the TEX upload result.\");\n}\n\nif (!pdfUpload) {\n  throw new Error(\"Could not identify the PDF upload result.\");\n}\n\nconst texUrl = texUpload.secure_url ?? texUpload.url;\nconst pdfUrl = pdfUpload.secure_url ?? pdfUpload.url;\n\nif (!texUrl || !pdfUrl) {\n  throw new Error(\"Cloudinary did not return both TEX and PDF URLs.\");\n}\n\nconst source = $(\"Normalize Input\").first().json;\n\nreturn [\n  {\n    json: {\n      document_type: source.document_type,\n      application_id: source.application_id,\n      job_id: source.job_id,\n      company_name: source.company_name,\n      job_title: source.job_title,\n      tex_url: texUrl,\n      pdf_url: pdfUrl,\n      tex_public_id: texUpload.public_id,\n      pdf_public_id: pdfUpload.public_id,\n    },\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1168,
+        2192
+      ],
+      "id": "00538e94-39df-4583-8458-9c9eed4a094f",
+      "name": "Final Output"
+    },
+    {
+      "parameters": {
+        "content": "## Required setup\n\n1. The FastAPI service must be named `document-worker` in Docker Compose.\n2. The worker endpoint is `http://document-worker:8000/generate`.\n3. Set `document_type` to either `cv` or `cover-letter`.\n4. The CV content workflow must return a `cv_json` object.\n5. The cover-letter content workflow must return a `cover_letter_json` object.\n6. Replace `REPLACE_WITH_COVER_LETTER_WORKFLOW_ID` in the **Run Cover Letter Content Creation** node with the actual workflow ID.\n7. Both content workflows receive the normalized input, including `test_mode`.\n8. In the manual test data, change `document_type` between `cv` and `cover-letter` to test either branch.\n9. Select your Cloudinary credential in both upload nodes.\n\nThis workflow generates and uploads documents only. It does not read from or write to Airtable.",
+        "height": 460,
+        "width": 560
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -400,
+        1424
+      ],
+      "id": "5d511921-77e0-4f83-bbe1-3ea5f4f30bf3",
+      "name": "Setup Notes"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        944,
+        2192
+      ],
+      "id": "27b26bae-a98b-4317-b1a8-1d88ddfc3637",
+      "name": "Merge Document Uploads"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Sample Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sample Input": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Called by Parent Workflow": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "Generate Document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Document": {
+      "main": [
+        [
+          {
+            "node": "Download Document TEX",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Download Document PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Document TEX": {
+      "main": [
+        [
+          {
+            "node": "Upload Document TEX to Cloudinary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Document TEX to Cloudinary": {
+      "main": [
+        [
+          {
+            "node": "Merge Document Uploads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Document PDF": {
+      "main": [
+        [
+          {
+            "node": "Upload Document PDF to Cloudinary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Document PDF to Cloudinary": {
+      "main": [
+        [
+          {
+            "node": "Merge Document Uploads",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Document Uploads": {
+      "main": [
+        [
+          {
+            "node": "Final Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "4177a1fc-777e-4598-9cc7-59f8438a8804",
+  "meta": {
+    "instanceId": "2d85b40e2e1a69706b539dc280f2a48f8b70729872141299d251c48887ea4c94"
+  },
+  "nodeGroups": [],
+  "id": "lRDjCWKyxz9iILOQ",
+  "tags": []
+}

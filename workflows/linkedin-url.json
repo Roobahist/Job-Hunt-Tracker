@@ -1,0 +1,227 @@
+{
+  "name": "LinkedIn URL - Active Baserow Criteria",
+  "nodes": [
+    {
+      "parameters": {
+        "databaseId": 504349,
+        "tableId": 1098022,
+        "returnAll": true,
+        "additionalOptions": {}
+      },
+      "id": "ef4c040d-1705-4789-a797-7720c132be19",
+      "name": "Read Search Criteria from Baserow",
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        0
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "baserowApi": {
+          "id": "6f5zUFzwe8YPXrNX",
+          "name": "Baserow account"
+        }
+      },
+      "notes": "Reads all rows from Job Hunt Tracker > Search Criteria. The Build LinkedIn URL node skips rows whose Active field is false."
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "language": "python",
+        "pythonCode": "import urllib.parse\n\n_json = _item[\"json\"]\n\nBASE_URL = \"https://www.linkedin.com/jobs/search/\"\n\nEXPERIENCE_LEVELS = {\n    \"internship\": \"1\",\n    \"entry level\": \"2\",\n    \"associate\": \"3\",\n    \"mid-senior\": \"4\",\n    \"director\": \"5\",\n    \"executive\": \"6\",\n}\n\nJOB_TYPES = {\n    \"full-time\": \"F\",\n    \"part-time\": \"P\",\n    \"contract\": \"C\",\n    \"temporary\": \"T\",\n    \"volunteer\": \"V\",\n    \"internship\": \"I\",\n    \"other\": \"O\",\n}\n\nWORKPLACE_TYPES = {\n    \"on-site\": \"1\",\n    \"remote\": \"2\",\n    \"hybrid\": \"3\",\n}\n\nDATE_POSTED_PRESETS = {\n    \"day\": \"r86400\",\n    \"week\": \"r604800\",\n    \"month\": \"r2592000\",\n    \"any\": None,\n}\n\nSORT_BY = {\n    \"relevance\": \"R\",\n    \"date\": \"DD\",\n}\n\n\ndef resolve_posted(value):\n    if not value:\n        return None\n    key = str(value).strip().lower()\n    if key in DATE_POSTED_PRESETS:\n        return DATE_POSTED_PRESETS[key]\n    try:\n        hours = float(key)\n    except ValueError:\n        return None\n    if hours <= 0:\n        return None\n    return f\"r{int(hours * 3600)}\"\n\n\ndef codes_from_list(values, mapping):\n    if not values:\n        return None\n    codes = []\n    for v in values:\n        key = str(v).strip().lower()\n        if key in mapping:\n            codes.append(mapping[key])\n    return \",\".join(codes) if codes else None\n\n\ndef baserow_value(value):\n    if isinstance(value, dict):\n        return value.get(\"value\") or value.get(\"name\") or value.get(\"id\")\n    return value\n\n\ndef baserow_list(value):\n    if value is None:\n        return []\n    if not isinstance(value, list):\n        value = [value]\n    return [baserow_value(item) for item in value if baserow_value(item) not in (None, \"\")]\n\n\nf = _json\nrecord_id = f.get(\"id\")\nparams = {}\n\nif f.get(\"Keywords\"):\n    params[\"keywords\"] = f[\"Keywords\"]\nif f.get(\"Location\"):\n    params[\"location\"] = f[\"Location\"]\n\nexp = codes_from_list(baserow_list(f.get(\"Experience Level\")), EXPERIENCE_LEVELS)\nif exp:\n    params[\"f_E\"] = exp\n\njt = codes_from_list(baserow_list(f.get(\"Job Type\")), JOB_TYPES)\nif jt:\n    params[\"f_JT\"] = jt\n\nwt = codes_from_list(baserow_list(f.get(\"Workplace Type\")), WORKPLACE_TYPES)\nif wt:\n    params[\"f_WT\"] = wt\n\ntpr = resolve_posted(f.get(\"Date Posted\"))\nif tpr:\n    params[\"f_TPR\"] = tpr\n\nsort_key = str(baserow_value(f.get(\"Sort By\")) or \"relevance\").strip().lower()\nparams[\"sortBy\"] = SORT_BY.get(sort_key, \"R\")\n\nif f.get(\"Distance\"):\n    params[\"distance\"] = f[\"Distance\"]\n\nif f.get(\"Company ID\"):\n    params[\"f_C\"] = f[\"Company ID\"]\n\nif f.get(\"Easy Apply\"):\n    params[\"f_AL\"] = \"true\"\n\nquery = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)\nurl = f\"{BASE_URL}?{query}\" if query else BASE_URL\n\nreturn {\n    \"json\": {\n        \"id\": record_id,\n        \"Generated URL\": url\n    }\n}"
+      },
+      "id": "d5f11bb6-0002-41c7-9b72-8850954d6379",
+      "name": "Build LinkedIn URL",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        912,
+        0
+      ],
+      "notes": "Builds the LinkedIn URL for an active Search Criteria row. Inactive rows are filtered by the preceding IF node."
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "databaseId": 504349,
+        "tableId": 1098022,
+        "rowId": "={{ $json.id }}",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": 9743529,
+              "fieldValue": "={{ $json[\"Generated URL\"] }}"
+            }
+          ]
+        }
+      },
+      "id": "781232ad-ab18-4e76-ae9c-30d9a11eed35",
+      "name": "Update Generated URL in Baserow",
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1.1,
+      "position": [
+        1120,
+        0
+      ],
+      "credentials": {
+        "baserowApi": {
+          "id": "6f5zUFzwe8YPXrNX",
+          "name": "Baserow account"
+        }
+      },
+      "notes": "Updates the Generated URL field on the matching Baserow row in Search Criteria."
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "f83cf06b-3098-4908-b54c-c2ebc18e15a4",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        448,
+        0
+      ],
+      "id": "b50ad28a-76e5-4b72-98f6-93f6fbd85f51",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a610248f-cd09-41a2-a8b3-b76993fe5a29",
+              "leftValue": "={{ (() => { const value = $json.Active; if (typeof value === \"boolean\") return value; if (typeof value === \"number\") return value === 1; const scalar = value && typeof value === \"object\" ? (value.value ?? value.name ?? value.id) : value; return [\"true\",\"1\",\"yes\",\"active\",\"enabled\"].includes(String(scalar ?? \"\").trim().toLowerCase()); })() }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        0
+      ],
+      "id": "478f8f1e-1eac-454a-90bc-134b285164a6",
+      "name": "Is Search Criterion Active?"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Read Search Criteria from Baserow": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build LinkedIn URL": {
+      "main": [
+        [
+          {
+            "node": "Update Generated URL in Baserow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Read Search Criteria from Baserow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Is Search Criterion Active?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Generated URL in Baserow": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Search Criterion Active?": {
+      "main": [
+        [
+          {
+            "node": "Build LinkedIn URL",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "2ca7419e-4772-4a81-9847-522c65e843c0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2d85b40e2e1a69706b539dc280f2a48f8b70729872141299d251c48887ea4c94"
+  },
+  "nodeGroups": [],
+  "id": "ih8KVW6xFuMKHhCS",
+  "tags": []
+}

@@ -1,30 +1,30 @@
 {
-  "name": "CV content creation",
+  "name": "CV Content Creation - Parent Context",
   "nodes": [
     {
       "parameters": {},
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        11616,
-        4752
+        -1568,
+        560
       ],
-      "id": "f2d9c73d-cc2b-413a-8536-9e27edbae148",
+      "id": "b291231d-f5f8-4462-8bb9-8e4c9d5532f4",
       "name": "When clicking Execute workflow",
       "disabled": true
     },
     {
       "parameters": {
         "language": "pythonNative",
-        "pythonCode": "return [\n    {\n        \"json\": {\n            \"job_description\": \"Machine Learning Engineer responsible for Python-based machine learning systems, data pipelines, APIs, deep learning, computer vision, statistical modeling, Docker, and workflow automation.\",\n            \"project_selection_count\": 3,\n            \"work_experience_selection_count\": 2,\n            \"master_cv\": {\n                \"summary\": [\n                    \"Computer Science graduate and MSc in Statistics with experience in machine learning, statistical modeling, biomedical data analysis, automation, teaching, and software development.\"\n                ],\n                \"skills\": [\n                    {\"label\": \"Programming\", \"value\": \"Python, R, SQL, JavaScript\"},\n                    {\"label\": \"Machine Learning\", \"value\": \"PyTorch, TensorFlow, Keras, scikit-learn\"},\n                    {\"label\": \"Data and Statistics\", \"value\": \"Pandas, NumPy, statistical modeling, regression, survival analysis\"},\n                    {\"label\": \"Tools\", \"value\": \"Docker, Git, n8n, REST APIs, Airtable\"}\n                ],\n                \"projects\": [\n                    {\n                        \"title\": \"Multimodal Fatigue Detection\",\n                        \"secondary\": \"Python, PyTorch, OpenCV\",\n                        \"organization\": \"University of Calgary\",\n                        \"date\": \"2024 to 2026\",\n                        \"description\": \"A multimodal deep learning pipeline for fatigue detection using facial video and EEG-derived supervision.\",\n                        \"content\": [\n                            \"Developed a modular fatigue-detection pipeline using facial video and EEG-derived signals.\",\n                            \"Built temporal models from pretrained visual embeddings and handcrafted facial indicators.\"\n                        ]\n                    },\n                    {\n                        \"title\": \"Job Application Automation Platform\",\n                        \"secondary\": \"Python, n8n, LLMs, APIs, Airtable\",\n                        \"organization\": \"Independent Project\",\n                        \"date\": \"2026\",\n                        \"description\": \"An automation platform that collects jobs, evaluates relevance, and generates tailored application content.\",\n                        \"content\": [\n                            \"Built modular n8n workflows for job collection and evaluation.\",\n                            \"Integrated LLMs and APIs with structured CV data.\"\n                        ]\n                    },\n                    {\n                        \"title\": \"Drug Response Prediction\",\n                        \"secondary\": \"Python, Keras, biomedical data\",\n                        \"organization\": \"University of Calgary\",\n                        \"date\": \"2025\",\n                        \"description\": \"A neural-network project predicting drug response from gene expression and molecular fingerprints.\",\n                        \"content\": [\n                            \"Combined gene-expression profiles with molecular fingerprints.\",\n                            \"Trained Keras neural networks for drug-response prediction.\"\n                        ]\n                    }\n                ],\n                \"work_experience\": [\n                    {\n                        \"title\": \"Teaching Assistant\",\n                        \"secondary\": \"Statistics and Data Science\",\n                        \"organization\": \"University of Calgary\",\n                        \"date\": \"2023 to 2026\",\n                        \"description\": \"Delivered tutorials and academic support in statistics, data science, and linear algebra.\",\n                        \"content\": [\n                            \"Led tutorials and office hours for statistics and data science courses.\",\n                            \"Explained quantitative concepts and graded technical assignments.\"\n                        ]\n                    },\n                    {\n                        \"title\": \"Graduate Researcher\",\n                        \"secondary\": \"Machine Learning and Statistics\",\n                        \"organization\": \"University of Calgary\",\n                        \"date\": \"2024 to 2026\",\n                        \"description\": \"Conducted research in statistical machine learning and biomedical data analysis.\",\n                        \"content\": [\n                            \"Developed reproducible Python workflows for biomedical modeling.\",\n                            \"Evaluated statistical and neural-network methods.\"\n                        ]\n                    }\n                ],\n                \"awards\": []\n            }\n        }\n    }\n]"
+        "pythonCode": "return [\n    {\n        \"json\": {\n            \"test_mode\": False,\n            \"job_description\": \"Machine Learning Engineer responsible for Python-based machine learning systems, data pipelines, APIs, deep learning, computer vision, statistical modeling, Docker, and workflow automation.\",\n            \"project_selection_count\": 3,\n            \"work_experience_selection_count\": 2,\n            \"master_cv\": {\n                \"summary\": [\n                    \"Computer Science graduate and MSc in Statistics with experience in machine learning, statistical modeling, biomedical data analysis, automation, teaching, and software development.\"\n                ],\n                \"skills\": [\n                    {\"label\": \"Programming\", \"value\": \"Python, R, SQL, JavaScript\"},\n                    {\"label\": \"Machine Learning\", \"value\": \"PyTorch, TensorFlow, Keras, scikit-learn\"},\n                    {\"label\": \"Data and Statistics\", \"value\": \"Pandas, NumPy, statistical modeling, regression, survival analysis\"},\n                    {\"label\": \"Tools\", \"value\": \"Docker, Git, n8n, REST APIs, Airtable\"}\n                ],\n                \"projects\": [\n                    {\n                        \"title\": \"Multimodal Fatigue Detection\",\n                        \"secondary\": \"Python, PyTorch, OpenCV\",\n                        \"organization\": \"University of Calgary\",\n                        \"date\": \"2024 to 2026\",\n                        \"description\": \"A multimodal deep learning pipeline for fatigue detection using facial video and EEG-derived supervision.\",\n                        \"content\": [\n                            \"Developed a modular fatigue-detection pipeline using facial video and EEG-derived signals.\",\n                            \"Built temporal models from pretrained visual embeddings and handcrafted facial indicators.\"\n                        ]\n                    },\n                    {\n                        \"title\": \"Job Application Automation Platform\",\n                        \"secondary\": \"Python, n8n, LLMs, APIs, Airtable\",\n                        \"organization\": \"Independent Project\",\n                        \"date\": \"2026\",\n                        \"description\": \"An automation platform that collects jobs, evaluates relevance, and generates tailored application content.\",\n                        \"content\": [\n                            \"Built modular n8n workflows for job collection and evaluation.\",\n                            \"Integrated LLMs and APIs with structured CV data.\"\n                        ]\n                    },\n                    {\n                        \"title\": \"Drug Response Prediction\",\n                        \"secondary\": \"Python, Keras, biomedical data\",\n                        \"organization\": \"University of Calgary\",\n                        \"date\": \"2025\",\n                        \"description\": \"A neural-network project predicting drug response from gene expression and molecular fingerprints.\",\n                        \"content\": [\n                            \"Combined gene-expression profiles with molecular fingerprints.\",\n                            \"Trained Keras neural networks for drug-response prediction.\"\n                        ]\n                    }\n                ],\n                \"work_experience\": [\n                    {\n                        \"title\": \"Teaching Assistant\",\n                        \"secondary\": \"Statistics and Data Science\",\n                        \"organization\": \"University of Calgary\",\n                        \"date\": \"2023 to 2026\",\n                        \"description\": \"Delivered tutorials and academic support in statistics, data science, and linear algebra.\",\n                        \"content\": [\n                            \"Led tutorials and office hours for statistics and data science courses.\",\n                            \"Explained quantitative concepts and graded technical assignments.\"\n                        ]\n                    },\n                    {\n                        \"title\": \"Graduate Researcher\",\n                        \"secondary\": \"Machine Learning and Statistics\",\n                        \"organization\": \"University of Calgary\",\n                        \"date\": \"2024 to 2026\",\n                        \"description\": \"Conducted research in statistical machine learning and biomedical data analysis.\",\n                        \"content\": [\n                            \"Developed reproducible Python workflows for biomedical modeling.\",\n                            \"Evaluated statistical and neural-network methods.\"\n                        ]\n                    }\n                ],\n                \"awards\": []\n            }\n        }\n    }\n]"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        11840,
-        4752
+        -1344,
+        560
       ],
-      "id": "9188471b-ebb6-40d7-b10f-725b62c05822",
+      "id": "af11f332-9cee-4bac-a51a-f5d37f5ca723",
       "name": "Sample Job and Master CV"
     },
     {
@@ -34,55 +34,46 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        11840,
-        4976
+        -1344,
+        752
       ],
-      "id": "8a94c631-5a7c-4562-8e0d-5b9eca506d7e",
+      "id": "7c1d307e-ce30-4b83-b5dd-6dadcfc81854",
       "name": "When Executed by Another Workflow"
     },
     {
       "parameters": {
-        "operation": "search",
-        "base": {
-          "__rl": true,
-          "value": "appEmht1pP7RwL17w",
-          "mode": "id"
-        },
-        "table": {
-          "__rl": true,
-          "value": "tblZmqBJOeQxbVTrh",
-          "mode": "id"
-        },
-        "filterByFormula": "AND({Enabled}=TRUE(),{Status}='Active',OR({Prompt Key}='cv_project_selection',{Prompt Key}='cv_project_rewrite',{Prompt Key}='cv_work_experience_selection',{Prompt Key}='cv_work_experience_rewrite',{Prompt Key}='cv_skills_tailoring',{Prompt Key}='cv_summary_rewrite'))",
-        "options": {}
+        "databaseId": 504349,
+        "tableId": 1098023,
+        "returnAll": true,
+        "additionalOptions": {}
       },
-      "type": "n8n-nodes-base.airtable",
-      "typeVersion": 2.1,
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1,
       "position": [
-        12064,
-        4688
+        -896,
+        656
       ],
-      "id": "7c63b398-4eb2-465b-b6ee-37d650815041",
-      "name": "Read Six Prompt Settings from Airtable",
+      "id": "78482209-283d-44ec-a1a4-4bf0baf17db6",
+      "name": "Read Six Prompt Settings from Baserow",
       "credentials": {
-        "airtableTokenApi": {
-          "id": "HEVK3kbJH16cDxgZ",
-          "name": "Airtable Personal Access Token account"
+        "baserowApi": {
+          "id": "6f5zUFzwe8YPXrNX",
+          "name": "Baserow account"
         }
       }
     },
     {
       "parameters": {
         "language": "pythonNative",
-        "pythonCode": "if not _items:\n    raise ValueError(\"Airtable returned no active prompt records.\")\n\ndef fields_of(item):\n    data = item.get(\"json\", {})\n    nested = data.get(\"fields\")\n    return nested if isinstance(nested, dict) else data\n\ndef get_value(fields, names):\n    for name in names:\n        if name in fields and fields[name] is not None:\n            return fields[name]\n    return None\n\nrequired = {\n    \"cv_project_selection\": \"project_selection\",\n    \"cv_project_rewrite\": \"project_rewrite\",\n    \"cv_work_experience_selection\": \"work_experience_selection\",\n    \"cv_work_experience_rewrite\": \"work_experience_rewrite\",\n    \"cv_skills_tailoring\": \"skills_tailoring\",\n    \"cv_summary_rewrite\": \"summary_rewrite\",\n}\n\nconfigs = {}\n\nfor item in _items:\n    fields = fields_of(item)\n    prompt_key = get_value(fields, [\"Prompt Key\", \"Key\", \"prompt_key\"])\n    version = get_value(fields, [\"Version\", \"Prompt Version\", \"version\"])\n    template = get_value(\n        fields,\n        [\"Prompt Template\", \"Prompt\", \"Template\", \"prompt_template\"],\n    )\n    temperature = get_value(fields, [\"Temperature\", \"temperature\"])\n\n    if not isinstance(prompt_key, str):\n        continue\n\n    prompt_key = prompt_key.strip()\n    if prompt_key not in required:\n        continue\n\n    short_key = required[prompt_key]\n    if short_key in configs:\n        raise ValueError(\n            f\"More than one active prompt exists for '{prompt_key}'.\"\n        )\n\n    if not isinstance(template, str) or not template.strip():\n        raise ValueError(f\"Prompt '{prompt_key}' has no template.\")\n\n    try:\n        version_value = float(version)\n    except (TypeError, ValueError) as exc:\n        raise ValueError(\n            f\"Prompt '{prompt_key}' must have a numeric version.\"\n        ) from exc\n\n    try:\n        temperature_value = float(temperature)\n    except (TypeError, ValueError) as exc:\n        raise ValueError(\n            f\"Prompt '{prompt_key}' must have a numeric temperature.\"\n        ) from exc\n\n    configs[short_key] = {\n        \"key\": prompt_key,\n        \"version\": version_value,\n        \"template\": template.strip(),\n        \"temperature\": temperature_value,\n    }\n\nmissing = [key for key in required.values() if key not in configs]\nif missing:\n    raise ValueError(\n        \"Missing active prompts: \" + \", \".join(missing)\n    )\n\noutput = {}\nfor short_key, config in configs.items():\n    output[f\"{short_key}_prompt_key\"] = config[\"key\"]\n    output[f\"{short_key}_prompt_version\"] = config[\"version\"]\n    output[f\"{short_key}_prompt_template\"] = config[\"template\"]\n    output[f\"{short_key}_temperature\"] = config[\"temperature\"]\n\nreturn [{\"json\": output}]"
+        "pythonCode": "if not _items:\n    raise ValueError(\"Baserow returned no prompt records.\")\n\ndef fields_of(item):\n    data = item.get(\"json\", {})\n    nested = data.get(\"fields\")\n    return nested if isinstance(nested, dict) else data\n\ndef get_value(fields, names):\n    for name in names:\n        if name in fields and fields[name] is not None:\n            return fields[name]\n    return None\n\ndef scalar(value):\n    # Baserow select and linked-record values can be returned as objects.\n    if isinstance(value, dict):\n        for key in (\"value\", \"name\"):\n            nested = value.get(key)\n            if nested is not None:\n                return nested\n        return value.get(\"id\")\n\n    # A single linked record may be represented as a one-item list.\n    if isinstance(value, list) and len(value) == 1:\n        return scalar(value[0])\n\n    return value\n\ndef is_enabled(value):\n    value = scalar(value)\n\n    if isinstance(value, bool):\n        return value\n\n    if isinstance(value, (int, float)):\n        return value == 1\n\n    if isinstance(value, str):\n        return value.strip().lower() in (\n            \"true\",\n            \"1\",\n            \"yes\",\n            \"enabled\",\n        )\n\n    return False\n\nrequired = {\n    \"cv_project_selection\": \"project_selection\",\n    \"cv_project_rewrite\": \"project_rewrite\",\n    \"cv_work_experience_selection\": \"work_experience_selection\",\n    \"cv_work_experience_rewrite\": \"work_experience_rewrite\",\n    \"cv_skills_tailoring\": \"skills_tailoring\",\n    \"cv_summary_rewrite\": \"summary_rewrite\",\n}\n\nconfigs = {}\n\nfor item in _items:\n    fields = fields_of(item)\n\n    prompt_key = scalar(\n        get_value(fields, [\"Prompt Key\", \"Key\", \"prompt_key\"])\n    )\n    enabled = get_value(fields, [\"Enabled\", \"enabled\"])\n    status = scalar(get_value(fields, [\"Status\", \"status\"]))\n\n    if not isinstance(prompt_key, str):\n        continue\n\n    prompt_key = prompt_key.strip()\n    if prompt_key not in required:\n        continue\n\n    if not is_enabled(enabled):\n        continue\n\n    if not isinstance(status, str) or status.strip() != \"Active\":\n        continue\n\n    short_key = required[prompt_key]\n    if short_key in configs:\n        raise ValueError(\n            f\"More than one active prompt exists for '{prompt_key}'.\"\n        )\n\n    version = scalar(\n        get_value(fields, [\"Version\", \"Prompt Version\", \"version\"])\n    )\n    template = scalar(\n        get_value(\n            fields,\n            [\"Prompt Template\", \"Prompt\", \"Template\", \"prompt_template\"],\n        )\n    )\n    temperature = scalar(\n        get_value(fields, [\"Temperature\", \"temperature\"])\n    )\n\n    if not isinstance(template, str) or not template.strip():\n        raise ValueError(f\"Prompt '{prompt_key}' has no template.\")\n\n    try:\n        version_value = float(version)\n    except (TypeError, ValueError) as exc:\n        raise ValueError(\n            f\"Prompt '{prompt_key}' must have a numeric version.\"\n        ) from exc\n\n    try:\n        temperature_value = float(temperature)\n    except (TypeError, ValueError) as exc:\n        raise ValueError(\n            f\"Prompt '{prompt_key}' must have a numeric temperature.\"\n        ) from exc\n\n    configs[short_key] = {\n        \"key\": prompt_key,\n        \"version\": version_value,\n        \"template\": template.strip(),\n        \"temperature\": temperature_value,\n    }\n\nmissing = [key for key in required.values() if key not in configs]\nif missing:\n    raise ValueError(\n        \"Missing active prompts: \" + \", \".join(missing)\n    )\n\noutput = {}\nfor short_key, config in configs.items():\n    output[f\"{short_key}_prompt_key\"] = config[\"key\"]\n    output[f\"{short_key}_prompt_version\"] = config[\"version\"]\n    output[f\"{short_key}_prompt_template\"] = config[\"template\"]\n    output[f\"{short_key}_temperature\"] = config[\"temperature\"]\n\nreturn [{\"json\": output}]"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        12288,
-        4688
+        -672,
+        656
       ],
-      "id": "cc581eac-6543-4bef-9f18-a852e7202308",
+      "id": "a6a2c94c-df30-435c-af95-f14349c97d1e",
       "name": "Validate Six Prompt Settings"
     },
     {
@@ -94,10 +85,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        12512,
-        4848
+        -448,
+        720
       ],
-      "id": "317a5cdb-d528-4dac-822e-ad3f3f7ac6d8",
+      "id": "e660aee2-6cff-4429-97cb-2fb0031fe8ab",
       "name": "Merge Input with Prompt Settings"
     },
     {
@@ -108,10 +99,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        12736,
-        4336
+        -224,
+        320
       ],
-      "id": "0934881d-d911-4e90-a7d6-934b2d00cce4",
+      "id": "f4137721-f1de-473b-b560-5214b84c51ff",
       "name": "Build Project Selection Prompt"
     },
     {
@@ -124,10 +115,10 @@
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.7,
       "position": [
-        12960,
-        4128
+        0,
+        0
       ],
-      "id": "0bd2f251-6c71-4df6-9d57-60e994335f32",
+      "id": "fe73c89c-02fc-462c-a9dc-d2de3750bda5",
       "name": "Select Projects"
     },
     {
@@ -140,10 +131,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
-        12976,
-        4352
+        16,
+        224
       ],
-      "id": "801c0c9b-7f01-42e9-a15f-6f954af046fb",
+      "id": "f763bf92-1bec-4af7-9bbf-95bc38e7fb3e",
       "name": "Project Selection Model",
       "credentials": {
         "openRouterApi": {
@@ -160,10 +151,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        13312,
-        4240
+        352,
+        112
       ],
-      "id": "8bd2aaaa-1036-4dd4-9294-ff1a9eec6f69",
+      "id": "5b74fb69-34dc-4eb1-864c-05a68ada462d",
       "name": "Prepare Project Selection Response"
     },
     {
@@ -175,10 +166,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        13536,
-        4336
+        576,
+        320
       ],
-      "id": "4551b51b-c086-4991-a22e-002fbd6d7c9f",
+      "id": "ac1c1d1b-f4f2-4327-be05-5b9c18229ccc",
       "name": "Merge Project Selection with Source"
     },
     {
@@ -189,10 +180,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        13760,
-        4336
+        800,
+        320
       ],
-      "id": "9a41c956-6242-42bb-adaa-47ac0f40819b",
+      "id": "169ef293-6cb2-4a05-81ba-958543400d9a",
       "name": "Parse Project Selection"
     },
     {
@@ -203,10 +194,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        13984,
-        4336
+        1024,
+        320
       ],
-      "id": "c341fe98-2ae5-4895-a054-d7f3670ff066",
+      "id": "9cc8ceba-0cdb-4976-83c0-b81fa703cd8b",
       "name": "Build Project Rewrite Prompt"
     },
     {
@@ -219,10 +210,10 @@
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.7,
       "position": [
-        14208,
-        4128
+        1248,
+        0
       ],
-      "id": "9acbb2e0-9a28-4c53-8e87-0c362d0262f3",
+      "id": "e1d90dbd-72a5-4920-b00d-abbcd352ce8a",
       "name": "Rewrite Project Content"
     },
     {
@@ -235,10 +226,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
-        14224,
-        4352
+        1264,
+        224
       ],
-      "id": "3c6a3a78-49f4-4407-a2f6-38bc727493a0",
+      "id": "3c4ff8a7-a2a2-4ddd-b22a-12f9f6317425",
       "name": "Project Rewrite Model",
       "credentials": {
         "openRouterApi": {
@@ -255,10 +246,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        14560,
-        4240
+        1600,
+        112
       ],
-      "id": "32e8bae1-6d5f-4779-a9cc-fb6e4b38020a",
+      "id": "b8d0eeda-efb1-4bab-8674-bf2f11f715c9",
       "name": "Prepare Project Rewrite Response"
     },
     {
@@ -270,10 +261,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        14784,
-        4336
+        1824,
+        320
       ],
-      "id": "a951b2a5-8fea-43c0-a95d-b99715c7d4e5",
+      "id": "6ae1065c-0644-4a84-81a4-cf09ba10f3f6",
       "name": "Merge Project Rewrite with Source"
     },
     {
@@ -284,10 +275,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        15008,
-        4336
+        2048,
+        320
       ],
-      "id": "db3731a8-1fd4-4cba-a030-b450bda0b35a",
+      "id": "a6e72220-a133-410a-85ba-74383e39d972",
       "name": "Apply Project Rewrite"
     },
     {
@@ -298,10 +289,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        12736,
-        4832
+        -224,
+        816
       ],
-      "id": "dd4cb99e-98cd-408b-ad8b-a491002e8a32",
+      "id": "7825fcb0-f31b-483e-bdd1-3a5108f9ab93",
       "name": "Build Work Selection Prompt"
     },
     {
@@ -315,10 +306,10 @@
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.7,
       "position": [
-        12960,
-        4736
+        0,
+        608
       ],
-      "id": "1243146c-6959-4d4c-b3a3-7d2893383134",
+      "id": "b1540a53-8537-4249-bffe-fdb32976ad46",
       "name": "Select Work Experiences"
     },
     {
@@ -331,10 +322,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
-        12976,
-        4960
+        16,
+        832
       ],
-      "id": "575d2c9f-49a9-432b-a7b1-73403e3b42f4",
+      "id": "6d2e3770-9160-48a3-a09a-af5f8df70438",
       "name": "Work Selection Model",
       "credentials": {
         "openRouterApi": {
@@ -351,10 +342,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        13312,
-        4736
+        352,
+        608
       ],
-      "id": "2d0ccb7d-a41d-43fe-b284-ab50aeac4de9",
+      "id": "20d56c4b-4edb-489f-9bd9-a74ed6b357fe",
       "name": "Prepare Work Selection Response"
     },
     {
@@ -366,10 +357,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        13536,
-        4832
+        576,
+        816
       ],
-      "id": "208a99f9-b0bf-44bd-912d-82eb13c40a52",
+      "id": "1726641c-97ff-440a-afea-0087b5a63786",
       "name": "Merge Work Selection with Source"
     },
     {
@@ -380,10 +371,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        13760,
-        4832
+        800,
+        816
       ],
-      "id": "4121e9fc-424b-4984-af71-6255e3d2ee02",
+      "id": "fed8df1a-c99a-47f3-a773-71e505924786",
       "name": "Parse Work Selection"
     },
     {
@@ -394,10 +385,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        13984,
-        4832
+        1024,
+        816
       ],
-      "id": "447d88c0-04f8-4112-95af-7d5bb3a74477",
+      "id": "6a56b287-99f4-4fdf-9223-74f9be9fede5",
       "name": "Build Work Rewrite Prompt"
     },
     {
@@ -410,10 +401,10 @@
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.7,
       "position": [
-        14208,
-        4624
+        1248,
+        496
       ],
-      "id": "3e11b005-9ac9-48e4-aace-3a9adcba261d",
+      "id": "bab0b6b9-ff78-4584-b0dd-19928c410d0e",
       "name": "Rewrite Work Content"
     },
     {
@@ -426,10 +417,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
-        14224,
-        4848
+        1264,
+        720
       ],
-      "id": "4df53a4d-ac51-4a63-8a5d-ebc4db18acd8",
+      "id": "190ae4f8-1ff7-422f-9522-0e43213d01ee",
       "name": "Work Rewrite Model",
       "credentials": {
         "openRouterApi": {
@@ -446,10 +437,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        14560,
-        4736
+        1600,
+        608
       ],
-      "id": "7b2e9093-0ccb-4748-b135-b44b9dd241bd",
+      "id": "12df63ec-f7f6-4390-8306-5ae69be489da",
       "name": "Prepare Work Rewrite Response"
     },
     {
@@ -461,10 +452,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        14784,
-        4832
+        1824,
+        816
       ],
-      "id": "39d4539f-8f68-476a-bf59-49aa659e19b8",
+      "id": "62becc0b-f731-4fbb-bb35-2d8d758f1ddb",
       "name": "Merge Work Rewrite with Source"
     },
     {
@@ -475,10 +466,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        15008,
-        4832
+        2048,
+        816
       ],
-      "id": "cce675ef-0ccc-401a-b0d5-a0847f24c72a",
+      "id": "d1166cad-2ceb-408b-ad82-270000e74807",
       "name": "Apply Work Rewrite"
     },
     {
@@ -489,10 +480,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        13984,
-        5328
+        1024,
+        1312
       ],
-      "id": "0ab678c4-fead-485b-8ea4-6dd019727781",
+      "id": "613b9bec-de41-47fc-a3a7-09121375c548",
       "name": "Build Skills Prompt"
     },
     {
@@ -505,10 +496,10 @@
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.7,
       "position": [
-        14208,
-        5232
+        1248,
+        1104
       ],
-      "id": "dd90ca7d-396c-440b-9fa0-f371252fe723",
+      "id": "a2554871-fcd4-4299-896f-cdedcea43d4c",
       "name": "Tailor Skills"
     },
     {
@@ -521,10 +512,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
-        14224,
-        5456
+        1264,
+        1328
       ],
-      "id": "cdf6d7e7-b6be-4d05-8575-72a5e2e9f674",
+      "id": "19c8a175-42bf-4ef6-b84a-bee00ebda77b",
       "name": "Skills Model",
       "credentials": {
         "openRouterApi": {
@@ -541,10 +532,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        14560,
-        5232
+        1600,
+        1104
       ],
-      "id": "ebb251b7-760c-4d9d-8ce2-50edad6197e5",
+      "id": "7df86c0b-6e00-4a94-b170-e4f4422c1257",
       "name": "Prepare Skills Response"
     },
     {
@@ -556,10 +547,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        14784,
-        5328
+        1824,
+        1312
       ],
-      "id": "08a150ab-513a-4d7c-aa1a-55875b4a3227",
+      "id": "f7f7526c-041f-49d7-87f0-c20daee4f1ba",
       "name": "Merge Skills Response with Source"
     },
     {
@@ -570,10 +561,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        15008,
-        5328
+        2048,
+        1312
       ],
-      "id": "0de847e4-4077-441b-b311-3e8513fd64f1",
+      "id": "66354320-d22e-4a12-b39f-8c0a580dab6b",
       "name": "Apply Tailored Skills"
     },
     {
@@ -584,10 +575,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        15456,
-        4832
+        2496,
+        816
       ],
-      "id": "c1792453-312a-4001-adc3-b879e68f42f9",
+      "id": "6bd23f4e-a293-460b-a307-ff16ce09d878",
       "name": "Build Summary Prompt"
     },
     {
@@ -600,10 +591,10 @@
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.7,
       "position": [
-        15680,
-        4704
+        2720,
+        704
       ],
-      "id": "04d3f340-835b-4dd4-9d7f-1c1e172b750a",
+      "id": "c285685e-9765-42c1-9879-7b46f3ad7dbc",
       "name": "Rewrite Summary"
     },
     {
@@ -616,10 +607,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
-        15696,
-        4928
+        2736,
+        928
       ],
-      "id": "5fdd5154-587d-4fa9-9dc9-b18c9de85f64",
+      "id": "6b2e1273-93a3-4f00-b245-502e7fd0b879",
       "name": "Summary Model",
       "credentials": {
         "openRouterApi": {
@@ -636,10 +627,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        16032,
-        4704
+        3072,
+        704
       ],
-      "id": "e0dd7164-c41e-4391-b213-bdfb52869744",
+      "id": "d6b036fe-62e5-4f14-8047-9e860b2f847c",
       "name": "Prepare Summary Response"
     },
     {
@@ -651,24 +642,24 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        16256,
-        4832
+        3296,
+        816
       ],
-      "id": "77fd07ee-299b-42ec-b2f0-e524aaa5b8da",
+      "id": "ce594c0b-dbb3-42ef-8d2b-24ed361a1853",
       "name": "Merge Summary Response with Source"
     },
     {
       "parameters": {
         "language": "pythonNative",
-        "pythonCode": "import json\n\ndata = _items[0][\"json\"]\nsummary = json.loads(data[\"summary_rewrite_response\"]).get(\"summary\")\n\nif not isinstance(summary, list) or any(\n    not isinstance(line, str) for line in summary\n):\n    raise ValueError(\"Summary output must contain a summary array of strings.\")\n\nmaster_cv = data[\"master_cv\"]\n\nfinal_cv = {\n    **master_cv,\n    \"summary\": summary,\n    \"skills\": data[\"tailored_skills\"],\n    \"projects\": data[\"tailored_projects\"],\n    \"work_experience\": data[\"tailored_work_experience\"],\n}\n\nprompt_usage = {}\nfor key in (\n    \"project_selection\",\n    \"project_rewrite\",\n    \"work_experience_selection\",\n    \"work_experience_rewrite\",\n    \"skills_tailoring\",\n    \"summary_rewrite\",\n):\n    prompt_usage[key] = {\n        \"prompt_key\": data.get(f\"{key}_prompt_key\"),\n        \"version\": data.get(f\"{key}_prompt_version\"),\n        \"temperature\": data.get(f\"{key}_temperature\"),\n    }\n\nreturn [{\n    \"json\": {\n        \"cv_json\": final_cv,\n        \"prompt_usage\": prompt_usage,\n        \"selected_project_indices\": data.get(\"selected_project_indices\", []),\n        \"selected_work_experience_indices\": data.get(\n            \"selected_work_experience_indices\",\n            [],\n        ),\n    }\n}]"
+        "pythonCode": "import json\n\ndata = _items[0][\"json\"]\nsummary = json.loads(data[\"summary_rewrite_response\"]).get(\"summary\")\n\nif not isinstance(summary, list) or any(\n    not isinstance(line, str) for line in summary\n):\n    raise ValueError(\"Summary output must contain a summary array of strings.\")\n\nmaster_cv = data[\"master_cv\"]\n\nfinal_cv = {\n    **master_cv,\n    \"summary\": summary,\n    \"skills\": data[\"tailored_skills\"],\n    \"projects\": data[\"tailored_projects\"],\n    \"work_experience\": data[\"tailored_work_experience\"],\n}\n\nprompt_usage = {}\nfor key in (\n    \"project_selection\",\n    \"project_rewrite\",\n    \"work_experience_selection\",\n    \"work_experience_rewrite\",\n    \"skills_tailoring\",\n    \"summary_rewrite\",\n):\n    prompt_usage[key] = {\n        \"prompt_key\": data.get(f\"{key}_prompt_key\"),\n        \"version\": data.get(f\"{key}_prompt_version\"),\n        \"temperature\": data.get(f\"{key}_temperature\"),\n    }\n\nreturn [{\n    \"json\": {\n        \"cv_json\": final_cv,\n        \"prompt_usage\": prompt_usage,\n        \"selected_project_indices\": data.get(\"selected_project_indices\", []),\n        \"selected_work_experience_indices\": data.get(\n            \"selected_work_experience_indices\",\n            [],\n        ),\n        \"job_id\": data.get(\"job_id\"),\n        \"company_name\": data.get(\"company_name\"),\n        \"job_title\": data.get(\"job_title\"),\n        \"job_description\": data.get(\"job_description\"),\n        \"job_url\": data.get(\"job_url\"),\n        \"application_id\": data.get(\"application_id\"),\n        \"published_at\": data.get(\"published_at\"),\n        \"location\": data.get(\"location\"),\n        \"contract_type\": data.get(\"contract_type\"),\n        \"source_job\": data.get(\"source_job\"),\n    }\n}]"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        16480,
-        4832
+        3520,
+        816
       ],
-      "id": "c2ba0158-6e59-4b38-b433-695da8d6d453",
+      "id": "7834dfc6-6aca-42d5-994a-1676782ee387",
       "name": "Build Final CV Output"
     },
     {
@@ -681,10 +672,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        15232,
-        4816
+        2272,
+        800
       ],
-      "id": "1b097909-24cf-4473-beed-5c4699647ce5",
+      "id": "72ab04c5-2b23-4d8f-94b2-290a11c595dc",
       "name": "Merge Parallel Branches"
     },
     {
@@ -697,10 +688,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
-        13104,
-        4352
+        144,
+        224
       ],
-      "id": "4a5d4a13-25e1-4803-87ab-a5a724708d18",
+      "id": "3d753fab-1df1-4458-a67b-a5152d43f71b",
       "name": "OpenRouter Chat Model",
       "credentials": {
         "openRouterApi": {
@@ -719,10 +710,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
-        14352,
-        4352
+        1392,
+        224
       ],
-      "id": "095424fc-71ff-41cd-9063-b368a63c9847",
+      "id": "feec0f9b-9b85-44d1-8a42-20890e5fbd0b",
       "name": "OpenRouter Chat Model1",
       "credentials": {
         "openRouterApi": {
@@ -741,10 +732,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
-        13104,
-        4960
+        144,
+        832
       ],
-      "id": "db1e71a4-bf60-4840-893e-ceb6c5f2c96c",
+      "id": "00d5aa05-2e43-4ef7-bf22-31268fa80a8b",
       "name": "OpenRouter Chat Model2",
       "credentials": {
         "openRouterApi": {
@@ -763,10 +754,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
-        14352,
-        4848
+        1392,
+        720
       ],
-      "id": "2ae465aa-ca14-4fa6-bec8-c9cc52ea3851",
+      "id": "463ed959-9666-4f87-9d6d-13ce04989d53",
       "name": "OpenRouter Chat Model3",
       "credentials": {
         "openRouterApi": {
@@ -785,10 +776,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
-        14352,
-        5456
+        1392,
+        1328
       ],
-      "id": "90605406-b1ce-479a-8753-0d08beec96d1",
+      "id": "32e07f88-04d3-4fc5-b43a-630a52267e1b",
       "name": "OpenRouter Chat Model4",
       "credentials": {
         "openRouterApi": {
@@ -807,10 +798,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
-        15824,
-        4928
+        2864,
+        928
       ],
-      "id": "19d53b14-a29b-4e2a-bd7d-0724165a1a14",
+      "id": "b767d041-8380-4956-bd3a-f438efc46f80",
       "name": "OpenRouter Chat Model5",
       "credentials": {
         "openRouterApi": {
@@ -818,6 +809,54 @@
           "name": "OpenRouter account"
         }
       }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6290d504-eafc-4d03-a447-f4207e95026e",
+              "leftValue": "={{ $json.test_mode }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1120,
+        656
+      ],
+      "id": "730167a5-de70-4249-9c9a-edb3fe5ae2bf",
+      "name": "Test Mode?"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "data = _items[0][\"json\"]\n\nmaster_cv = data.get(\"master_cv\")\nif not isinstance(master_cv, dict):\n    raise ValueError(\"master_cv must be an object.\")\n\nprojects = master_cv.get(\"projects\", [])\nwork_experience = master_cv.get(\"work_experience\", [])\n\nproject_count = data.get(\"project_selection_count\", 3)\nwork_count = data.get(\"work_experience_selection_count\", 2)\n\nselected_project_indices = list(range(min(project_count, len(projects))))\nselected_work_experience_indices = list(\n    range(min(work_count, len(work_experience)))\n)\n\ndef without_description(entries, indices):\n    output = []\n    for index in indices:\n        entry = {\n            key: value\n            for key, value in entries[index].items()\n            if key != \"description\"\n        }\n        output.append(entry)\n    return output\n\nskills = master_cv.get(\"skills\", [])\ntest_skills = skills[:3] if isinstance(skills, list) else []\n\nfinal_cv = {\n    **master_cv,\n    \"summary\": master_cv.get(\"summary\", []),\n    \"skills\": test_skills,\n    \"projects\": without_description(projects, selected_project_indices),\n    \"work_experience\": without_description(\n        work_experience,\n        selected_work_experience_indices,\n    ),\n}\n\nreturn [\n    {\n        \"json\": {\n            \"cv_json\": final_cv,\n            \"prompt_usage\": {},\n            \"selected_project_indices\": selected_project_indices,\n            \"selected_work_experience_indices\": (\n                selected_work_experience_indices\n            ),\n            \"test_mode\": True,\n        }\n    }\n]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -896,
+        464
+      ],
+      "id": "ee13ff82-12e1-4d5f-bbad-2bca83b7a49f",
+      "name": "Return Test CV Output"
     }
   ],
   "pinData": {},
@@ -837,12 +876,7 @@
       "main": [
         [
           {
-            "node": "Read Six Prompt Settings from Airtable",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Merge Input with Prompt Settings",
+            "node": "Test Mode?",
             "type": "main",
             "index": 0
           }
@@ -853,23 +887,7 @@
       "main": [
         [
           {
-            "node": "Read Six Prompt Settings from Airtable",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Merge Input with Prompt Settings",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Read Six Prompt Settings from Airtable": {
-      "main": [
-        [
-          {
-            "node": "Validate Six Prompt Settings",
+            "node": "Test Mode?",
             "type": "main",
             "index": 0
           }
@@ -882,7 +900,7 @@
           {
             "node": "Merge Input with Prompt Settings",
             "type": "main",
-            "index": 1
+            "index": 0
           }
         ]
       ]
@@ -919,7 +937,7 @@
           {
             "node": "Merge Project Selection with Source",
             "type": "main",
-            "index": 0
+            "index": 1
           }
         ]
       ]
@@ -952,7 +970,7 @@
           {
             "node": "Merge Project Selection with Source",
             "type": "main",
-            "index": 1
+            "index": 0
           }
         ]
       ]
@@ -990,7 +1008,7 @@
           {
             "node": "Merge Project Rewrite with Source",
             "type": "main",
-            "index": 0
+            "index": 1
           }
         ]
       ]
@@ -1023,7 +1041,7 @@
           {
             "node": "Merge Project Rewrite with Source",
             "type": "main",
-            "index": 1
+            "index": 0
           }
         ]
       ]
@@ -1061,7 +1079,7 @@
           {
             "node": "Merge Work Selection with Source",
             "type": "main",
-            "index": 0
+            "index": 1
           }
         ]
       ]
@@ -1094,7 +1112,7 @@
           {
             "node": "Merge Work Selection with Source",
             "type": "main",
-            "index": 1
+            "index": 0
           }
         ]
       ]
@@ -1132,7 +1150,7 @@
           {
             "node": "Merge Work Rewrite with Source",
             "type": "main",
-            "index": 0
+            "index": 1
           }
         ]
       ]
@@ -1165,7 +1183,7 @@
           {
             "node": "Merge Work Rewrite with Source",
             "type": "main",
-            "index": 1
+            "index": 0
           }
         ]
       ]
@@ -1203,7 +1221,7 @@
           {
             "node": "Merge Skills Response with Source",
             "type": "main",
-            "index": 0
+            "index": 1
           }
         ]
       ]
@@ -1236,7 +1254,7 @@
           {
             "node": "Merge Skills Response with Source",
             "type": "main",
-            "index": 1
+            "index": 0
           }
         ]
       ]
@@ -1274,7 +1292,7 @@
           {
             "node": "Merge Summary Response with Source",
             "type": "main",
-            "index": 0
+            "index": 1
           }
         ]
       ]
@@ -1307,7 +1325,7 @@
           {
             "node": "Merge Summary Response with Source",
             "type": "main",
-            "index": 1
+            "index": 0
           }
         ]
       ]
@@ -1399,6 +1417,40 @@
           }
         ]
       ]
+    },
+    "Test Mode?": {
+      "main": [
+        [
+          {
+            "node": "Return Test CV Output",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Read Six Prompt Settings from Baserow",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Input with Prompt Settings",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Read Six Prompt Settings from Baserow": {
+      "main": [
+        [
+          {
+            "node": "Validate Six Prompt Settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -1407,12 +1459,12 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "5dccce3a-11ad-4bf1-8f6c-125e6c1a2bf8",
+  "versionId": "4af0f417-1571-4b9f-b859-2571fcb2bf3e",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "2d85b40e2e1a69706b539dc280f2a48f8b70729872141299d251c48887ea4c94"
   },
   "nodeGroups": [],
-  "id": "4sa273djfXRAtOe0",
+  "id": "NTyHpEu6JpWlafcj",
   "tags": []
 }
