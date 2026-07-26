@@ -1,0 +1,431 @@
+{
+  "name": "Cover Letter Content Creation",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        64,
+        288
+      ],
+      "id": "2c5aee69-72f5-4031-a092-f70867907b93",
+      "name": "Manual Trigger",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "return [\n    {\n        \"json\": {\n            \"test_mode\": False,\n            \"company_name\": \"Example Company\",\n            \"job_title\": \"Machine Learning Engineer\",\n            \"job_description\": \"Machine Learning Engineer responsible for Python-based machine learning systems, data pipelines, APIs, deep learning, computer vision, statistical modeling, Docker, and workflow automation.\",\n            \"master_cv\": {\"summary\": [\"Computer Science graduate and MSc in Statistics with experience in machine learning, statistical modeling, biomedical data analysis, automation, teaching, and software development.\"], \"skills\": [{\"label\": \"Programming\", \"value\": \"Python, R, SQL, JavaScript\"}, {\"label\": \"Machine Learning\", \"value\": \"PyTorch, TensorFlow, Keras, scikit-learn\"}, {\"label\": \"Data and Statistics\", \"value\": \"Pandas, NumPy, statistical modeling, regression\"}, {\"label\": \"Tools\", \"value\": \"Docker, Git, n8n, REST APIs\"}], \"projects\": [{\"title\": \"Multimodal Fatigue Detection\", \"secondary\": \"Python, PyTorch, OpenCV\", \"organization\": \"University of Calgary\", \"date\": \"2024 to 2026\", \"description\": \"A multimodal deep-learning pipeline for fatigue detection using facial video and EEG-derived supervision.\", \"content\": [\"Developed a modular fatigue-detection pipeline using facial video and EEG-derived signals.\", \"Built temporal models from pretrained visual embeddings and handcrafted facial indicators.\"]}, {\"title\": \"Job Application Automation Platform\", \"secondary\": \"Python, n8n, LLMs, APIs\", \"organization\": \"Independent Project\", \"date\": \"2026\", \"description\": \"An automation platform that collects jobs, evaluates relevance, and generates tailored application content.\", \"content\": [\"Built modular n8n workflows for job collection and evaluation.\", \"Integrated LLMs and APIs with structured CV data.\"]}], \"work_experience\": [{\"title\": \"Teaching Assistant\", \"secondary\": \"Statistics and Data Science\", \"organization\": \"University of Calgary\", \"date\": \"2023 to 2026\", \"description\": \"Delivered tutorials and academic support in statistics, data science, and linear algebra.\", \"content\": [\"Led tutorials and office hours for statistics and data science courses.\", \"Explained quantitative concepts and graded technical assignments.\"]}], \"awards\": []}\n        }\n    }\n]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        288,
+        288
+      ],
+      "id": "b4875f7d-3f36-4228-87b5-6d39e8f5b603",
+      "name": "Sample Job and Master CV"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        288,
+        480
+      ],
+      "id": "9efee0de-90d4-4e1e-82aa-0add5e7802d1",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "eb6e535f-eb19-4071-98cc-ee36dc077d64",
+              "leftValue": "={{ $json.test_mode }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        512,
+        384
+      ],
+      "id": "06ab41e2-45a8-4d75-9a06-51debe139773",
+      "name": "Test Mode?"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "from datetime import datetime, timezone\n\ndata = _items[0][\"json\"]\n\ncompany_name = data.get(\"company_name\")\njob_title = data.get(\"job_title\")\n\nif not isinstance(company_name, str) or not company_name.strip():\n    raise ValueError(\"company_name must be a non-empty string.\")\n\nif not isinstance(job_title, str) or not job_title.strip():\n    raise ValueError(\"job_title must be a non-empty string.\")\n\ndate_value = data.get(\"date\")\nif not isinstance(date_value, str) or not date_value.strip():\n    now = datetime.now(timezone.utc)\n    date_value = now.strftime(\"%B \") + str(now.day) + now.strftime(\", %Y\")\n\nparagraphs = [\n    (\n        f\"I am writing to apply for the {job_title.strip()} position at \"\n        f\"{company_name.strip()}. My background in statistics, machine \"\n        \"learning, and software development has prepared me to contribute \"\n        \"to data-driven technical work.\"\n    ),\n    (\n        \"Through my academic research and software projects, I have built \"\n        \"end-to-end workflows using Python, statistical modelling, machine \"\n        \"learning frameworks, APIs, automation tools, and reproducible data \"\n        \"pipelines.\"\n    ),\n    (\n        f\"I would welcome the opportunity to contribute these skills to \"\n        f\"{company_name.strip()}. Thank you for considering my application. \"\n        \"I look forward to discussing how my experience aligns with the role.\"\n    ),\n]\n\nreturn [\n    {\n        \"json\": {\n            \"cover_letter_json\": {\n                \"date\": date_value,\n                \"company_name\": company_name.strip(),\n                \"paragraphs\": paragraphs,\n            },\n            \"prompt_usage\": {},\n            \"test_mode\": True,\n        }\n    }\n]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        736,
+        240
+      ],
+      "id": "cadb9123-8fda-4ca0-af00-dc80809e9743",
+      "name": "Return Test Cover Letter Output"
+    },
+    {
+      "parameters": {
+        "databaseId": "Job Hunt Tracker",
+        "tableId": "Prompts",
+        "returnAll": true,
+        "additionalOptions": {}
+      },
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1,
+      "position": [
+        736,
+        528
+      ],
+      "id": "0ae0555a-d310-4175-8e00-58bb74711a12",
+      "name": "Read Cover Letter Prompt from Baserow"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "if not _items:\n    raise ValueError(\"Baserow returned no cover-letter prompt records.\")\n\n\ndef fields_of(item):\n    data = item.get(\"json\", {})\n    nested = data.get(\"fields\")\n    return nested if isinstance(nested, dict) else data\n\n\ndef get_value(fields, names):\n    for name in names:\n        if name in fields and fields[name] is not None:\n            return fields[name]\n    return None\n\n\ndef scalar(value):\n    # Baserow single-select fields are returned as objects such as\n    # {\"id\": 1, \"value\": \"Active\", \"color\": \"green\"}.\n    if isinstance(value, dict):\n        for key in (\"value\", \"name\"):\n            nested = value.get(key)\n            if nested is not None:\n                return nested\n    return value\n\n\ndef is_enabled(value):\n    value = scalar(value)\n    if isinstance(value, bool):\n        return value\n    if isinstance(value, (int, float)):\n        return value == 1\n    if isinstance(value, str):\n        return value.strip().lower() in (\"true\", \"1\", \"yes\", \"enabled\")\n    return False\n\n\nrecords = []\n\nfor item in _items:\n    fields = fields_of(item)\n\n    prompt_key = scalar(\n        get_value(fields, [\"Prompt Key\", \"Key\", \"prompt_key\"])\n    )\n    if not isinstance(prompt_key, str):\n        continue\n    if prompt_key.strip() != \"cover_letter_generation\":\n        continue\n\n    enabled = get_value(fields, [\"Enabled\", \"enabled\"])\n    status = scalar(get_value(fields, [\"Status\", \"status\"]))\n\n    if not is_enabled(enabled):\n        continue\n    if not isinstance(status, str) or status.strip() != \"Active\":\n        continue\n\n    template = scalar(\n        get_value(\n            fields,\n            [\"Prompt Template\", \"Prompt\", \"Template\", \"prompt_template\"],\n        )\n    )\n    version = scalar(\n        get_value(fields, [\"Version\", \"Prompt Version\", \"version\"])\n    )\n    temperature = scalar(\n        get_value(fields, [\"Temperature\", \"temperature\"])\n    )\n\n    if not isinstance(template, str) or not template.strip():\n        raise ValueError(\n            \"Prompt 'cover_letter_generation' has no template.\"\n        )\n\n    try:\n        version_value = float(version)\n    except (TypeError, ValueError) as exc:\n        raise ValueError(\n            \"Prompt 'cover_letter_generation' must have a numeric version.\"\n        ) from exc\n\n    try:\n        temperature_value = float(temperature)\n    except (TypeError, ValueError) as exc:\n        raise ValueError(\n            \"Prompt 'cover_letter_generation' must have a numeric temperature.\"\n        ) from exc\n\n    records.append(\n        {\n            \"cover_letter_prompt_key\": \"cover_letter_generation\",\n            \"cover_letter_prompt_version\": version_value,\n            \"cover_letter_prompt_template\": template.strip(),\n            \"cover_letter_temperature\": temperature_value,\n        }\n    )\n\nif not records:\n    raise ValueError(\n        \"No enabled Active prompt found with Prompt Key \"\n        \"'cover_letter_generation'.\"\n    )\n\nif len(records) > 1:\n    raise ValueError(\n        \"More than one enabled Active prompt exists for \"\n        \"'cover_letter_generation'.\"\n    )\n\nreturn [{\"json\": records[0]}]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        528
+      ],
+      "id": "97e336f3-ba28-4bba-bac5-da39c11b0009",
+      "name": "Validate Cover Letter Prompt"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1184,
+        464
+      ],
+      "id": "9aad4f19-61bd-4a68-b201-e24bf2f38ca9",
+      "name": "Merge Input with Prompt"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "import json\nfrom datetime import datetime, timezone\n\nif not _items:\n    raise ValueError(\"The workflow received no merged input.\")\n\ndata = _items[0][\"json\"]\n\ncompany_name = data.get(\"company_name\")\njob_title = data.get(\"job_title\")\njob_description = data.get(\"job_description\")\nmaster_cv = data.get(\"master_cv\")\ntemplate = data.get(\"cover_letter_prompt_template\")\n\nif not isinstance(company_name, str) or not company_name.strip():\n    raise ValueError(\"company_name must be a non-empty string.\")\nif not isinstance(job_title, str) or not job_title.strip():\n    raise ValueError(\"job_title must be a non-empty string.\")\nif not isinstance(job_description, str) or not job_description.strip():\n    raise ValueError(\"job_description must be a non-empty string.\")\nif not isinstance(master_cv, dict):\n    raise ValueError(\"master_cv must be an object.\")\nif not isinstance(template, str) or not template.strip():\n    raise ValueError(\"Cover-letter prompt template is missing.\")\n\ndate_value = data.get(\"date\")\nif not isinstance(date_value, str) or not date_value.strip():\n    now = datetime.now(timezone.utc)\n    date_value = now.strftime(\"%B \") + str(now.day) + now.strftime(\", %Y\")\n\ncompact_cv = json.dumps(\n    master_cv,\n    ensure_ascii=False,\n    separators=(\",\", \":\"),\n)\n\nprompt = template\nreplacements = {\n    \"[[date]]\": date_value,\n    \"[[company_name]]\": company_name.strip(),\n    \"[[job_title]]\": job_title.strip(),\n    \"[[job_description]]\": job_description.strip(),\n    \"[[master_cv_json]]\": compact_cv,\n}\n\nfor placeholder, value in replacements.items():\n    prompt = prompt.replace(placeholder, value)\n\nreturn [\n    {\n        \"json\": {\n            **data,\n            \"cover_letter_date\": date_value,\n            \"cover_letter_prompt\": prompt,\n        }\n    }\n]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1408,
+        464
+      ],
+      "id": "36a2b859-af6e-4caf-ba89-9f6e8d38c8f9",
+      "name": "Build Cover Letter Prompt"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.cover_letter_prompt }}",
+        "needsFallback": true,
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        1632,
+        336
+      ],
+      "id": "427f69c2-6bfd-4cad-bd0f-d9e522e26d11",
+      "name": "Generate Cover Letter"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-20b:free",
+        "options": {
+          "temperature": "={{ $json.project_selection_temperature }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1648,
+        560
+      ],
+      "id": "b6fa1e3b-4e1a-41e0-9d57-66f315ff16e3",
+      "name": "Cover Letter Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "z9dqljjig300DoBw",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "google/gemma-4-31b-it:free",
+        "options": {
+          "temperature": "={{ $json.project_selection_temperature }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1776,
+        560
+      ],
+      "id": "0fd8d45f-8913-4988-b176-a9be64ddb811",
+      "name": "Cover Letter Fallback Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "z9dqljjig300DoBw",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "import json\nimport re\n\n\ndef extract_text(root):\n    try:\n        value = root[\"response\"][\"generations\"][0][0][\"text\"]\n        if isinstance(value, str):\n            return value\n    except (KeyError, IndexError, TypeError):\n        pass\n\n    for key in (\"text\", \"output\", \"content\"):\n        value = root.get(key)\n        if isinstance(value, str):\n            return value\n\n    raise ValueError(\"Could not locate the cover-letter model output.\")\n\n\nif not _items:\n    raise ValueError(\"The cover-letter model returned no items.\")\n\ntext = extract_text(_items[0][\"json\"]).strip()\ntext = re.sub(r\"^```(?:json)?\\s*\", \"\", text, flags=re.IGNORECASE)\ntext = re.sub(r\"\\s*```$\", \"\", text, flags=re.IGNORECASE).strip()\n\ntry:\n    parsed = json.loads(text)\nexcept json.JSONDecodeError as exc:\n    raise ValueError(\n        \"The cover-letter model output must be valid JSON.\"\n    ) from exc\n\nif not isinstance(parsed, dict):\n    raise ValueError(\n        \"The cover-letter model output must be a JSON object.\"\n    )\n\nparagraphs = parsed.get(\"paragraphs\")\nif not isinstance(paragraphs, list) or len(paragraphs) != 3:\n    raise ValueError(\n        \"The model output must contain exactly three paragraphs.\"\n    )\n\nif any(\n    not isinstance(paragraph, str) or not paragraph.strip()\n    for paragraph in paragraphs\n):\n    raise ValueError(\n        \"Every cover-letter paragraph must be a non-empty string.\"\n    )\n\ncompany_name = parsed.get(\"company_name\")\ndate_value = parsed.get(\"date\")\n\nif not isinstance(company_name, str) or not company_name.strip():\n    raise ValueError(\n        \"The model output must contain a non-empty company_name.\"\n    )\n\nif not isinstance(date_value, str) or not date_value.strip():\n    raise ValueError(\n        \"The model output must contain a non-empty date.\"\n    )\n\nnormalized = {\n    \"date\": date_value.strip(),\n    \"company_name\": company_name.strip(),\n    \"paragraphs\": [paragraph.strip() for paragraph in paragraphs],\n}\n\nreturn [\n    {\n        \"json\": {\n            \"cover_letter_response\": json.dumps(\n                normalized,\n                ensure_ascii=False,\n                separators=(\",\", \":\"),\n            )\n        }\n    }\n]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1984,
+        336
+      ],
+      "id": "c36be7a6-5d69-403b-94d0-7be362cd145c",
+      "name": "Prepare Cover Letter Response"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2208,
+        464
+      ],
+      "id": "bf8a627e-311c-4587-9139-b85caff96b14",
+      "name": "Merge Response with Source"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "import json\n\nif not _items:\n    raise ValueError(\"The workflow received no merged final input.\")\n\ndata = _items[0][\"json\"]\n\nresponse = data.get(\"cover_letter_response\")\nif not isinstance(response, str):\n    raise ValueError(\"cover_letter_response is missing.\")\n\ncover_letter = json.loads(response)\n\ndate_value = cover_letter.get(\"date\")\ncompany_name = cover_letter.get(\"company_name\")\nparagraphs = cover_letter.get(\"paragraphs\")\n\nif not isinstance(date_value, str) or not date_value.strip():\n    raise ValueError(\"date must be a non-empty string.\")\n\nif not isinstance(company_name, str) or not company_name.strip():\n    raise ValueError(\"company_name must be a non-empty string.\")\n\nif not isinstance(paragraphs, list) or len(paragraphs) != 3:\n    raise ValueError(\"paragraphs must contain exactly three strings.\")\n\nif any(\n    not isinstance(paragraph, str) or not paragraph.strip()\n    for paragraph in paragraphs\n):\n    raise ValueError(\"Every paragraph must be a non-empty string.\")\n\nreturn [\n    {\n        \"json\": {\n            \"cover_letter_json\": {\n                \"date\": date_value.strip(),\n                \"company_name\": company_name.strip(),\n                \"paragraphs\": [\n                    paragraph.strip()\n                    for paragraph in paragraphs\n                ],\n            },\n            \"prompt_usage\": {\n                \"cover_letter_generation\": {\n                    \"prompt_key\": data.get(\"cover_letter_prompt_key\"),\n                    \"version\": data.get(\"cover_letter_prompt_version\"),\n                    \"temperature\": data.get(\n                        \"cover_letter_temperature\"\n                    ),\n                }\n            },\n            \"test_mode\": False,\n        }\n    }\n]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2432,
+        464
+      ],
+      "id": "c62bea32-d06b-4ba0-8d31-f254c3b8dfaf",
+      "name": "Build Final Cover Letter Output"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Sample Job and Master CV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sample Job and Master CV": {
+      "main": [
+        [
+          {
+            "node": "Test Mode?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Test Mode?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Mode?": {
+      "main": [
+        [
+          {
+            "node": "Return Test Cover Letter Output",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Read Cover Letter Prompt from Baserow",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Input with Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Cover Letter Prompt": {
+      "main": [
+        [
+          {
+            "node": "Merge Input with Prompt",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Input with Prompt": {
+      "main": [
+        [
+          {
+            "node": "Build Cover Letter Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Cover Letter Prompt": {
+      "main": [
+        [
+          {
+            "node": "Generate Cover Letter",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Response with Source",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Generate Cover Letter": {
+      "main": [
+        [
+          {
+            "node": "Prepare Cover Letter Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cover Letter Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate Cover Letter",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cover Letter Fallback Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate Cover Letter",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Prepare Cover Letter Response": {
+      "main": [
+        [
+          {
+            "node": "Merge Response with Source",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Response with Source": {
+      "main": [
+        [
+          {
+            "node": "Build Final Cover Letter Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Cover Letter Prompt from Baserow": {
+      "main": [
+        [
+          {
+            "node": "Validate Cover Letter Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "56b7a588-dc8d-4e90-bc13-c41c47d8e441",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2d85b40e2e1a69706b539dc280f2a48f8b70729872141299d251c48887ea4c94"
+  },
+  "nodeGroups": [],
+  "id": "sKj0AxXk8F0xwuBi",
+  "tags": []
+}
