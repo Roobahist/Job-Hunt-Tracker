@@ -6,10 +6,10 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        1072,
-        3168
+        2016,
+        3968
       ],
-      "id": "b20c6fac-8535-43a3-b305-95ab1cd7ce51",
+      "id": "9b0e9056-1e77-4a29-9ef3-8b5a67c974bb",
       "name": "Manual Trigger",
       "disabled": true
     },
@@ -42,10 +42,10 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        1296,
-        3360
+        2240,
+        4160
       ],
-      "id": "a6fa7ff8-e9c3-4f71-a986-dd40b34238a5",
+      "id": "5727045a-adb0-4903-a9fa-c41744c75329",
       "name": "Called by Parent Workflow"
     },
     {
@@ -56,10 +56,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1296,
-        3168
+        2240,
+        3968
       ],
-      "id": "ebd7f1bc-9ca1-468d-8088-c56b1fd07037",
+      "id": "bd4724df-73f6-4a73-9baf-f7c05797d228",
       "name": "Sample Input"
     },
     {
@@ -70,10 +70,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1520,
-        3264
+        2464,
+        4064
       ],
-      "id": "80404f6d-d5ee-4441-b0a5-29e3b7d57f0b",
+      "id": "0caddb3c-eda0-4cdd-8592-fb0d8feb7da9",
       "name": "Normalize Input"
     },
     {
@@ -89,10 +89,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1744,
-        3264
+        2688,
+        4064
       ],
-      "id": "8554de7f-fe95-4638-ae72-baca36f8b9a7",
+      "id": "44ef22ef-3386-48b7-a073-160acfc2dfbc",
       "name": "Generate Document"
     },
     {
@@ -110,10 +110,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1968,
-        3168
+        2912,
+        3968
       ],
-      "id": "758b18e3-68be-4e96-a1fb-552ea8b9be8d",
+      "id": "58515127-5e21-45f7-b93f-c6c4e58767ec",
       "name": "Download Document TEX"
     },
     {
@@ -130,10 +130,10 @@
       "type": "n8n-nodes-cloudinary.cloudinary",
       "typeVersion": 1,
       "position": [
-        2192,
-        3168
+        3136,
+        3968
       ],
-      "id": "6effdb80-7b57-4aea-9809-7188427f1d15",
+      "id": "a54f2b49-e01b-4188-a3cf-f5f7ad39966c",
       "name": "Upload Document TEX to Cloudinary",
       "credentials": {
         "cloudinaryApi": {
@@ -157,10 +157,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1968,
-        3360
+        2912,
+        4160
       ],
-      "id": "9682cedd-7854-44e4-94ec-d9ee958c02e2",
+      "id": "e16dc3f8-3d5b-49ca-ace3-d84a63eca311",
       "name": "Download Document PDF"
     },
     {
@@ -177,10 +177,10 @@
       "type": "n8n-nodes-cloudinary.cloudinary",
       "typeVersion": 1,
       "position": [
-        2192,
-        3360
+        3136,
+        4160
       ],
-      "id": "d8530c42-38b2-4258-a77a-c126a187524c",
+      "id": "f045b1f6-7edd-4867-a681-99fac1b16267",
       "name": "Upload Document PDF to Cloudinary",
       "credentials": {
         "cloudinaryApi": {
@@ -191,15 +191,16 @@
     },
     {
       "parameters": {
-        "jsCode": "const uploads = $input.all().map((item) => item.json ?? {});\n\nif (uploads.length < 2) {\n  throw new Error(\"Expected two Cloudinary upload items.\");\n}\n\nconst texUpload = uploads.find((item) => {\n  const publicId = String(item.public_id ?? \"\").toLowerCase();\n  const secureUrl = String(item.secure_url ?? \"\").toLowerCase();\n  const url = String(item.url ?? \"\").toLowerCase();\n\n  return (\n    publicId.endsWith(\".tex\") ||\n    secureUrl.endsWith(\".tex\") ||\n    url.endsWith(\".tex\")\n  );\n});\n\nconst pdfUpload = uploads.find((item) => {\n  const format = String(item.format ?? \"\").toLowerCase();\n  const publicId = String(item.public_id ?? \"\").toLowerCase();\n  const secureUrl = String(item.secure_url ?? \"\").toLowerCase();\n  const url = String(item.url ?? \"\").toLowerCase();\n\n  return (\n    format === \"pdf\" ||\n    publicId.endsWith(\".pdf\") ||\n    secureUrl.endsWith(\".pdf\") ||\n    url.endsWith(\".pdf\")\n  );\n});\n\nif (!texUpload) {\n  throw new Error(\"Could not identify the TEX upload result.\");\n}\n\nif (!pdfUpload) {\n  throw new Error(\"Could not identify the PDF upload result.\");\n}\n\nconst texUrl = texUpload.secure_url ?? texUpload.url;\nconst pdfUrl = pdfUpload.secure_url ?? pdfUpload.url;\n\nif (!texUrl || !pdfUrl) {\n  throw new Error(\"Cloudinary did not return both TEX and PDF URLs.\");\n}\n\nconst source = $(\"Normalize Input\").first().json;\n\nreturn [\n  {\n    json: {\n      document_type: source.document_type,\n      application_id: source.application_id,\n      job_id: source.job_id,\n      company_name: source.company_name,\n      job_title: source.job_title,\n      tex_url: texUrl,\n      pdf_url: pdfUrl,\n      tex_public_id: texUpload.public_id,\n      pdf_public_id: pdfUpload.public_id,\n    },\n  },\n];"
+        "language": "javaScript",
+        "jsCode": "const uploads = $input.all().map((item) => {\n  const data = item && typeof item.json === \"object\" && item.json !== null\n    ? item.json\n    : {};\n  return data;\n});\n\nif (uploads.length < 2) {\n  throw new Error(\"Expected two Cloudinary upload items.\");\n}\n\nconst textValue = (item, key) => {\n  const value = item[key];\n  return value == null ? \"\" : String(value).toLowerCase();\n};\n\nconst isTexUpload = (item) => {\n  const publicId = textValue(item, \"public_id\");\n  const secureUrl = textValue(item, \"secure_url\");\n  const url = textValue(item, \"url\");\n\n  return (\n    publicId.endsWith(\".tex\") ||\n    secureUrl.endsWith(\".tex\") ||\n    url.endsWith(\".tex\")\n  );\n};\n\nconst isPdfUpload = (item) => {\n  const fileFormat = textValue(item, \"format\");\n  const publicId = textValue(item, \"public_id\");\n  const secureUrl = textValue(item, \"secure_url\");\n  const url = textValue(item, \"url\");\n\n  return (\n    fileFormat === \"pdf\" ||\n    publicId.endsWith(\".pdf\") ||\n    secureUrl.endsWith(\".pdf\") ||\n    url.endsWith(\".pdf\")\n  );\n};\n\nconst texUpload = uploads.find(isTexUpload);\nconst pdfUpload = uploads.find(isPdfUpload);\n\nif (!texUpload) {\n  throw new Error(\"Could not identify the TEX upload result.\");\n}\n\nif (!pdfUpload) {\n  throw new Error(\"Could not identify the PDF upload result.\");\n}\n\nconst texUrl = texUpload.secure_url || texUpload.url;\nconst pdfUrl = pdfUpload.secure_url || pdfUpload.url;\n\nif (!texUrl || !pdfUrl) {\n  throw new Error(\"Cloudinary did not return both TEX and PDF URLs.\");\n}\n\nconst source = $(\"Normalize Input\").first().json;\n\nreturn [\n  {\n    json: {\n      document_type: source.document_type,\n      application_id: source.application_id,\n      job_id: source.job_id,\n      company_name: source.company_name,\n      job_title: source.job_title,\n      tex_url: texUrl,\n      pdf_url: pdfUrl,\n      tex_public_id: texUpload.public_id,\n      pdf_public_id: pdfUpload.public_id,\n    },\n  },\n];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2640,
-        3264
+        3584,
+        4064
       ],
-      "id": "5383a287-daf3-40ef-b00c-a6d73c7e64f8",
+      "id": "9f1485f0-792d-4732-9571-712ca3633d2d",
       "name": "Final Output"
     },
     {
@@ -211,10 +212,10 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        1744,
-        2496
+        2688,
+        3296
       ],
-      "id": "44a96491-a246-471b-9040-23a5eb635b39",
+      "id": "643606d4-0821-4540-b32c-9764da9a8eb2",
       "name": "Setup Notes"
     },
     {
@@ -222,10 +223,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        2416,
-        3264
+        3360,
+        4064
       ],
-      "id": "38fcbf0e-c105-4c81-b646-b5a54a916e05",
+      "id": "ee47c34e-46c3-466c-b94b-adf591ef47ae",
       "name": "Merge Document Uploads"
     }
   ],
@@ -353,7 +354,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "8fb0c478-b8d3-49d9-a62d-239de8f717a3",
+  "versionId": "bcf5fd7d-92aa-4655-b8a9-86b21c76675d",
   "meta": {
     "instanceId": "2d85b40e2e1a69706b539dc280f2a48f8b70729872141299d251c48887ea4c94"
   },

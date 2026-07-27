@@ -6,25 +6,25 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -1408,
+        -1632,
         832
       ],
-      "id": "f52af65e-f762-46f4-a3c7-7e810a753615",
+      "id": "3d3feae0-34ed-4780-b474-717c7e8f9498",
       "name": "When clicking Execute workflow",
       "disabled": true
     },
     {
       "parameters": {
         "language": "pythonNative",
-        "pythonCode": "return [\n    {\n        \"json\": {\n            \"test_mode\": False,\n            \"job_description\": \"Machine Learning Engineer responsible for Python-based machine learning systems, data pipelines, APIs, deep learning, computer vision, statistical modeling, Docker, and workflow automation.\",\n            \"project_selection_count\": 3,\n            \"work_experience_selection_count\": 2,\n            \"master_cv\": {\n                \"summary\": [\n                    \"Computer Science graduate and MSc in Statistics with experience in machine learning, statistical modeling, biomedical data analysis, automation, teaching, and software development.\"\n                ],\n                \"skills\": [\n                    {\"label\": \"Programming\", \"value\": \"Python, R, SQL, JavaScript\"},\n                    {\"label\": \"Machine Learning\", \"value\": \"PyTorch, TensorFlow, Keras, scikit-learn\"},\n                    {\"label\": \"Data and Statistics\", \"value\": \"Pandas, NumPy, statistical modeling, regression, survival analysis\"},\n                    {\"label\": \"Tools\", \"value\": \"Docker, Git, n8n, REST APIs, Airtable\"}\n                ],\n                \"projects\": [\n                    {\n                        \"title\": \"Multimodal Fatigue Detection\",\n                        \"secondary\": \"Python, PyTorch, OpenCV\",\n                        \"organization\": \"University of Calgary\",\n                        \"date\": \"2024 to 2026\",\n                        \"description\": \"A multimodal deep learning pipeline for fatigue detection using facial video and EEG-derived supervision.\",\n                        \"content\": [\n                            \"Developed a modular fatigue-detection pipeline using facial video and EEG-derived signals.\",\n                            \"Built temporal models from pretrained visual embeddings and handcrafted facial indicators.\"\n                        ]\n                    },\n                    {\n                        \"title\": \"Job Application Automation Platform\",\n                        \"secondary\": \"Python, n8n, LLMs, APIs, Airtable\",\n                        \"organization\": \"Independent Project\",\n                        \"date\": \"2026\",\n                        \"description\": \"An automation platform that collects jobs, evaluates relevance, and generates tailored application content.\",\n                        \"content\": [\n                            \"Built modular n8n workflows for job collection and evaluation.\",\n                            \"Integrated LLMs and APIs with structured CV data.\"\n                        ]\n                    },\n                    {\n                        \"title\": \"Drug Response Prediction\",\n                        \"secondary\": \"Python, Keras, biomedical data\",\n                        \"organization\": \"University of Calgary\",\n                        \"date\": \"2025\",\n                        \"description\": \"A neural-network project predicting drug response from gene expression and molecular fingerprints.\",\n                        \"content\": [\n                            \"Combined gene-expression profiles with molecular fingerprints.\",\n                            \"Trained Keras neural networks for drug-response prediction.\"\n                        ]\n                    }\n                ],\n                \"work_experience\": [\n                    {\n                        \"title\": \"Teaching Assistant\",\n                        \"secondary\": \"Statistics and Data Science\",\n                        \"organization\": \"University of Calgary\",\n                        \"date\": \"2023 to 2026\",\n                        \"description\": \"Delivered tutorials and academic support in statistics, data science, and linear algebra.\",\n                        \"content\": [\n                            \"Led tutorials and office hours for statistics and data science courses.\",\n                            \"Explained quantitative concepts and graded technical assignments.\"\n                        ]\n                    },\n                    {\n                        \"title\": \"Graduate Researcher\",\n                        \"secondary\": \"Machine Learning and Statistics\",\n                        \"organization\": \"University of Calgary\",\n                        \"date\": \"2024 to 2026\",\n                        \"description\": \"Conducted research in statistical machine learning and biomedical data analysis.\",\n                        \"content\": [\n                            \"Developed reproducible Python workflows for biomedical modeling.\",\n                            \"Evaluated statistical and neural-network methods.\"\n                        ]\n                    }\n                ],\n                \"awards\": []\n            }\n        }\n    }\n]"
+        "pythonCode": "return [\n    {\n        \"json\": {\n            \"test_mode\": False,\n            \"job_description\": \"Machine Learning Engineer responsible for Python-based machine learning systems, data pipelines, APIs, deep learning, computer vision, statistical modeling, Docker, and workflow automation.\",\n            \"project_selection_count\": 3,\n            \"work_experience_selection_count\": 2,\n            \"master_cv\": {\n                \"summary\": [\n                    \"Computer Science graduate and MSc in Statistics with experience in machine learning, statistical modeling, biomedical data analysis, automation, teaching, and software development.\"\n                ],\n                \"skills\": [\n                    {\"label\": \"Programming\", \"value\": \"Python, R, SQL, JavaScript\"},\n                    {\"label\": \"Machine Learning\", \"value\": \"PyTorch, TensorFlow, Keras, scikit-learn\"},\n                    {\"label\": \"Data and Statistics\", \"value\": \"Pandas, NumPy, statistical modeling, regression, survival analysis\"},\n                    {\"label\": \"Tools\", \"value\": \"Docker, Git, n8n, REST APIs, Airtable\"}\n                ],\n                \"projects\": [\n                    {\n                        \"title\": \"Multimodal Fatigue Detection\",\n                        \"secondary\": \"Python, PyTorch, OpenCV\",\n                        \"organization\": \"University of Calgary\",\n                        \"date\": \"2024 to 2026\",\n                        \"content\": [\n                            \"Developed a modular fatigue-detection pipeline using facial video and EEG-derived signals.\",\n                            \"Built temporal models from pretrained visual embeddings and handcrafted facial indicators.\"\n                        ]\n                    },\n                    {\n                        \"title\": \"Job Application Automation Platform\",\n                        \"secondary\": \"Python, n8n, LLMs, APIs, Airtable\",\n                        \"organization\": \"Independent Project\",\n                        \"date\": \"2026\",\n                        \"content\": [\n                            \"Built modular n8n workflows for job collection and evaluation.\",\n                            \"Integrated LLMs and APIs with structured CV data.\"\n                        ]\n                    },\n                    {\n                        \"title\": \"Drug Response Prediction\",\n                        \"secondary\": \"Python, Keras, biomedical data\",\n                        \"organization\": \"University of Calgary\",\n                        \"date\": \"2025\",\n                        \"content\": [\n                            \"Combined gene-expression profiles with molecular fingerprints.\",\n                            \"Trained Keras neural networks for drug-response prediction.\"\n                        ]\n                    }\n                ],\n                \"work_experience\": [\n                    {\n                        \"title\": \"Teaching Assistant\",\n                        \"secondary\": \"Statistics and Data Science\",\n                        \"organization\": \"University of Calgary\",\n                        \"date\": \"2023 to 2026\",\n                        \"content\": [\n                            \"Led tutorials and office hours for statistics and data science courses.\",\n                            \"Explained quantitative concepts and graded technical assignments.\"\n                        ]\n                    },\n                    {\n                        \"title\": \"Graduate Researcher\",\n                        \"secondary\": \"Machine Learning and Statistics\",\n                        \"organization\": \"University of Calgary\",\n                        \"date\": \"2024 to 2026\",\n                        \"content\": [\n                            \"Developed reproducible Python workflows for biomedical modeling.\",\n                            \"Evaluated statistical and neural-network methods.\"\n                        ]\n                    }\n                ],\n                \"awards\": []\n            }\n        }\n    }\n]"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1184,
+        -1408,
         832
       ],
-      "id": "d29f82c1-7996-481e-a78b-b03f5ca2da65",
+      "id": "a94083c0-2ff7-440f-8a6e-0d294887457f",
       "name": "Sample Job and Master CV"
     },
     {
@@ -34,10 +34,10 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        -1184,
+        -1408,
         1024
       ],
-      "id": "1fecfd27-8d7f-4169-8af0-7dc666f4c5c2",
+      "id": "bb5d6fbe-ea73-42dc-992b-e8f268250a92",
       "name": "When Executed by Another Workflow"
     },
     {
@@ -50,10 +50,10 @@
       "type": "n8n-nodes-base.baserow",
       "typeVersion": 1,
       "position": [
-        -736,
+        -960,
         928
       ],
-      "id": "62506b39-973c-4601-a69f-e6c27615b908",
+      "id": "7b29cc65-c717-4616-bc91-073527f30855",
       "name": "Read Six Prompt Settings from Baserow",
       "credentials": {
         "baserowApi": {
@@ -70,10 +70,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -512,
+        -736,
         928
       ],
-      "id": "757418db-1915-4952-8308-977349ee7b2f",
+      "id": "3f62ef24-1226-45fa-aaad-91955c53ef5a",
       "name": "Validate Six Prompt Settings"
     },
     {
@@ -85,24 +85,24 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        -288,
+        -512,
         992
       ],
-      "id": "b46379f5-6f3f-4bc3-ac65-541b2d3ca6af",
+      "id": "0fe8542e-3c55-49e4-8dd7-f067ccb1a889",
       "name": "Merge Input with Prompt Settings"
     },
     {
       "parameters": {
         "language": "pythonNative",
-        "pythonCode": "import json\n\ndata = _items[0][\"json\"]\njob_description = data.get(\"job_description\")\nmaster_cv = data.get(\"master_cv\")\ncount = data.get(\"project_selection_count\", data.get(\"selection_count\", 4))\ntemplate = data.get(\"project_selection_prompt_template\")\n\nif not isinstance(job_description, str) or not job_description.strip():\n    raise ValueError(\"job_description must be a non-empty string.\")\nif not isinstance(master_cv, dict):\n    raise ValueError(\"master_cv must be an object.\")\nif not isinstance(template, str):\n    raise ValueError(\"Project selection prompt is missing.\")\n\nprojects = master_cv.get(\"projects\")\nif not isinstance(projects, list):\n    raise ValueError(\"master_cv.projects must be an array.\")\n\nsummaries = []\nfor index, project in enumerate(projects):\n    description = project.get(\"description\")\n    if not isinstance(description, str) or not description.strip():\n        content = project.get(\"content\", [])\n        description = \" \".join(\n            bullet for bullet in content[:2] if isinstance(bullet, str)\n        )\n\n    summaries.append({\n        \"index\": index,\n        \"title\": project.get(\"title\", \"\"),\n        \"secondary\": project.get(\"secondary\", \"\"),\n        \"description\": description,\n    })\n\nprompt = template\nprompt = prompt.replace(\"[[selection_count]]\", str(count))\nprompt = prompt.replace(\"[[job_description]]\", job_description)\nprompt = prompt.replace(\n    \"[[project_summaries_json]]\",\n    json.dumps(summaries, ensure_ascii=False, separators=(\",\", \":\")),\n)\n\nreturn [{\"json\": {**data, \"project_selection_prompt\": prompt}}]"
+        "pythonCode": "import json\n\ndata = _items[0][\"json\"]\njob_description = data.get(\"job_description\")\nmaster_cv = data.get(\"master_cv\")\ncount = data.get(\"project_selection_count\", data.get(\"selection_count\", 4))\ntemplate = data.get(\"project_selection_prompt_template\")\n\nif not isinstance(job_description, str) or not job_description.strip():\n    raise ValueError(\"job_description must be a non-empty string.\")\nif not isinstance(master_cv, dict):\n    raise ValueError(\"master_cv must be an object.\")\nif not isinstance(template, str):\n    raise ValueError(\"Project selection prompt is missing.\")\n\nprojects = master_cv.get(\"projects\")\nif not isinstance(projects, list):\n    raise ValueError(\"master_cv.projects must be an array.\")\n\nproject_inputs = []\nfor index, project in enumerate(projects):\n    if not isinstance(project, dict):\n        raise ValueError(\"Each project must be an object.\")\n\n    content = project.get(\"content\")\n    if not isinstance(content, list) or any(\n        not isinstance(bullet, str) for bullet in content\n    ):\n        raise ValueError(\n            f\"Project at index {index} must have a content array of strings.\"\n        )\n\n    project_inputs.append({\n        \"index\": index,\n        **{\n            key: value\n            for key, value in project.items()\n            if key != \"description\"\n        },\n    })\n\ncompact = json.dumps(\n    project_inputs,\n    ensure_ascii=False,\n    separators=(\",\", \":\"),\n)\n\nprompt = template\nprompt = prompt.replace(\"[[selection_count]]\", str(count))\nprompt = prompt.replace(\"[[job_description]]\", job_description)\nprompt = prompt.replace(\"[[project_summaries_json]]\", compact)\nprompt = prompt.replace(\"[[projects_json]]\", compact)\nprompt = prompt.replace(\"[[project_inputs_json]]\", compact)\n\nreturn [{\"json\": {**data, \"project_selection_prompt\": prompt}}]"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -64,
+        -288,
         384
       ],
-      "id": "28cf4ef5-f450-4c25-9135-73657c1a6a2d",
+      "id": "ede5ee2a-9b9a-4552-878d-ec3c47a9b818",
       "name": "Build Project Selection Prompt"
     },
     {
@@ -116,10 +116,10 @@
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.7,
       "position": [
-        224,
+        0,
         0
       ],
-      "id": "6385a41f-4f52-4cac-b422-f75516b63ade",
+      "id": "93d9ac63-dfa6-4f08-8341-c9ad351981b2",
       "name": "Select Projects"
     },
     {
@@ -130,10 +130,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        784,
+        560,
         208
       ],
-      "id": "94194eab-1b71-427f-9050-ead6ce7cddec",
+      "id": "6890e1e7-487a-4358-90d7-ccbf97b38d7d",
       "name": "Prepare Project Selection Response"
     },
     {
@@ -145,10 +145,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        1008,
+        784,
         384
       ],
-      "id": "e2ca10e7-c2ae-4f02-ad7e-0a7ad127500b",
+      "id": "87d5caf5-5568-4c4b-8323-def616d7a9a0",
       "name": "Merge Project Selection with Source"
     },
     {
@@ -159,10 +159,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1232,
+        1008,
         384
       ],
-      "id": "95852ef4-efd1-4769-acb0-96b6321dbf25",
+      "id": "b83b73e9-ed13-4692-bd18-7774a176819d",
       "name": "Parse Project Selection"
     },
     {
@@ -173,10 +173,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1456,
+        1232,
         384
       ],
-      "id": "2879b31d-24ca-4b79-a241-b8c995651622",
+      "id": "c1d7c429-f3b0-43ae-abec-53e797871568",
       "name": "Build Project Rewrite Prompt"
     },
     {
@@ -190,10 +190,10 @@
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.7,
       "position": [
-        1744,
+        1520,
         0
       ],
-      "id": "44a5f541-6c68-4436-a644-068a58439f7f",
+      "id": "7d028353-a252-493e-96b3-876437656bd9",
       "name": "Rewrite Project Content"
     },
     {
@@ -204,10 +204,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2304,
+        2080,
         208
       ],
-      "id": "c181bb7e-01d2-4174-bfd1-3ac54de6c3fc",
+      "id": "f68ad76b-5c5d-41d5-a1bf-2e7e8567395a",
       "name": "Prepare Project Rewrite Response"
     },
     {
@@ -219,38 +219,38 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        2528,
+        2304,
         384
       ],
-      "id": "31a7b324-d826-4392-98cb-2fa90f9da1cc",
+      "id": "2bbb10f5-4b88-4856-8259-3694c61919e5",
       "name": "Merge Project Rewrite with Source"
     },
     {
       "parameters": {
         "language": "pythonNative",
-        "pythonCode": "import json\n\ndata = _items[0][\"json\"]\ncontents = json.loads(data[\"project_rewrite_response\"]).get(\"contents\")\nindices = data.get(\"selected_project_indices\")\n\nif not isinstance(contents, list):\n    raise ValueError(\"Project rewrite must contain contents.\")\nif len(contents) != len(indices):\n    raise ValueError(\"Project contents count does not match selected projects.\")\nif len(contents) != len(indices):\n\n    raise ValueError(\"Project contents count does not match selected projects.\")\n\nsource = data[\"master_cv\"][\"projects\"]\ntailored = []\n\nfor position, index in enumerate(indices):\n    bullets = contents[position]\n    if not isinstance(bullets, list) or any(\n        not isinstance(bullet, str) for bullet in bullets\n    ):\n        raise ValueError(\"Each project content must be an array of strings.\")\n\n    rebuilt = {\n        key: value\n        for key, value in source[index].items()\n        if key != \"description\"\n    }\n    rebuilt[\"content\"] = bullets\n    tailored.append(rebuilt)\n\nreturn [{\"json\": {**data, \"tailored_projects\": tailored}}]"
+        "pythonCode": "import json\n\ndata = _items[0][\"json\"]\ncontents = json.loads(data[\"project_rewrite_response\"]).get(\"contents\")\nindices = data.get(\"selected_project_indices\")\n\nif not isinstance(contents, list):\n    raise ValueError(\"Project rewrite must contain contents.\")\nif not isinstance(indices, list):\n    raise ValueError(\"selected_project_indices must be an array.\")\nif len(contents) != len(indices):\n    raise ValueError(\"Project contents count does not match selected projects.\")\n\nsource = data[\"master_cv\"][\"projects\"]\ntailored = []\n\nfor position, index in enumerate(indices):\n    bullets = contents[position]\n    if not isinstance(bullets, list) or any(\n        not isinstance(bullet, str) for bullet in bullets\n    ):\n        raise ValueError(\"Each project content must be an array of strings.\")\n\n    rebuilt = dict(source[index])\n    rebuilt.pop(\"description\", None)\n    rebuilt[\"content\"] = bullets\n    tailored.append(rebuilt)\n\nreturn [{\"json\": {**data, \"tailored_projects\": tailored}}]"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2752,
+        2528,
         384
       ],
-      "id": "3cb396b7-721f-4af9-829d-14fa65c0414b",
+      "id": "35d7a331-0a94-4b76-9bd7-cfc699985cc9",
       "name": "Apply Project Rewrite"
     },
     {
       "parameters": {
         "language": "pythonNative",
-        "pythonCode": "import json\n\ndata = _items[0][\"json\"]\ntemplate = data.get(\"work_experience_selection_prompt_template\")\ncount = data.get(\"work_experience_selection_count\", 3)\nexperiences = data[\"master_cv\"].get(\"work_experience\", [])\n\nif not isinstance(template, str):\n    raise ValueError(\"Work-experience selection prompt is missing.\")\nif not isinstance(experiences, list):\n    raise ValueError(\"master_cv.work_experience must be an array.\")\n\nsummaries = []\nfor index, experience in enumerate(experiences):\n    description = experience.get(\"description\")\n    if not isinstance(description, str) or not description.strip():\n        content = experience.get(\"content\", [])\n        description = \" \".join(\n            bullet for bullet in content[:2] if isinstance(bullet, str)\n        )\n\n    summaries.append({\n        \"index\": index,\n        \"title\": experience.get(\"title\", \"\"),\n        \"organization\": experience.get(\"organization\", \"\"),\n        \"secondary\": experience.get(\"secondary\", \"\"),\n        \"description\": description,\n    })\n\ncompact = json.dumps(summaries, ensure_ascii=False, separators=(\",\", \":\"))\nprompt = template\nprompt = prompt.replace(\"[[selection_count]]\", str(count))\nprompt = prompt.replace(\"[[job_description]]\", data[\"job_description\"])\nprompt = prompt.replace(\"[[work_experience_summaries_json]]\", compact)\nprompt = prompt.replace(\"[[experience_summaries_json]]\", compact)\n\nreturn [{\"json\": {**data, \"work_experience_selection_prompt\": prompt}}]"
+        "pythonCode": "import json\n\ndata = _items[0][\"json\"]\ntemplate = data.get(\"work_experience_selection_prompt_template\")\ncount = data.get(\"work_experience_selection_count\", 3)\nmaster_cv = data.get(\"master_cv\")\n\nif not isinstance(template, str):\n    raise ValueError(\"Work-experience selection prompt is missing.\")\nif not isinstance(master_cv, dict):\n    raise ValueError(\"master_cv must be an object.\")\n\nexperiences = master_cv.get(\"work_experience\", [])\nif not isinstance(experiences, list):\n    raise ValueError(\"master_cv.work_experience must be an array.\")\n\nexperience_inputs = []\nfor index, experience in enumerate(experiences):\n    if not isinstance(experience, dict):\n        raise ValueError(\"Each work experience must be an object.\")\n\n    content = experience.get(\"content\")\n    if not isinstance(content, list) or any(\n        not isinstance(bullet, str) for bullet in content\n    ):\n        raise ValueError(\n            f\"Work experience at index {index} must have a content array of strings.\"\n        )\n\n    experience_inputs.append({\n        \"index\": index,\n        **{\n            key: value\n            for key, value in experience.items()\n            if key != \"description\"\n        },\n    })\n\ncompact = json.dumps(\n    experience_inputs,\n    ensure_ascii=False,\n    separators=(\",\", \":\"),\n)\n\nprompt = template\nprompt = prompt.replace(\"[[selection_count]]\", str(count))\nprompt = prompt.replace(\"[[job_description]]\", data[\"job_description\"])\nprompt = prompt.replace(\"[[work_experience_summaries_json]]\", compact)\nprompt = prompt.replace(\"[[experience_summaries_json]]\", compact)\nprompt = prompt.replace(\"[[work_experiences_json]]\", compact)\nprompt = prompt.replace(\"[[experience_inputs_json]]\", compact)\n\nreturn [{\"json\": {**data, \"work_experience_selection_prompt\": prompt}}]"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -64,
+        -288,
         1088
       ],
-      "id": "41f69a26-0349-4f1a-aa4b-ff2f7347c429",
+      "id": "cf912849-2c95-4fd0-953c-ccdcae4e1728",
       "name": "Build Work Selection Prompt"
     },
     {
@@ -264,10 +264,10 @@
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.7,
       "position": [
-        224,
+        0,
         912
       ],
-      "id": "c2001981-e31a-4033-8392-66b5f21c45ef",
+      "id": "9c3e92c6-3a09-41d8-8c5e-24f5148d4dda",
       "name": "Select Work Experiences"
     },
     {
@@ -278,10 +278,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        784,
+        560,
         912
       ],
-      "id": "5ef9b852-537e-405c-b5b4-1bda126117e8",
+      "id": "e946b182-efdb-48c6-9940-7891b091eaec",
       "name": "Prepare Work Selection Response"
     },
     {
@@ -293,10 +293,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        1008,
+        784,
         1088
       ],
-      "id": "aecdbe68-dc2d-4364-9415-23e1adf9aeb5",
+      "id": "5ca70cd6-0e11-40a4-8166-ceedcc9b723c",
       "name": "Merge Work Selection with Source"
     },
     {
@@ -307,10 +307,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1232,
+        1008,
         1088
       ],
-      "id": "0794e9be-02b8-44cf-b866-ebf01f4f58b1",
+      "id": "510decea-2efc-42a5-a08b-c45abc6ddabd",
       "name": "Parse Work Selection"
     },
     {
@@ -321,10 +321,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1456,
+        1232,
         1088
       ],
-      "id": "1cf15cd0-5e1c-4948-b6af-f3a543b84ede",
+      "id": "9342f95c-f81c-4c40-b235-a2f93a71256a",
       "name": "Build Work Rewrite Prompt"
     },
     {
@@ -338,10 +338,10 @@
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.7,
       "position": [
-        1744,
+        1520,
         704
       ],
-      "id": "c97a801f-5c14-4ad9-8425-b810d91a0aad",
+      "id": "e9b7a89f-c017-47d0-95d9-84ad363dd74e",
       "name": "Rewrite Work Content"
     },
     {
@@ -352,10 +352,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2304,
+        2080,
         912
       ],
-      "id": "3ca16819-bd0a-4f57-9756-a4428fa02016",
+      "id": "e5d7aef5-36ab-40dd-9170-7e5cfe78da58",
       "name": "Prepare Work Rewrite Response"
     },
     {
@@ -367,24 +367,24 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        2528,
+        2304,
         1088
       ],
-      "id": "3f01e85b-ee87-45c2-a029-1c9e15a7d8b9",
+      "id": "c597c457-e4d4-4d33-bec3-a464a1bbb836",
       "name": "Merge Work Rewrite with Source"
     },
     {
       "parameters": {
         "language": "pythonNative",
-        "pythonCode": "import json\n\ndata = _items[0][\"json\"]\ncontents = json.loads(\n    data[\"work_experience_rewrite_response\"]\n).get(\"contents\")\nindices = data.get(\"selected_work_experience_indices\")\n\nif not isinstance(contents, list):\n    raise ValueError(\"Work rewrite must contain contents.\")\nif len(contents) != len(indices):\n    raise ValueError(\n        \"Work-experience contents count does not match selected experiences.\"\n    )\n\nsource = data[\"master_cv\"][\"work_experience\"]\ntailored = []\n\nfor position, index in enumerate(indices):\n    bullets = contents[position]\n    if not isinstance(bullets, list) or any(\n        not isinstance(bullet, str) for bullet in bullets\n    ):\n        raise ValueError(\n            \"Each work-experience content must be an array of strings.\"\n        )\n\n    rebuilt = {\n        key: value\n        for key, value in source[index].items()\n        if key != \"description\"\n    }\n    rebuilt[\"content\"] = bullets\n    tailored.append(rebuilt)\n\nreturn [{\"json\": {**data, \"tailored_work_experience\": tailored}}]"
+        "pythonCode": "import json\n\ndata = _items[0][\"json\"]\ncontents = json.loads(\n    data[\"work_experience_rewrite_response\"]\n).get(\"contents\")\nindices = data.get(\"selected_work_experience_indices\")\n\nif not isinstance(contents, list):\n    raise ValueError(\"Work rewrite must contain contents.\")\nif not isinstance(indices, list):\n    raise ValueError(\"selected_work_experience_indices must be an array.\")\nif len(contents) != len(indices):\n    raise ValueError(\n        \"Work-experience contents count does not match selected experiences.\"\n    )\n\nsource = data[\"master_cv\"][\"work_experience\"]\ntailored = []\n\nfor position, index in enumerate(indices):\n    bullets = contents[position]\n    if not isinstance(bullets, list) or any(\n        not isinstance(bullet, str) for bullet in bullets\n    ):\n        raise ValueError(\n            \"Each work-experience content must be an array of strings.\"\n        )\n\n    rebuilt = dict(source[index])\n    rebuilt.pop(\"description\", None)\n    rebuilt[\"content\"] = bullets\n    tailored.append(rebuilt)\n\nreturn [{\"json\": {**data, \"tailored_work_experience\": tailored}}]"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2752,
+        2528,
         1088
       ],
-      "id": "193b8446-e21f-42a7-b25b-3095679c216e",
+      "id": "5450a154-b8ed-46f6-8078-f0539ad42944",
       "name": "Apply Work Rewrite"
     },
     {
@@ -395,10 +395,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1456,
+        1232,
         1792
       ],
-      "id": "7cc26b8a-3be7-4999-943c-8f741875c858",
+      "id": "873ba15b-15c8-4bef-9bcc-dc31030c71bb",
       "name": "Build Skills Prompt"
     },
     {
@@ -412,10 +412,10 @@
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.7,
       "position": [
-        1744,
+        1520,
         1616
       ],
-      "id": "d103a718-589d-4fbe-9790-4d4dbed04bd4",
+      "id": "8dcbbb4f-e34b-4632-b49f-cd93bd3707af",
       "name": "Tailor Skills"
     },
     {
@@ -426,10 +426,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2304,
+        2080,
         1616
       ],
-      "id": "d53bc6f1-7c41-4fde-a7ab-fd7dd5f7a62f",
+      "id": "ca7958b1-34ed-44b7-be98-72312d4c018d",
       "name": "Prepare Skills Response"
     },
     {
@@ -441,10 +441,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        2528,
+        2304,
         1792
       ],
-      "id": "9c320646-2f91-4dce-a23d-e7f38218f610",
+      "id": "53b7bf95-9dd9-4961-8ab5-16703c3d6201",
       "name": "Merge Skills Response with Source"
     },
     {
@@ -455,24 +455,24 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2752,
+        2528,
         1792
       ],
-      "id": "fc041be1-ec7d-435e-ad0c-c63378f53872",
+      "id": "bcf338b9-a6dd-4a9a-bf68-66295a11efaa",
       "name": "Apply Tailored Skills"
     },
     {
       "parameters": {
         "language": "pythonNative",
-        "pythonCode": "import json\n\ndata = _items[0][\"json\"]\ntemplate = data.get(\"summary_rewrite_prompt_template\")\n\nif not isinstance(template, str):\n    raise ValueError(\"Summary prompt is missing.\")\n\nmaster_cv = data[\"master_cv\"]\noriginal_summary = master_cv.get(\"summary\", [])\nselected_indices = data.get(\"selected_work_experience_indices\", [])\nsource_experiences = master_cv.get(\"work_experience\", [])\n\nexperience_context = []\nfor index in selected_indices:\n    experience = source_experiences[index]\n    description = experience.get(\"description\")\n    if not isinstance(description, str) or not description.strip():\n        content = experience.get(\"content\", [])\n        description = \" \".join(\n            bullet for bullet in content[:2] if isinstance(bullet, str)\n        )\n\n    experience_context.append({\n        \"title\": experience.get(\"title\", \"\"),\n        \"organization\": experience.get(\"organization\", \"\"),\n        \"description\": description,\n    })\n\ncontext = {\n    \"original_summary\": original_summary,\n    \"tailored_skills\": data.get(\"tailored_skills\", []),\n    \"experience_context\": experience_context,\n}\n\ncompact = json.dumps(context, ensure_ascii=False, separators=(\",\", \":\"))\nprompt = template\nprompt = prompt.replace(\"[[job_description]]\", data[\"job_description\"])\nprompt = prompt.replace(\"[[summary_context_json]]\", compact)\nprompt = prompt.replace(\n    \"[[original_summary_json]]\",\n    json.dumps(original_summary, ensure_ascii=False, separators=(\",\", \":\")),\n)\nprompt = prompt.replace(\n    \"[[tailored_skills_json]]\",\n    json.dumps(data.get(\"tailored_skills\", []), ensure_ascii=False, separators=(\",\", \":\")),\n)\nprompt = prompt.replace(\n    \"[[experience_context_json]]\",\n    json.dumps(experience_context, ensure_ascii=False, separators=(\",\", \":\")),\n)\n\nreturn [{\"json\": {**data, \"summary_rewrite_prompt\": prompt}}]"
+        "pythonCode": "import json\n\ndata = _items[0][\"json\"]\ntemplate = data.get(\"summary_rewrite_prompt_template\")\n\nif not isinstance(template, str):\n    raise ValueError(\"Summary prompt is missing.\")\n\nmaster_cv = data.get(\"master_cv\")\nif not isinstance(master_cv, dict):\n    raise ValueError(\"master_cv must be an object.\")\n\noriginal_summary = master_cv.get(\"summary\", [])\ntailored_skills = data.get(\"tailored_skills\", [])\ntailored_projects = data.get(\"tailored_projects\", [])\ntailored_experiences = data.get(\"tailored_work_experience\", [])\n\nif not isinstance(original_summary, list):\n    raise ValueError(\"master_cv.summary must be an array.\")\nif not isinstance(tailored_skills, list):\n    raise ValueError(\"tailored_skills must be an array.\")\nif not isinstance(tailored_projects, list):\n    raise ValueError(\"tailored_projects must be an array.\")\nif not isinstance(tailored_experiences, list):\n    raise ValueError(\"tailored_work_experience must be an array.\")\n\nproject_context = []\nfor project in tailored_projects:\n    if not isinstance(project, dict):\n        raise ValueError(\"Each tailored project must be an object.\")\n    project_context.append({\n        key: value\n        for key, value in project.items()\n        if key != \"description\"\n    })\n\nexperience_context = []\nfor experience in tailored_experiences:\n    if not isinstance(experience, dict):\n        raise ValueError(\"Each tailored work experience must be an object.\")\n    experience_context.append({\n        key: value\n        for key, value in experience.items()\n        if key != \"description\"\n    })\n\ncontext = {\n    \"original_summary\": original_summary,\n    \"tailored_skills\": tailored_skills,\n    \"project_context\": project_context,\n    \"experience_context\": experience_context,\n}\n\ncompact = json.dumps(context, ensure_ascii=False, separators=(\",\", \":\"))\noriginal_summary_json = json.dumps(\n    original_summary,\n    ensure_ascii=False,\n    separators=(\",\", \":\"),\n)\ntailored_skills_json = json.dumps(\n    tailored_skills,\n    ensure_ascii=False,\n    separators=(\",\", \":\"),\n)\nproject_context_json = json.dumps(\n    project_context,\n    ensure_ascii=False,\n    separators=(\",\", \":\"),\n)\nexperience_context_json = json.dumps(\n    experience_context,\n    ensure_ascii=False,\n    separators=(\",\", \":\"),\n)\n\nprompt = template\nprompt = prompt.replace(\"[[job_description]]\", data[\"job_description\"])\nprompt = prompt.replace(\"[[summary_context_json]]\", compact)\nprompt = prompt.replace(\"[[original_summary_json]]\", original_summary_json)\nprompt = prompt.replace(\"[[tailored_skills_json]]\", tailored_skills_json)\nprompt = prompt.replace(\"[[project_context_json]]\", project_context_json)\nprompt = prompt.replace(\"[[tailored_projects_json]]\", project_context_json)\nprompt = prompt.replace(\"[[experience_context_json]]\", experience_context_json)\nprompt = prompt.replace(\n    \"[[tailored_work_experience_json]]\",\n    experience_context_json,\n)\n\nreturn [{\"json\": {**data, \"summary_rewrite_prompt\": prompt}}]"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3200,
+        2976,
         1088
       ],
-      "id": "284a5288-aab8-4070-91ef-7481c6c0c924",
+      "id": "5b50cf49-a4b6-4da1-ad94-9de579823830",
       "name": "Build Summary Prompt"
     },
     {
@@ -486,10 +486,10 @@
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.7,
       "position": [
-        3488,
+        3264,
         912
       ],
-      "id": "fb79fb59-67e0-4cfd-852d-8dbe44c90719",
+      "id": "475d234b-5f44-4040-9764-dc13646b38ff",
       "name": "Rewrite Summary"
     },
     {
@@ -500,10 +500,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        4048,
+        3824,
         912
       ],
-      "id": "93d4894f-e2fb-47f7-bd1e-a457edad0173",
+      "id": "c3214259-0a12-41d4-8255-9428a806f2d0",
       "name": "Prepare Summary Response"
     },
     {
@@ -515,10 +515,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        4272,
+        4048,
         1088
       ],
-      "id": "4e6c5cb4-8f71-406b-ae4d-19af45cfcbfa",
+      "id": "cc83b62a-6700-48cf-911b-62e6bfcecfd2",
       "name": "Merge Summary Response with Source"
     },
     {
@@ -529,10 +529,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        4496,
+        4272,
         1088
       ],
-      "id": "be4b39cf-04ce-43b0-b2c2-755828144868",
+      "id": "af69f54e-90dc-44ee-b36e-191a1562c741",
       "name": "Build Final CV Output"
     },
     {
@@ -545,10 +545,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        2976,
+        2752,
         1072
       ],
-      "id": "6d5ae122-6ab2-45a6-9010-26b2cbf381b3",
+      "id": "dc116976-3675-41ef-8d18-2dddc2ed9a47",
       "name": "Merge Parallel Branches"
     },
     {
@@ -561,10 +561,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
-        1808,
+        1584,
         1840
       ],
-      "id": "f4e02ae1-d73c-4cf4-8636-9f860d72fb51",
+      "id": "72b73fb8-5193-44bf-bdfe-6a5169715ade",
       "name": "OpenRouter Chat Model4",
       "credentials": {
         "openRouterApi": {
@@ -583,10 +583,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
-        3552,
+        3328,
         1136
       ],
-      "id": "388d287f-75ee-48c3-b349-46369fc316db",
+      "id": "f5f80f07-06ca-4208-8a22-35acfd65d137",
       "name": "OpenRouter Chat Model5",
       "credentials": {
         "openRouterApi": {
@@ -623,24 +623,24 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -960,
+        -1184,
         928
       ],
-      "id": "0bcafb8e-56f0-4e2c-9c1f-f47690908660",
+      "id": "9e809930-e507-4e5c-84ef-59118b719b01",
       "name": "Test Mode?"
     },
     {
       "parameters": {
         "language": "pythonNative",
-        "pythonCode": "data = _items[0][\"json\"]\n\nmaster_cv = data.get(\"master_cv\")\nif not isinstance(master_cv, dict):\n    raise ValueError(\"master_cv must be an object.\")\n\nprojects = master_cv.get(\"projects\", [])\nwork_experience = master_cv.get(\"work_experience\", [])\n\nproject_count = data.get(\"project_selection_count\", 3)\nwork_count = data.get(\"work_experience_selection_count\", 2)\n\nselected_project_indices = list(range(min(project_count, len(projects))))\nselected_work_experience_indices = list(\n    range(min(work_count, len(work_experience)))\n)\n\ndef without_description(entries, indices):\n    output = []\n    for index in indices:\n        entry = {\n            key: value\n            for key, value in entries[index].items()\n            if key != \"description\"\n        }\n        output.append(entry)\n    return output\n\nskills = master_cv.get(\"skills\", [])\ntest_skills = skills[:3] if isinstance(skills, list) else []\n\nfinal_cv = {\n    **master_cv,\n    \"summary\": master_cv.get(\"summary\", []),\n    \"skills\": test_skills,\n    \"projects\": without_description(projects, selected_project_indices),\n    \"work_experience\": without_description(\n        work_experience,\n        selected_work_experience_indices,\n    ),\n}\n\nreturn [\n    {\n        \"json\": {\n            \"cv_json\": final_cv,\n            \"prompt_usage\": {},\n            \"selected_project_indices\": selected_project_indices,\n            \"selected_work_experience_indices\": (\n                selected_work_experience_indices\n            ),\n            \"test_mode\": True,\n        }\n    }\n]"
+        "pythonCode": "data = _items[0][\"json\"]\n\nmaster_cv = data.get(\"master_cv\")\nif not isinstance(master_cv, dict):\n    raise ValueError(\"master_cv must be an object.\")\n\nprojects = master_cv.get(\"projects\", [])\nwork_experience = master_cv.get(\"work_experience\", [])\n\nif not isinstance(projects, list):\n    raise ValueError(\"master_cv.projects must be an array.\")\nif not isinstance(work_experience, list):\n    raise ValueError(\"master_cv.work_experience must be an array.\")\n\nproject_count = data.get(\"project_selection_count\", 3)\nwork_count = data.get(\"work_experience_selection_count\", 2)\n\nselected_project_indices = list(range(min(project_count, len(projects))))\nselected_work_experience_indices = list(\n    range(min(work_count, len(work_experience)))\n)\n\n\ndef selected_entries(entries, indices):\n    output = []\n    for index in indices:\n        entry = dict(entries[index])\n        entry.pop(\"description\", None)\n        output.append(entry)\n    return output\n\n\nskills = master_cv.get(\"skills\", [])\ntest_skills = skills[:3] if isinstance(skills, list) else []\n\nfinal_cv = {\n    **master_cv,\n    \"summary\": master_cv.get(\"summary\", []),\n    \"skills\": test_skills,\n    \"projects\": selected_entries(projects, selected_project_indices),\n    \"work_experience\": selected_entries(\n        work_experience,\n        selected_work_experience_indices,\n    ),\n}\n\nreturn [\n    {\n        \"json\": {\n            \"cv_json\": final_cv,\n            \"prompt_usage\": {},\n            \"selected_project_indices\": selected_project_indices,\n            \"selected_work_experience_indices\": (\n                selected_work_experience_indices\n            ),\n            \"test_mode\": True,\n        }\n    }\n]"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -736,
+        -960,
         736
       ],
-      "id": "17015be0-d82c-4dbe-98ea-5ee4d87744af",
+      "id": "94c62d4c-4342-4981-9b23-e2207c7c7186",
       "name": "Return Test CV Output"
     },
     {
@@ -653,10 +653,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
-        1808,
+        1584,
         928
       ],
-      "id": "f5aba518-557f-4dcb-8f12-7c32bb55efa9",
+      "id": "fad3d7e4-19b2-466f-99f9-833d9241278b",
       "name": "OpenRouter Chat Model3",
       "credentials": {
         "openRouterApi": {
@@ -675,10 +675,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
-        288,
+        64,
         1136
       ],
-      "id": "ac87b16d-e1ef-433a-93f4-5bf01b271f1f",
+      "id": "b4b5fe45-8e6c-4381-89f7-7ca46190d7d7",
       "name": "OpenRouter Chat Model2",
       "credentials": {
         "openRouterApi": {
@@ -697,10 +697,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
-        1808,
+        1584,
         224
       ],
-      "id": "14214f0a-f261-4e70-9d23-152b76290085",
+      "id": "bcbab8c0-56b6-4bad-ba38-9965c10fbabb",
       "name": "OpenRouter Chat Model1",
       "credentials": {
         "openRouterApi": {
@@ -719,10 +719,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
-        288,
+        64,
         224
       ],
-      "id": "fd2e9d5e-922e-4693-be56-69d5167bde01",
+      "id": "e28c62c1-b44a-4f4b-ad99-9babe0b78d58",
       "name": "OpenRouter Chat Model",
       "credentials": {
         "openRouterApi": {
@@ -739,10 +739,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1.1,
       "position": [
-        160,
+        -64,
         224
       ],
-      "id": "cf0c81a6-b592-4b15-b526-a41527ece896",
+      "id": "46f9d32d-26fe-4db4-86a3-9ce326d5ffcb",
       "name": "Google Gemini Chat Model",
       "credentials": {
         "googlePalmApi": {
@@ -759,10 +759,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1.1,
       "position": [
-        160,
+        -64,
         1136
       ],
-      "id": "76803792-59fe-43af-9943-ed230b9e5a2b",
+      "id": "c5c56069-6cf0-4754-8237-3dbb056b4c5c",
       "name": "Google Gemini Chat Model1",
       "credentials": {
         "googlePalmApi": {
@@ -779,10 +779,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1.1,
       "position": [
-        1680,
+        1456,
         224
       ],
-      "id": "a6ccf49c-f7a0-4e38-a4ac-2d1618b29d4a",
+      "id": "e75210c9-7a53-4f82-becd-eee7303fb0ad",
       "name": "Google Gemini Chat Model2",
       "credentials": {
         "googlePalmApi": {
@@ -799,10 +799,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1.1,
       "position": [
-        1680,
+        1456,
         928
       ],
-      "id": "08631d04-cc7d-4164-978f-29c4f7679eae",
+      "id": "971aafb4-5d67-480b-92dc-deb8911dee64",
       "name": "Google Gemini Chat Model3",
       "credentials": {
         "googlePalmApi": {
@@ -819,10 +819,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1.1,
       "position": [
-        1680,
+        1456,
         1840
       ],
-      "id": "cf957e8e-28c0-4183-bef2-333061723a02",
+      "id": "7ec74fec-bdce-49a5-a0ee-76a6c6528fb4",
       "name": "Google Gemini Chat Model4",
       "credentials": {
         "googlePalmApi": {
@@ -839,10 +839,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1.1,
       "position": [
-        3424,
+        3200,
         1136
       ],
-      "id": "963bb0fd-6bf6-4bed-9cff-3553708346a1",
+      "id": "51e348d7-3f46-4568-a7c4-760eab86aed8",
       "name": "Google Gemini Chat Model5",
       "credentials": {
         "googlePalmApi": {
@@ -860,10 +860,10 @@
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "typeVersion": 1.3,
       "position": [
-        416,
+        192,
         224
       ],
-      "id": "7d76402d-0ef6-4b8a-bd7a-83e03af5de04",
+      "id": "edc025bc-901d-4be0-95bd-2154dc85cfdd",
       "name": "Select Projects Structured Output Parser"
     },
     {
@@ -874,10 +874,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1.1,
       "position": [
-        496,
+        272,
         432
       ],
-      "id": "f7780489-7f18-4f40-9dd4-0e7334829272",
+      "id": "2086027b-e098-410b-b8be-7aa93a61de76",
       "name": "Select Projects Auto-Fix Model",
       "credentials": {
         "googlePalmApi": {
@@ -895,10 +895,10 @@
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "typeVersion": 1.3,
       "position": [
-        1936,
+        1712,
         224
       ],
-      "id": "06335415-ee2d-43e5-a2bd-9ed07aa45eea",
+      "id": "6ca1d34f-ac19-412f-beca-b8393457d2de",
       "name": "Rewrite Project Content Structured Output Parser"
     },
     {
@@ -909,10 +909,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1.1,
       "position": [
-        2016,
+        1792,
         432
       ],
-      "id": "2a0fca68-f94e-4bfc-abc7-094064ef8598",
+      "id": "c836b360-e557-4be1-b7b9-5560ae890fab",
       "name": "Rewrite Project Content Auto-Fix Model",
       "credentials": {
         "googlePalmApi": {
@@ -930,10 +930,10 @@
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "typeVersion": 1.3,
       "position": [
-        416,
+        192,
         1136
       ],
-      "id": "2836b5f1-fa33-417a-9706-30440d2eb1f0",
+      "id": "b2e094c2-f712-4dd4-8653-2a349c7cae93",
       "name": "Select Work Experiences Structured Output Parser"
     },
     {
@@ -944,10 +944,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1.1,
       "position": [
-        496,
+        272,
         1344
       ],
-      "id": "e5795e5d-1fb5-40b3-9394-634de2802906",
+      "id": "de1e61c5-34a6-46a0-b6e8-9a344dfd37a4",
       "name": "Select Work Experiences Auto-Fix Model",
       "credentials": {
         "googlePalmApi": {
@@ -965,10 +965,10 @@
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "typeVersion": 1.3,
       "position": [
-        1936,
+        1712,
         928
       ],
-      "id": "d42ac719-48ca-4f3f-9b4d-b34eaa738412",
+      "id": "ac7a6fc9-dd21-47bc-8def-bba861d7db82",
       "name": "Rewrite Work Content Structured Output Parser"
     },
     {
@@ -979,10 +979,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1.1,
       "position": [
-        2016,
+        1792,
         1136
       ],
-      "id": "8f0fa867-c2f5-4d1c-b001-4cba68998bcb",
+      "id": "e90eed84-18f9-43ba-a97e-4655170fb5aa",
       "name": "Rewrite Work Content Auto-Fix Model",
       "credentials": {
         "googlePalmApi": {
@@ -1000,10 +1000,10 @@
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "typeVersion": 1.3,
       "position": [
-        1936,
+        1712,
         1840
       ],
-      "id": "dbb004a7-fffc-449f-aefd-aadc40547d71",
+      "id": "5cc875cd-4d0d-47df-8ad0-c009fcfdff07",
       "name": "Tailor Skills Structured Output Parser"
     },
     {
@@ -1014,10 +1014,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1.1,
       "position": [
-        2016,
+        1792,
         2048
       ],
-      "id": "46836a57-3ff0-4d98-ab7c-d1787e56e716",
+      "id": "86ecffe0-7071-4365-a0fd-4bcb9c416677",
       "name": "Tailor Skills Auto-Fix Model",
       "credentials": {
         "googlePalmApi": {
@@ -1035,10 +1035,10 @@
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "typeVersion": 1.3,
       "position": [
-        3680,
+        3456,
         1136
       ],
-      "id": "98f4515a-a356-47f8-9772-8f3b3effcfea",
+      "id": "0bada76e-b061-42a1-8136-40a495cd57ff",
       "name": "Rewrite Summary Structured Output Parser"
     },
     {
@@ -1049,10 +1049,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1.1,
       "position": [
-        3760,
+        3536,
         1344
       ],
-      "id": "00ac6f2c-c306-485d-8461-f2fb2a9801c8",
+      "id": "881c6790-d527-4482-9375-a394d907943c",
       "name": "Rewrite Summary Auto-Fix Model",
       "credentials": {
         "googlePalmApi": {
@@ -1794,7 +1794,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "8884c4b6-3f9d-4430-ba6a-bf7a59fb3d1e",
+  "versionId": "71c15794-0231-43d7-b822-3a10458c756a",
   "meta": {
     "instanceId": "2d85b40e2e1a69706b539dc280f2a48f8b70729872141299d251c48887ea4c94"
   },
