@@ -159,7 +159,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const extracted = $(\"Extract Master CV\").first().json;\nconst form = $(\"Submit Job\").first().json;\nconst actorItems = $input.all().map((item) => item.json);\n\nconst parseJson = (value) => {\n  if (typeof value !== \"string\") return value;\n  try {\n    return JSON.parse(value);\n  } catch {\n    return value;\n  }\n};\n\nconst unwrapMasterCv = (value) => {\n  let current = parseJson(value);\n\n  for (let depth = 0; depth < 5; depth++) {\n    if (!current || typeof current !== \"object\" || Array.isArray(current)) break;\n    if (Array.isArray(current.projects)) return current;\n\n    const next =\n      current.master_cv ??\n      current.cv_json ??\n      current.document_data ??\n      current.data ??\n      current.json;\n\n    if (next === undefined || next === current) break;\n    current = parseJson(next);\n  }\n\n  return current;\n};\n\nconst firstValue = (source, names) => {\n  for (const name of names) {\n    const value = source?.[name];\n    if (value !== undefined && value !== null && String(value).trim() !== \"\") {\n      return value;\n    }\n  }\n  return \"\";\n};\n\nconst text = (value) => String(value ?? \"\").trim();\nconst masterCv = unwrapMasterCv(extracted);\n\nif (!masterCv || typeof masterCv !== \"object\" || Array.isArray(masterCv)) {\n  throw new Error(\"The master CV file must contain a JSON object.\");\n}\nif (!Array.isArray(masterCv.projects)) {\n  throw new Error(\"The master CV JSON could not be normalized: projects must be an array.\");\n}\n\nconst linkedinJobUrl = text(form.linkedinJobUrl || form[\"LinkedIn Job URL\"]);\nif (!linkedinJobUrl) {\n  throw new Error(\"LinkedIn Job URL is required for LinkedIn entries.\");\n}\nif (actorItems.length === 0) {\n  throw new Error(\"The LinkedIn actor returned no job.\");\n}\n\nreturn actorItems.map((job, index) => {\n  const company =\n    job.company && typeof job.company === \"object\"\n      ? firstValue(job.company, [\"name\", \"companyName\", \"title\"])\n      : job.company;\n\n  const companyName = text(firstValue(job, [\n    \"companyName\", \"company_name\", \"company\", \"companyTitle\", \"organizationName\"\n  ]) || company);\n\n  const jobTitle = text(firstValue(job, [\n    \"jobTitle\", \"job_title\", \"title\", \"position\", \"positionName\"\n  ]));\n\n  const jobDescription = text(firstValue(job, [\n    \"jobDescription\", \"job_description\", \"description\", \"descriptionText\", \"text\"\n  ]));\n\n  const jobUrl = text(firstValue(job, [\n    \"jobUrl\", \"job_url\", \"url\", \"link\", \"linkedinUrl\", \"jobPostingUrl\"\n  ]) || linkedinJobUrl);\n\n  if (!companyName) throw new Error(\"The LinkedIn actor output is missing companyName.\");\n  if (!jobTitle) throw new Error(\"The LinkedIn actor output is missing jobTitle.\");\n  if (!jobDescription) throw new Error(\"The LinkedIn actor output is missing jobDescription.\");\n  if (!jobUrl) throw new Error(\"The LinkedIn actor output is missing jobUrl.\");\n\n  const locationValue =\n    job.location && typeof job.location === \"object\"\n      ? firstValue(job.location, [\"formattedAddress\", \"name\", \"city\"])\n      : firstValue(job, [\"location\", \"jobLocation\", \"locationName\"]);\n\n  return {\n    json: {\n      companyName,\n      jobTitle,\n      jobDescription,\n      jobUrl,\n      location: text(locationValue),\n      contractType: text(firstValue(job, [\n        \"contractType\", \"contract_type\", \"employmentType\", \"employment_type\", \"jobType\"\n      ])),\n      publishedAt: text(firstValue(job, [\n        \"publishedAt\", \"published_at\", \"postedAt\", \"posted_at\", \"datePosted\", \"publishedDate\"\n      ])),\n      jobId: text(firstValue(job, [\n        \"jobId\", \"job_id\", \"id\", \"linkedinJobId\", \"externalId\"\n      ])),\n      source: \"LinkedIn\",\n      master_cv: masterCv,\n    },\n    pairedItem: { item: index },\n  };\n});"
+        "jsCode": "const extracted = $(\"Extract Master CV\").first().json;\nconst form = $(\"Submit Job\").first().json;\nconst actorItems = $input.all().map((item) => item.json);\n\nconst parseJson = (value) => {\n  if (typeof value !== \"string\") return value;\n  try {\n    return JSON.parse(value);\n  } catch {\n    return value;\n  }\n};\n\nconst unwrapMasterCv = (value) => {\n  let current = parseJson(value);\n\n  for (let depth = 0; depth < 5; depth++) {\n    if (!current || typeof current !== \"object\" || Array.isArray(current)) break;\n    if (Array.isArray(current.projects)) return current;\n\n    const next =\n      current.master_cv ??\n      current.cv_json ??\n      current.document_data ??\n      current.data ??\n      current.json;\n\n    if (next === undefined || next === current) break;\n    current = parseJson(next);\n  }\n\n  return current;\n};\n\nconst firstValue = (source, names) => {\n  for (const name of names) {\n    const value = source?.[name];\n    if (value !== undefined && value !== null && String(value).trim() !== \"\") {\n      return value;\n    }\n  }\n  return \"\";\n};\n\nconst text = (value) => String(value ?? \"\").trim();\nconst masterCv = unwrapMasterCv(extracted);\n\nif (!masterCv || typeof masterCv !== \"object\" || Array.isArray(masterCv)) {\n  throw new Error(\"The master CV file must contain a JSON object.\");\n}\nif (!Array.isArray(masterCv.projects)) {\n  throw new Error(\"The master CV JSON could not be normalized: projects must be an array.\");\n}\n\nconst linkedinJobUrl = text(form.linkedinJobUrl);\nconst linkedinJobId = text(form.linkedinJobId || form.jobId);\nif (!linkedinJobUrl) {\n  throw new Error(\"LinkedIn Job URL is required for LinkedIn entries.\");\n}\nif (actorItems.length === 0) {\n  throw new Error(\"The LinkedIn actor returned no job.\");\n}\n\nreturn actorItems.map((job, index) => {\n  const company =\n    job.company && typeof job.company === \"object\"\n      ? firstValue(job.company, [\"name\", \"companyName\", \"title\"])\n      : job.company;\n\n  const companyName = text(firstValue(job, [\n    \"companyName\", \"company_name\", \"company\", \"companyTitle\", \"organizationName\"\n  ]) || company);\n\n  const jobTitle = text(firstValue(job, [\n    \"jobTitle\", \"job_title\", \"title\", \"position\", \"positionName\"\n  ]));\n\n  const jobDescription = text(firstValue(job, [\n    \"jobDescription\", \"job_description\", \"description\", \"descriptionText\", \"text\"\n  ]));\n\n  const jobUrl = text(firstValue(job, [\n    \"jobUrl\", \"job_url\", \"url\", \"link\", \"linkedinUrl\", \"jobPostingUrl\"\n  ]) || linkedinJobUrl);\n\n  if (!companyName) throw new Error(\"The LinkedIn actor output is missing companyName.\");\n  if (!jobTitle) throw new Error(\"The LinkedIn actor output is missing jobTitle.\");\n  if (!jobDescription) throw new Error(\"The LinkedIn actor output is missing jobDescription.\");\n  if (!jobUrl) throw new Error(\"The LinkedIn actor output is missing jobUrl.\");\n\n  const locationValue =\n    job.location && typeof job.location === \"object\"\n      ? firstValue(job.location, [\"formattedAddress\", \"name\", \"city\"])\n      : firstValue(job, [\"location\", \"jobLocation\", \"locationName\"]);\n\n  return {\n    json: {\n      companyName,\n      jobTitle,\n      jobDescription,\n      jobUrl,\n      location: text(locationValue),\n      contractType: text(firstValue(job, [\n        \"contractType\", \"contract_type\", \"employmentType\", \"employment_type\", \"jobType\"\n      ])),\n      publishedAt: text(firstValue(job, [\n        \"publishedAt\", \"published_at\", \"postedAt\", \"posted_at\", \"datePosted\", \"publishedDate\"\n      ])),\n      jobId: text(firstValue(job, [\n        \"jobId\", \"job_id\", \"id\", \"linkedinJobId\", \"externalId\"\n      ]) || linkedinJobId),\n      source: \"LinkedIn\",\n      master_cv: masterCv,\n    },\n    pairedItem: { item: index },\n  };\n});"
       },
       "id": "178772a0-54fe-46dd-bb78-c8159a0c9711",
       "name": "Normalize LinkedIn Job Input",
@@ -481,7 +481,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3504,
+        3360,
         176
       ]
     },
@@ -497,8 +497,8 @@
       "type": "n8n-nodes-base.baserow",
       "typeVersion": 1.1,
       "position": [
-        3728,
-        240
+        3584,
+        176
       ],
       "credentials": {
         "baserowApi": {
@@ -509,7 +509,7 @@
     },
     {
       "parameters": {
-        "content": "## Unified Fillout job workflow\n\n1. Install and enable the verified `n8n-nodes-fillout` integration.\n2. Open **Fillout Submission**, select your Fillout credential, and choose the deployed form created from the attached Fillout export.\n3. Activate the workflow so the Fillout trigger can register its webhook.\n4. The **Submit Job** parser converts Fillout's question-ID map into the same flat field names used by the original workflow.\n5. LinkedIn submissions continue through the existing native Apify node and actor `apt_marble/linkedin-job-listings-scraper-by-url`.\n6. External and LinkedIn submissions still normalize to the same downstream item shape and reconnect at **Loop Over Jobs**.\n7. Put the master CV at `/home/node/.n8n-files/document-pipeline/master_cv.json`.\n\nFillout widget IDs mapped by **Submit Job**:\n- Entry Type: `entryType`\n- LinkedIn Job URL: `oghMWc6sfTWHCnUjHzN5PT`\n- Company Name: `tccyk1pB8iRUf1NGCDbcP5`\n- Job Title: `mV2wYQbu1b1Jhf1gTDAbK8`\n- Job Description: `98TcaL2qnS8Y31TQxgZaZD`\n- Job URL: `1gZ3kT2Db3G3y2QhYfjT8X`\n- Location: `oc63gzWN4vxEJwx8nzZrAK`\n- Contract Type: `g2VK5MiabTgDTUXGYhnV4q`\n- Published Date: `sYghUzUtSwi8T4yaReYefR`\n- External Job ID: `2XDTXJHaY2BJEndo3EgEAV`\n",
+        "content": "## Unified Fillout job workflow\n\n1. Install and enable the verified `n8n-nodes-fillout` integration.\n2. Open **Fillout Submission**, select your Fillout credential, and choose the deployed form created from the attached Fillout export.\n3. Activate the workflow so the Fillout trigger can register its webhook.\n4. The **Submit Job** parser converts Fillout's question-ID map into the same flat field names used by the original workflow.\n5. LinkedIn submissions build `https://www.linkedin.com/jobs/view/{LinkedIn Job ID}` and pass that URL to the native Apify node using actor `apt_marble/linkedin-job-listings-scraper-by-url`.\n6. External and LinkedIn submissions still normalize to the same downstream item shape and reconnect at **Loop Over Jobs**.\n7. Put the master CV at `/home/node/.n8n-files/document-pipeline/master_cv.json`.\n\nFillout widget IDs mapped by **Submit Job**:\n- Entry Type: `entryType`\n- LinkedIn Job ID: `6Ze685Zcm27s3sV6xAdg6w`\n- Company Name: `tccyk1pB8iRUf1NGCDbcP5`\n- Job Title: `mV2wYQbu1b1Jhf1gTDAbK8`\n- Job Description: `98TcaL2qnS8Y31TQxgZaZD`\n- Job URL: `1gZ3kT2Db3G3y2QhYfjT8X`\n- Location: `oc63gzWN4vxEJwx8nzZrAK`\n- Contract Type: `g2VK5MiabTgDTUXGYhnV4q`\n- Published Date: `sYghUzUtSwi8T4yaReYefR`\n- External Job ID: `2XDTXJHaY2BJEndo3EgEAV`\n",
         "height": 520,
         "width": 1700
       },
@@ -539,8 +539,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2608,
-        176
+        2640,
+        -80
       ],
       "credentials": {
         "httpHeaderAuth": {
@@ -566,8 +566,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2832,
-        176
+        2640,
+        80
       ],
       "credentials": {
         "httpHeaderAuth": {
@@ -593,8 +593,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        3056,
-        176
+        2640,
+        272
       ],
       "credentials": {
         "httpHeaderAuth": {
@@ -620,8 +620,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        3280,
-        176
+        2640,
+        432
       ],
       "credentials": {
         "httpHeaderAuth": {
@@ -632,7 +632,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const submission = $input.first().json ?? {};\nconst questions = submission.questions ?? {};\n\nconst FIELD_IDS = {\n  entryType: \"entryType\",\n  linkedinJobUrl: \"oghMWc6sfTWHCnUjHzN5PT\",\n  companyName: \"tccyk1pB8iRUf1NGCDbcP5\",\n  jobTitle: \"mV2wYQbu1b1Jhf1gTDAbK8\",\n  jobDescription: \"98TcaL2qnS8Y31TQxgZaZD\",\n  jobUrl: \"1gZ3kT2Db3G3y2QhYfjT8X\",\n  location: \"oc63gzWN4vxEJwx8nzZrAK\",\n  contractType: \"g2VK5MiabTgDTUXGYhnV4q\",\n  publishedAt: \"sYghUzUtSwi8T4yaReYefR\",\n  jobId: \"2XDTXJHaY2BJEndo3EgEAV\",\n};\n\nconst normalizeValue = (value) => {\n  if (value === undefined || value === null) return \"\";\n\n  if (Array.isArray(value)) {\n    return value.map(normalizeValue).filter((item) => item !== \"\").join(\", \");\n  }\n\n  if (typeof value === \"object\") {\n    for (const key of [\"value\", \"label\", \"name\", \"url\", \"text\", \"optionId\", \"id\"]) {\n      if (value[key] !== undefined && value[key] !== null) {\n        return normalizeValue(value[key]);\n      }\n    }\n    return JSON.stringify(value);\n  }\n\n  return String(value).trim();\n};\n\nconst questionValue = (fieldId, expectedName) => {\n  const direct = questions[fieldId];\n\n  if (direct !== undefined) {\n    if (direct && typeof direct === \"object\" && \"value\" in direct) {\n      return normalizeValue(direct.value);\n    }\n    return normalizeValue(direct);\n  }\n\n  const match = Object.values(questions).find((question) => {\n    if (!question || typeof question !== \"object\") return false;\n    const name = normalizeValue(question.name ?? question.label);\n    return name.toLowerCase() === expectedName.toLowerCase();\n  });\n\n  return match && typeof match === \"object\" && \"value\" in match\n    ? normalizeValue(match.value)\n    : normalizeValue(match);\n};\n\nconst entryTypeRaw = questionValue(FIELD_IDS.entryType, \"Entry Type\");\nconst entryType =\n  entryTypeRaw.toLowerCase() === \"linkedin\"\n    ? \"LinkedIn\"\n    : entryTypeRaw.toLowerCase() === \"external\"\n      ? \"External\"\n      : entryTypeRaw;\n\nif (![\"LinkedIn\", \"External\"].includes(entryType)) {\n  throw new Error(`Fillout submission has an invalid Entry Type: \"${entryTypeRaw}\".`);\n}\n\nconst parsed = {\n  entryType,\n  linkedinJobUrl: questionValue(FIELD_IDS.linkedinJobUrl, \"LinkedIn Job URL\"),\n  companyName: questionValue(FIELD_IDS.companyName, \"Company Name\"),\n  jobTitle: questionValue(FIELD_IDS.jobTitle, \"Job Title\"),\n  jobDescription: questionValue(FIELD_IDS.jobDescription, \"Job Description\"),\n  jobUrl: questionValue(FIELD_IDS.jobUrl, \"Job URL\"),\n  location: questionValue(FIELD_IDS.location, \"Location\"),\n  contractType: questionValue(FIELD_IDS.contractType, \"Contract Type\"),\n  publishedAt: questionValue(FIELD_IDS.publishedAt, \"Published Date\"),\n  jobId: questionValue(FIELD_IDS.jobId, \"External Job ID\"),\n};\n\nif (entryType === \"LinkedIn\" && !parsed.linkedinJobUrl) {\n  throw new Error(\"LinkedIn Job URL is required for LinkedIn entries.\");\n}\n\nif (entryType === \"External\") {\n  for (const [field, label] of [\n    [\"companyName\", \"Company Name\"],\n    [\"jobTitle\", \"Job Title\"],\n    [\"jobDescription\", \"Job Description\"],\n    [\"jobUrl\", \"Job URL\"],\n  ]) {\n    if (!parsed[field]) {\n      throw new Error(`${label} is required for External entries.`);\n    }\n  }\n}\n\nreturn [{\n  json: {\n    ...parsed,\n    filloutSubmissionId: submission.submissionId ?? submission.id ?? \"\",\n    filloutFormId: submission.formId ?? \"\",\n    filloutSubmittedAt: submission.submissionTime ?? submission.createdAt ?? \"\",\n  },\n  pairedItem: { item: 0 },\n}];"
+        "jsCode": "const submission = $input.first().json ?? {};\nconst questions = submission.questions ?? {};\n\nconst FIELD_IDS = {\n  entryType: \"entryType\",\n  linkedinJobId: \"6Ze685Zcm27s3sV6xAdg6w\",\n  companyName: \"tccyk1pB8iRUf1NGCDbcP5\",\n  jobTitle: \"mV2wYQbu1b1Jhf1gTDAbK8\",\n  jobDescription: \"98TcaL2qnS8Y31TQxgZaZD\",\n  jobUrl: \"1gZ3kT2Db3G3y2QhYfjT8X\",\n  location: \"oc63gzWN4vxEJwx8nzZrAK\",\n  contractType: \"g2VK5MiabTgDTUXGYhnV4q\",\n  publishedAt: \"sYghUzUtSwi8T4yaReYefR\",\n  jobId: \"2XDTXJHaY2BJEndo3EgEAV\",\n};\n\nconst normalizeValue = (value) => {\n  if (value === undefined || value === null) return \"\";\n\n  if (Array.isArray(value)) {\n    return value.map(normalizeValue).filter((item) => item !== \"\").join(\", \");\n  }\n\n  if (typeof value === \"object\") {\n    for (const key of [\"value\", \"label\", \"name\", \"url\", \"text\", \"optionId\", \"id\"]) {\n      if (value[key] !== undefined && value[key] !== null) {\n        return normalizeValue(value[key]);\n      }\n    }\n    return JSON.stringify(value);\n  }\n\n  return String(value).trim();\n};\n\nconst questionValue = (fieldId, expectedName) => {\n  const direct = questions[fieldId];\n\n  if (direct !== undefined) {\n    if (direct && typeof direct === \"object\" && \"value\" in direct) {\n      return normalizeValue(direct.value);\n    }\n    return normalizeValue(direct);\n  }\n\n  const match = Object.values(questions).find((question) => {\n    if (!question || typeof question !== \"object\") return false;\n    const name = normalizeValue(question.name ?? question.label);\n    return name.toLowerCase() === expectedName.toLowerCase();\n  });\n\n  return match && typeof match === \"object\" && \"value\" in match\n    ? normalizeValue(match.value)\n    : normalizeValue(match);\n};\n\nconst entryTypeRaw = questionValue(FIELD_IDS.entryType, \"Entry Type\");\nconst entryType =\n  entryTypeRaw.toLowerCase() === \"linkedin\"\n    ? \"LinkedIn\"\n    : entryTypeRaw.toLowerCase() === \"external\"\n      ? \"External\"\n      : entryTypeRaw;\n\nif (![\"LinkedIn\", \"External\"].includes(entryType)) {\n  throw new Error(`Fillout submission has an invalid Entry Type: \"${entryTypeRaw}\".`);\n}\n\nconst linkedinJobId = questionValue(FIELD_IDS.linkedinJobId, \"LinkedIn Job ID\")\n  .replace(/\\s+/g, \"\");\n\nif (entryType === \"LinkedIn\" && !/^\\d+$/.test(linkedinJobId)) {\n  throw new Error(\"LinkedIn Job ID is required and must contain only digits.\");\n}\n\nconst linkedinJobUrl = linkedinJobId\n  ? `https://www.linkedin.com/jobs/view/${linkedinJobId}`\n  : \"\";\n\nconst parsed = {\n  entryType,\n  linkedinJobId,\n  linkedinJobUrl,\n  companyName: questionValue(FIELD_IDS.companyName, \"Company Name\"),\n  jobTitle: questionValue(FIELD_IDS.jobTitle, \"Job Title\"),\n  jobDescription: questionValue(FIELD_IDS.jobDescription, \"Job Description\"),\n  jobUrl: questionValue(FIELD_IDS.jobUrl, \"Job URL\"),\n  location: questionValue(FIELD_IDS.location, \"Location\"),\n  contractType: questionValue(FIELD_IDS.contractType, \"Contract Type\"),\n  publishedAt: questionValue(FIELD_IDS.publishedAt, \"Published Date\"),\n  jobId: entryType === \"LinkedIn\"\n    ? linkedinJobId\n    : questionValue(FIELD_IDS.jobId, \"External Job ID\"),\n};\n\nif (entryType === \"External\") {\n  for (const [field, label] of [\n    [\"companyName\", \"Company Name\"],\n    [\"jobTitle\", \"Job Title\"],\n    [\"jobDescription\", \"Job Description\"],\n    [\"jobUrl\", \"Job URL\"],\n  ]) {\n    if (!parsed[field]) {\n      throw new Error(`${label} is required for External entries.`);\n    }\n  }\n}\n\nreturn [{\n  json: {\n    ...parsed,\n    filloutSubmissionId: submission.submissionId ?? submission.id ?? \"\",\n    filloutFormId: submission.formId ?? \"\",\n    filloutSubmittedAt: submission.submissionTime ?? submission.createdAt ?? \"\",\n  },\n  pairedItem: { item: 0 },\n}];"
       },
       "id": "08b2cf32-22a1-49f1-a718-0641dc14b9e5",
       "name": "Submit Job",
@@ -641,6 +641,48 @@
       "position": [
         -752,
         240
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch",
+        "output": "input1"
+      },
+      "id": "594010df-7ea2-46c7-bbaa-08726ca1a1ba",
+      "name": "Merge CV Uploads",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2880,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch",
+        "output": "input1"
+      },
+      "id": "c96a15f5-c703-43f3-9b61-f0294ae11a97",
+      "name": "Merge Cover Letter Uploads",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2880,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch",
+        "output": "input1"
+      },
+      "id": "b35640c9-e21f-4083-beff-08fb211365b1",
+      "name": "Merge All Uploads",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3120,
+        176
       ]
     }
   ],
@@ -764,6 +806,21 @@
             "node": "Upload CV PDF to Baserow",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Upload CV TEX to Baserow",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Upload Cover Letter PDF to Baserow",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Upload Cover Letter TEX to Baserow",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
@@ -794,7 +851,7 @@
       "main": [
         [
           {
-            "node": "Upload CV TEX to Baserow",
+            "node": "Merge CV Uploads",
             "type": "main",
             "index": 0
           }
@@ -805,9 +862,9 @@
       "main": [
         [
           {
-            "node": "Upload Cover Letter PDF to Baserow",
+            "node": "Merge CV Uploads",
             "type": "main",
-            "index": 0
+            "index": 1
           }
         ]
       ]
@@ -816,7 +873,7 @@
       "main": [
         [
           {
-            "node": "Upload Cover Letter TEX to Baserow",
+            "node": "Merge Cover Letter Uploads",
             "type": "main",
             "index": 0
           }
@@ -827,9 +884,9 @@
       "main": [
         [
           {
-            "node": "Build Jobs Row",
+            "node": "Merge Cover Letter Uploads",
             "type": "main",
-            "index": 0
+            "index": 1
           }
         ]
       ]
@@ -906,6 +963,39 @@
           }
         ]
       ]
+    },
+    "Merge CV Uploads": {
+      "main": [
+        [
+          {
+            "node": "Merge All Uploads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Cover Letter Uploads": {
+      "main": [
+        [
+          {
+            "node": "Merge All Uploads",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge All Uploads": {
+      "main": [
+        [
+          {
+            "node": "Build Jobs Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -914,7 +1004,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "07de8953-88bd-4dae-b9c2-18cdfc97df61",
+  "versionId": "baf09640-1cb8-4ec5-b935-47a1cba6fb3a",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "2d85b40e2e1a69706b539dc280f2a48f8b70729872141299d251c48887ea4c94"
