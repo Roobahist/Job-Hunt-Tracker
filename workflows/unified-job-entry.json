@@ -1,0 +1,925 @@
+{
+  "name": "Unified LinkedIn and External Job Entry - Fillout Trigger",
+  "nodes": [
+    {
+      "parameters": {
+        "form": "pYWsgnSTjfus"
+      },
+      "id": "410dfec9-57ad-4849-8327-962dc93159ce",
+      "name": "Fillout Submission",
+      "type": "n8n-nodes-fillout.filloutTrigger",
+      "typeVersion": 1,
+      "position": [
+        -976,
+        240
+      ],
+      "webhookId": "0478173a-05af-4592-92a2-fd2bb9d4552f",
+      "credentials": {
+        "filloutApi": {
+          "id": "tPZNw0NXsxFZSRcD",
+          "name": "Fillout account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fileSelector": "/home/node/.n8n-files/document-pipeline/master_cv.json",
+        "options": {}
+      },
+      "id": "a06348cb-8479-4490-9a5d-1cab259867f9",
+      "name": "Read Master CV JSON",
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        -528,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "fromJson",
+        "options": {}
+      },
+      "id": "2547ba99-0653-4925-80a9-e828cd8ddac4",
+      "name": "Extract Master CV",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const extracted = $(\"Extract Master CV\").first().json;\nconst form = $(\"Submit Job\").first().json;\n\nconst parseJson = (value) => {\n  if (typeof value !== \"string\") return value;\n  try {\n    return JSON.parse(value);\n  } catch {\n    return value;\n  }\n};\n\nconst unwrapMasterCv = (value) => {\n  let current = parseJson(value);\n\n  for (let depth = 0; depth < 5; depth++) {\n    if (!current || typeof current !== \"object\" || Array.isArray(current)) break;\n    if (Array.isArray(current.projects)) return current;\n\n    const next =\n      current.master_cv ??\n      current.cv_json ??\n      current.document_data ??\n      current.data ??\n      current.json;\n\n    if (next === undefined || next === current) break;\n    current = parseJson(next);\n  }\n\n  return current;\n};\n\nconst text = (value) => String(value ?? \"\").trim();\nconst masterCv = unwrapMasterCv(extracted);\n\nif (!masterCv || typeof masterCv !== \"object\" || Array.isArray(masterCv)) {\n  throw new Error(\"The master CV file must contain a JSON object.\");\n}\nif (!Array.isArray(masterCv.projects)) {\n  throw new Error(\"The master CV JSON could not be normalized: projects must be an array.\");\n}\n\nconst entryType = text(form.entryType || form[\"Entry Type\"]);\nif (entryType !== \"External\") {\n  throw new Error(`Expected Entry Type External but received \"${entryType}\".`);\n}\n\nconst companyName = text(form.companyName || form[\"Company Name\"]);\nconst jobTitle = text(form.jobTitle || form[\"Job Title\"]);\nconst jobDescription = text(form.jobDescription || form[\"Job Description\"]);\nconst jobUrl = text(form.jobUrl || form[\"Job URL\"]);\n\nif (!companyName) throw new Error(\"Company Name is required for External entries.\");\nif (!jobTitle) throw new Error(\"Job Title is required for External entries.\");\nif (!jobDescription) throw new Error(\"Job Description is required for External entries.\");\nif (!jobUrl) throw new Error(\"Job URL is required for External entries.\");\n\nreturn [{\n  json: {\n    companyName,\n    jobTitle,\n    jobDescription,\n    jobUrl,\n    location: text(form.location || form[\"Location\"]),\n    contractType: text(form.contractType || form[\"Contract Type\"]),\n    publishedAt: text(form.publishedAt || form[\"Published Date\"]),\n    jobId: text(form.jobId || form[\"External Job ID\"]),\n    source: \"External\",\n    master_cv: masterCv,\n  },\n  pairedItem: { item: 0 },\n}];"
+      },
+      "id": "ef447a5c-6139-482f-9c54-0c127ee4fb09",
+      "name": "Normalize External Job Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        368,
+        336
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "3c37c400-2319-44c6-8a77-4b77fb2ea26f",
+                    "leftValue": "={{ $('Submit Job').first().json.entryType || $('Submit Job').first().json['Entry Type'] }}",
+                    "rightValue": "LinkedIn",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "LinkedIn"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "6ab9412f-8eed-4e46-a646-d7ad815e9a6f",
+                    "leftValue": "={{ $('Submit Job').first().json.entryType || $('Submit Job').first().json['Entry Type'] }}",
+                    "rightValue": "External",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "External"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "none"
+        }
+      },
+      "id": "7fe7012f-7d3f-447b-ac7d-d41a56d97e8f",
+      "name": "Route by Entry Type",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -80,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "Run actor and get dataset",
+        "actorSource": "store",
+        "actorId": {
+          "__rl": true,
+          "value": "apt_marble/linkedin-job-listings-scraper-by-url",
+          "mode": "list",
+          "cachedResultUrl": "https://console.apify.com/actors/apt_marble/linkedin-job-listings-scraper-by-url/input",
+          "cachedResultName": "LinkedIn Jobs URL Scraper"
+        },
+        "customBody": "={\n  \"jobUrls\": [\n    \"{{ $('Submit Job').first().json.linkedinJobUrl }}\"\n  ],\n  \"proxyCountry\": \"ca\",\n  \"maxConcurrency\": 1\n}"
+      },
+      "id": "7ff4b866-1e10-4f88-9ab3-937ab3747259",
+      "name": "Scrape LinkedIn Job",
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        144,
+        144
+      ],
+      "credentials": {
+        "apifyApi": {
+          "id": "q46xluuTPbr4NqDY",
+          "name": "Apify account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const extracted = $(\"Extract Master CV\").first().json;\nconst form = $(\"Submit Job\").first().json;\nconst actorItems = $input.all().map((item) => item.json);\n\nconst parseJson = (value) => {\n  if (typeof value !== \"string\") return value;\n  try {\n    return JSON.parse(value);\n  } catch {\n    return value;\n  }\n};\n\nconst unwrapMasterCv = (value) => {\n  let current = parseJson(value);\n\n  for (let depth = 0; depth < 5; depth++) {\n    if (!current || typeof current !== \"object\" || Array.isArray(current)) break;\n    if (Array.isArray(current.projects)) return current;\n\n    const next =\n      current.master_cv ??\n      current.cv_json ??\n      current.document_data ??\n      current.data ??\n      current.json;\n\n    if (next === undefined || next === current) break;\n    current = parseJson(next);\n  }\n\n  return current;\n};\n\nconst firstValue = (source, names) => {\n  for (const name of names) {\n    const value = source?.[name];\n    if (value !== undefined && value !== null && String(value).trim() !== \"\") {\n      return value;\n    }\n  }\n  return \"\";\n};\n\nconst text = (value) => String(value ?? \"\").trim();\nconst masterCv = unwrapMasterCv(extracted);\n\nif (!masterCv || typeof masterCv !== \"object\" || Array.isArray(masterCv)) {\n  throw new Error(\"The master CV file must contain a JSON object.\");\n}\nif (!Array.isArray(masterCv.projects)) {\n  throw new Error(\"The master CV JSON could not be normalized: projects must be an array.\");\n}\n\nconst linkedinJobUrl = text(form.linkedinJobUrl || form[\"LinkedIn Job URL\"]);\nif (!linkedinJobUrl) {\n  throw new Error(\"LinkedIn Job URL is required for LinkedIn entries.\");\n}\nif (actorItems.length === 0) {\n  throw new Error(\"The LinkedIn actor returned no job.\");\n}\n\nreturn actorItems.map((job, index) => {\n  const company =\n    job.company && typeof job.company === \"object\"\n      ? firstValue(job.company, [\"name\", \"companyName\", \"title\"])\n      : job.company;\n\n  const companyName = text(firstValue(job, [\n    \"companyName\", \"company_name\", \"company\", \"companyTitle\", \"organizationName\"\n  ]) || company);\n\n  const jobTitle = text(firstValue(job, [\n    \"jobTitle\", \"job_title\", \"title\", \"position\", \"positionName\"\n  ]));\n\n  const jobDescription = text(firstValue(job, [\n    \"jobDescription\", \"job_description\", \"description\", \"descriptionText\", \"text\"\n  ]));\n\n  const jobUrl = text(firstValue(job, [\n    \"jobUrl\", \"job_url\", \"url\", \"link\", \"linkedinUrl\", \"jobPostingUrl\"\n  ]) || linkedinJobUrl);\n\n  if (!companyName) throw new Error(\"The LinkedIn actor output is missing companyName.\");\n  if (!jobTitle) throw new Error(\"The LinkedIn actor output is missing jobTitle.\");\n  if (!jobDescription) throw new Error(\"The LinkedIn actor output is missing jobDescription.\");\n  if (!jobUrl) throw new Error(\"The LinkedIn actor output is missing jobUrl.\");\n\n  const locationValue =\n    job.location && typeof job.location === \"object\"\n      ? firstValue(job.location, [\"formattedAddress\", \"name\", \"city\"])\n      : firstValue(job, [\"location\", \"jobLocation\", \"locationName\"]);\n\n  return {\n    json: {\n      companyName,\n      jobTitle,\n      jobDescription,\n      jobUrl,\n      location: text(locationValue),\n      contractType: text(firstValue(job, [\n        \"contractType\", \"contract_type\", \"employmentType\", \"employment_type\", \"jobType\"\n      ])),\n      publishedAt: text(firstValue(job, [\n        \"publishedAt\", \"published_at\", \"postedAt\", \"posted_at\", \"datePosted\", \"publishedDate\"\n      ])),\n      jobId: text(firstValue(job, [\n        \"jobId\", \"job_id\", \"id\", \"linkedinJobId\", \"externalId\"\n      ])),\n      source: \"LinkedIn\",\n      master_cv: masterCv,\n    },\n    pairedItem: { item: index },\n  };\n});"
+      },
+      "id": "178772a0-54fe-46dd-bb78-c8159a0c9711",
+      "name": "Normalize LinkedIn Job Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        368,
+        144
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "0fda3b47-7b89-4514-abd2-c9da3af4e56e",
+      "name": "Loop Over Jobs",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        592,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "import re\n\n\nif not _items:\n    raise ValueError(\"Prepare CV Content Input received no items.\")\n\njob = _items[0].get(\"json\", {})\nmaster_cv = job.get(\"master_cv\")\n\nif not isinstance(master_cv, dict):\n    raise ValueError(\"master_cv must be an object.\")\n\nif not isinstance(master_cv.get(\"projects\"), list):\n    raise ValueError(\"master_cv.projects must be an array.\")\n\nif not isinstance(master_cv.get(\"work_experience\"), list):\n    raise ValueError(\"master_cv.work_experience must be an array.\")\n\nif not isinstance(master_cv.get(\"skills\"), list):\n    raise ValueError(\"master_cv.skills must be an array.\")\n\n\ndef slugify(value):\n    normalized = str(value or \"\").lower().strip()\n    normalized = re.sub(r\"[^a-z0-9]+\", \"-\", normalized)\n    normalized = re.sub(r\"-+\", \"-\", normalized).strip(\"-\")\n    return normalized or \"unknown\"\n\n\njob_id = str(job.get(\"jobId\") or \"\").strip() or slugify(job.get(\"jobUrl\"))\napplication_id = (\n    f\"{slugify(job.get('companyName'))}-\"\n    f\"{slugify(job.get('jobTitle'))}-\"\n    f\"{slugify(job_id)}\"\n)\n\nreturn [\n    {\n        \"json\": {\n            \"test_mode\": False,\n            \"job_id\": job_id,\n            \"company_name\": job.get(\"companyName\"),\n            \"job_title\": job.get(\"jobTitle\"),\n            \"job_description\": job.get(\"jobDescription\"),\n            \"job_url\": job.get(\"jobUrl\"),\n            \"published_at\": job.get(\"publishedAt\"),\n            \"location\": job.get(\"location\"),\n            \"contract_type\": job.get(\"contractType\"),\n            \"application_id\": application_id,\n            \"project_selection_count\": 4,\n            \"work_experience_selection_count\": 3,\n            \"master_cv\": master_cv,\n            \"source_job\": job,\n        }\n    }\n]"
+      },
+      "id": "0cc120c8-5bb8-40e7-974a-b8894a4fb169",
+      "name": "Prepare CV Content Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        816,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "qWB5UMZoKmMpFV4I",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/qWB5UMZoKmMpFV4I",
+          "cachedResultName": "CV Content Creation - Parent Context - Structured Output"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "id": "53b0b352-1022-41ac-8558-63f30642d2ac",
+      "name": "Create Tailored CV Content",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1040,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "if not _items:\n    raise ValueError(\"Prepare CV Document received no items.\")\n\ndata = _items[0].get(\"json\", {})\ncv_json = data.get(\"cv_json\")\n\nif not isinstance(cv_json, dict):\n    raise ValueError(\"CV content workflow did not return cv_json.\")\n\nreturn [\n    {\n        \"json\": {\n            **data,\n            \"document_type\": \"cv\",\n            \"document_data\": cv_json,\n        }\n    }\n]"
+      },
+      "id": "c772aae3-29dd-4de4-bdc5-fbd05bfa48d6",
+      "name": "Prepare CV Document",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1264,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "lRDjCWKyxz9iILOQ",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/lRDjCWKyxz9iILOQ",
+          "cachedResultName": "Render Document and Upload to Cloudinary"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "document_type",
+              "displayName": "document_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "document_data",
+              "displayName": "document_data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "object",
+              "removed": false
+            },
+            {
+              "id": "job_id",
+              "displayName": "job_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "company_name",
+              "displayName": "company_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "job_title",
+              "displayName": "job_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "application_id",
+              "displayName": "application_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "id": "7d844414-fe6b-4557-b812-9d60c809308b",
+      "name": "Generate CV Files",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1488,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const cvResult = $(\"Create Tailored CV Content\").item.json;\nconst job = cvResult.source_job;\n\nreturn [{\n  json: {\n    test_mode: false,\n    job_id: cvResult.job_id,\n    company_name: cvResult.company_name,\n    job_title: cvResult.job_title,\n    job_description: cvResult.job_description,\n    job_url: cvResult.job_url,\n    published_at: cvResult.published_at,\n    location: cvResult.location,\n    contract_type: cvResult.contract_type,\n    application_id: cvResult.application_id,\n    master_cv: cvResult.cv_json,\n    source_job: job,\n  },\n}];"
+      },
+      "id": "e1c33aa9-40f9-4c13-a4fb-7560b0909095",
+      "name": "Prepare Cover Letter Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1712,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "GutFx2P0jerXjCCh",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/GutFx2P0jerXjCCh",
+          "cachedResultName": "Cover Letter Content Creation - Structured Output"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "id": "c2176489-7934-4da2-9d40-a30965ae1af6",
+      "name": "Create Cover Letter Content",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1936,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "if not _items:\n    raise ValueError(\"Prepare Cover Letter Document received no items.\")\n\ndata = _items[0].get(\"json\", {})\ncover_letter_json = data.get(\"cover_letter_json\")\n\nif not isinstance(cover_letter_json, dict):\n    raise ValueError(\n        \"Cover letter workflow did not return cover_letter_json.\"\n    )\n\nreturn [\n    {\n        \"json\": {\n            **data,\n            \"document_type\": \"cover-letter\",\n            \"document_data\": cover_letter_json,\n        }\n    }\n]"
+      },
+      "id": "f4d358e7-36cc-4d88-9b87-9ccc4ecccf09",
+      "name": "Prepare Cover Letter Document",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2160,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "lRDjCWKyxz9iILOQ",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/lRDjCWKyxz9iILOQ",
+          "cachedResultName": "Render Document and Upload to Cloudinary"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "document_type",
+              "displayName": "document_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "document_data",
+              "displayName": "document_data",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "object",
+              "removed": false
+            },
+            {
+              "id": "job_id",
+              "displayName": "job_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "company_name",
+              "displayName": "company_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "job_title",
+              "displayName": "job_title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "application_id",
+              "displayName": "application_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "id": "28abb7aa-773a-4b06-b337-cb9e2649e3bd",
+      "name": "Generate Cover Letter Files",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        2384,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const cvContent = $(\"Create Tailored CV Content\").item.json;\nconst job = cvContent.source_job;\n\nconst cvPdf = $(\"Upload CV PDF to Baserow\").first().json;\nconst cvTex = $(\"Upload CV TEX to Baserow\").first().json;\nconst coverPdf = $(\"Upload Cover Letter PDF to Baserow\").first().json;\nconst coverTex = $(\"Upload Cover Letter TEX to Baserow\").first().json;\n\nconst requiredUpload = (upload, label) => {\n  if (!upload || typeof upload.name !== \"string\" || !upload.name.trim()) {\n    throw new Error(`${label} did not return a valid Baserow user-file name.`);\n  }\n  return upload;\n};\n\nrequiredUpload(cvPdf, \"CV PDF upload\");\nrequiredUpload(cvTex, \"CV TEX upload\");\nrequiredUpload(coverPdf, \"Cover letter PDF upload\");\nrequiredUpload(coverTex, \"Cover letter TEX upload\");\n\nconst applicationId = String(cvContent.application_id ?? \"application\");\n\nconst dateValue = job.publishedAt\n  ? String(job.publishedAt).slice(0, 10)\n  : new Date().toISOString().slice(0, 10);\n\nreturn [{\n  json: {\n    \"Job ID\": String(cvContent.job_id ?? \"\"),\n    \"Date\": dateValue,\n    \"Company Name\": job.companyName ?? \"\",\n    \"Title\": job.jobTitle ?? \"\",\n    \"Location\": job.location ?? \"\",\n    \"Job Description\": job.jobDescription ?? \"\",\n    \"Contract Type\": job.contractType ?? \"\",\n    \"Cover Letter\": [\n      {\n        \"name\": coverPdf.name,\n        \"visible_name\": `cover-letter_${applicationId}.pdf`\n      },\n      {\n        \"name\": coverTex.name,\n        \"visible_name\": `cover-letter_${applicationId}.tex`\n      }\n    ],\n    \"CV\": [\n      {\n        \"name\": cvPdf.name,\n        \"visible_name\": `cv_${applicationId}.pdf`\n      },\n      {\n        \"name\": cvTex.name,\n        \"visible_name\": `cv_${applicationId}.tex`\n      }\n    ],\n    \"Link\": job.jobUrl ?? \"\",\n    \"Status\": \"New\"\n  }\n}];"
+      },
+      "id": "8b4ddf97-7d2b-4269-903b-5349e8a2fcc7",
+      "name": "Build Jobs Row",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3504,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "databaseId": 504349,
+        "tableId": 1098021,
+        "dataToSend": "autoMapInputData"
+      },
+      "id": "7f261e3f-8e10-48a4-ac5e-28ec7286b8ea",
+      "name": "Create Job Row in Baserow",
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1.1,
+      "position": [
+        3728,
+        240
+      ],
+      "credentials": {
+        "baserowApi": {
+          "id": "6f5zUFzwe8YPXrNX",
+          "name": "Baserow account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Unified Fillout job workflow\n\n1. Install and enable the verified `n8n-nodes-fillout` integration.\n2. Open **Fillout Submission**, select your Fillout credential, and choose the deployed form created from the attached Fillout export.\n3. Activate the workflow so the Fillout trigger can register its webhook.\n4. The **Submit Job** parser converts Fillout's question-ID map into the same flat field names used by the original workflow.\n5. LinkedIn submissions continue through the existing native Apify node and actor `apt_marble/linkedin-job-listings-scraper-by-url`.\n6. External and LinkedIn submissions still normalize to the same downstream item shape and reconnect at **Loop Over Jobs**.\n7. Put the master CV at `/home/node/.n8n-files/document-pipeline/master_cv.json`.\n\nFillout widget IDs mapped by **Submit Job**:\n- Entry Type: `entryType`\n- LinkedIn Job URL: `oghMWc6sfTWHCnUjHzN5PT`\n- Company Name: `tccyk1pB8iRUf1NGCDbcP5`\n- Job Title: `mV2wYQbu1b1Jhf1gTDAbK8`\n- Job Description: `98TcaL2qnS8Y31TQxgZaZD`\n- Job URL: `1gZ3kT2Db3G3y2QhYfjT8X`\n- Location: `oc63gzWN4vxEJwx8nzZrAK`\n- Contract Type: `g2VK5MiabTgDTUXGYhnV4q`\n- Published Date: `sYghUzUtSwi8T4yaReYefR`\n- External Job ID: `2XDTXJHaY2BJEndo3EgEAV`\n",
+        "height": 520,
+        "width": 1700
+      },
+      "id": "ffd7c564-a761-430b-b063-ad08a65b80a7",
+      "name": "Setup Notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -752,
+        816
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.baserow.io/api/user-files/upload-via-url/",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ url: $(\"Generate CV Files\").first().json.pdf_url }) }}",
+        "options": {}
+      },
+      "id": "20dfe9fd-df9f-4d57-b733-20990bddb1c1",
+      "name": "Upload CV PDF to Baserow",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2608,
+        176
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "sWtOMxT4bDqBr8wI",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.baserow.io/api/user-files/upload-via-url/",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ url: $(\"Generate CV Files\").first().json.tex_url }) }}",
+        "options": {}
+      },
+      "id": "8df385c1-5a97-446b-8742-15712df7b7e9",
+      "name": "Upload CV TEX to Baserow",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2832,
+        176
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "sWtOMxT4bDqBr8wI",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.baserow.io/api/user-files/upload-via-url/",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ url: $(\"Generate Cover Letter Files\").first().json.pdf_url }) }}",
+        "options": {}
+      },
+      "id": "f5b02a9c-f34d-48e8-aefe-379894b6dc29",
+      "name": "Upload Cover Letter PDF to Baserow",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3056,
+        176
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "sWtOMxT4bDqBr8wI",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.baserow.io/api/user-files/upload-via-url/",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({ url: $(\"Generate Cover Letter Files\").first().json.tex_url }) }}",
+        "options": {}
+      },
+      "id": "47983ba1-412a-4fd3-a949-ef79c05e2f2d",
+      "name": "Upload Cover Letter TEX to Baserow",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3280,
+        176
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "sWtOMxT4bDqBr8wI",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const submission = $input.first().json ?? {};\nconst questions = submission.questions ?? {};\n\nconst FIELD_IDS = {\n  entryType: \"entryType\",\n  linkedinJobUrl: \"oghMWc6sfTWHCnUjHzN5PT\",\n  companyName: \"tccyk1pB8iRUf1NGCDbcP5\",\n  jobTitle: \"mV2wYQbu1b1Jhf1gTDAbK8\",\n  jobDescription: \"98TcaL2qnS8Y31TQxgZaZD\",\n  jobUrl: \"1gZ3kT2Db3G3y2QhYfjT8X\",\n  location: \"oc63gzWN4vxEJwx8nzZrAK\",\n  contractType: \"g2VK5MiabTgDTUXGYhnV4q\",\n  publishedAt: \"sYghUzUtSwi8T4yaReYefR\",\n  jobId: \"2XDTXJHaY2BJEndo3EgEAV\",\n};\n\nconst normalizeValue = (value) => {\n  if (value === undefined || value === null) return \"\";\n\n  if (Array.isArray(value)) {\n    return value.map(normalizeValue).filter((item) => item !== \"\").join(\", \");\n  }\n\n  if (typeof value === \"object\") {\n    for (const key of [\"value\", \"label\", \"name\", \"url\", \"text\", \"optionId\", \"id\"]) {\n      if (value[key] !== undefined && value[key] !== null) {\n        return normalizeValue(value[key]);\n      }\n    }\n    return JSON.stringify(value);\n  }\n\n  return String(value).trim();\n};\n\nconst questionValue = (fieldId, expectedName) => {\n  const direct = questions[fieldId];\n\n  if (direct !== undefined) {\n    if (direct && typeof direct === \"object\" && \"value\" in direct) {\n      return normalizeValue(direct.value);\n    }\n    return normalizeValue(direct);\n  }\n\n  const match = Object.values(questions).find((question) => {\n    if (!question || typeof question !== \"object\") return false;\n    const name = normalizeValue(question.name ?? question.label);\n    return name.toLowerCase() === expectedName.toLowerCase();\n  });\n\n  return match && typeof match === \"object\" && \"value\" in match\n    ? normalizeValue(match.value)\n    : normalizeValue(match);\n};\n\nconst entryTypeRaw = questionValue(FIELD_IDS.entryType, \"Entry Type\");\nconst entryType =\n  entryTypeRaw.toLowerCase() === \"linkedin\"\n    ? \"LinkedIn\"\n    : entryTypeRaw.toLowerCase() === \"external\"\n      ? \"External\"\n      : entryTypeRaw;\n\nif (![\"LinkedIn\", \"External\"].includes(entryType)) {\n  throw new Error(`Fillout submission has an invalid Entry Type: \"${entryTypeRaw}\".`);\n}\n\nconst parsed = {\n  entryType,\n  linkedinJobUrl: questionValue(FIELD_IDS.linkedinJobUrl, \"LinkedIn Job URL\"),\n  companyName: questionValue(FIELD_IDS.companyName, \"Company Name\"),\n  jobTitle: questionValue(FIELD_IDS.jobTitle, \"Job Title\"),\n  jobDescription: questionValue(FIELD_IDS.jobDescription, \"Job Description\"),\n  jobUrl: questionValue(FIELD_IDS.jobUrl, \"Job URL\"),\n  location: questionValue(FIELD_IDS.location, \"Location\"),\n  contractType: questionValue(FIELD_IDS.contractType, \"Contract Type\"),\n  publishedAt: questionValue(FIELD_IDS.publishedAt, \"Published Date\"),\n  jobId: questionValue(FIELD_IDS.jobId, \"External Job ID\"),\n};\n\nif (entryType === \"LinkedIn\" && !parsed.linkedinJobUrl) {\n  throw new Error(\"LinkedIn Job URL is required for LinkedIn entries.\");\n}\n\nif (entryType === \"External\") {\n  for (const [field, label] of [\n    [\"companyName\", \"Company Name\"],\n    [\"jobTitle\", \"Job Title\"],\n    [\"jobDescription\", \"Job Description\"],\n    [\"jobUrl\", \"Job URL\"],\n  ]) {\n    if (!parsed[field]) {\n      throw new Error(`${label} is required for External entries.`);\n    }\n  }\n}\n\nreturn [{\n  json: {\n    ...parsed,\n    filloutSubmissionId: submission.submissionId ?? submission.id ?? \"\",\n    filloutFormId: submission.formId ?? \"\",\n    filloutSubmittedAt: submission.submissionTime ?? submission.createdAt ?? \"\",\n  },\n  pairedItem: { item: 0 },\n}];"
+      },
+      "id": "08b2cf32-22a1-49f1-a718-0641dc14b9e5",
+      "name": "Submit Job",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -752,
+        240
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Read Master CV JSON": {
+      "main": [
+        [
+          {
+            "node": "Extract Master CV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Master CV": {
+      "main": [
+        [
+          {
+            "node": "Route by Entry Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Jobs": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Prepare CV Content Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare CV Content Input": {
+      "main": [
+        [
+          {
+            "node": "Create Tailored CV Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Tailored CV Content": {
+      "main": [
+        [
+          {
+            "node": "Prepare CV Document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare CV Document": {
+      "main": [
+        [
+          {
+            "node": "Generate CV Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate CV Files": {
+      "main": [
+        [
+          {
+            "node": "Prepare Cover Letter Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Cover Letter Input": {
+      "main": [
+        [
+          {
+            "node": "Create Cover Letter Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Cover Letter Content": {
+      "main": [
+        [
+          {
+            "node": "Prepare Cover Letter Document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Cover Letter Document": {
+      "main": [
+        [
+          {
+            "node": "Generate Cover Letter Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Cover Letter Files": {
+      "main": [
+        [
+          {
+            "node": "Upload CV PDF to Baserow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Jobs Row": {
+      "main": [
+        [
+          {
+            "node": "Create Job Row in Baserow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Job Row in Baserow": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload CV PDF to Baserow": {
+      "main": [
+        [
+          {
+            "node": "Upload CV TEX to Baserow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload CV TEX to Baserow": {
+      "main": [
+        [
+          {
+            "node": "Upload Cover Letter PDF to Baserow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Cover Letter PDF to Baserow": {
+      "main": [
+        [
+          {
+            "node": "Upload Cover Letter TEX to Baserow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Cover Letter TEX to Baserow": {
+      "main": [
+        [
+          {
+            "node": "Build Jobs Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize External Job Input": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Entry Type": {
+      "main": [
+        [
+          {
+            "node": "Scrape LinkedIn Job",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Normalize External Job Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scrape LinkedIn Job": {
+      "main": [
+        [
+          {
+            "node": "Normalize LinkedIn Job Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize LinkedIn Job Input": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fillout Submission": {
+      "main": [
+        [
+          {
+            "node": "Submit Job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Submit Job": {
+      "main": [
+        [
+          {
+            "node": "Read Master CV JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "07de8953-88bd-4dae-b9c2-18cdfc97df61",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2d85b40e2e1a69706b539dc280f2a48f8b70729872141299d251c48887ea4c94"
+  },
+  "nodeGroups": [],
+  "id": "Z6eQO7DbDI5JJKaI",
+  "tags": []
+}
