@@ -1,84 +1,59 @@
 {
-  "name": "Manual External Job Entry - Baserow CV Cover Letter",
+  "name": "Manual External or LinkedIn Job Entry - Conditional Form - Final Fixed",
   "nodes": [
     {
       "parameters": {
-        "formTitle": "Add a Job",
-        "formDescription": "Paste a LinkedIn job-post URL by itself, or provide the full job information from any source. LinkedIn-only submissions are enriched automatically before the CV and cover letter are created.",
-        "formFields": {
-          "values": [
-            {
-              "fieldLabel": "Company Name",
-              "placeholder": "Example: Alberta Health Services",
-              "requiredField": false
-            },
-            {
-              "fieldLabel": "Job Title",
-              "placeholder": "Example: Data Scientist",
-              "requiredField": false
-            },
-            {
-              "fieldLabel": "Job Description",
-              "fieldType": "textarea",
-              "placeholder": "Paste the complete job description",
-              "requiredField": false
-            },
-            {
-              "fieldLabel": "Job URL",
-              "placeholder": "https://...",
-              "requiredField": true
-            },
-            {
-              "fieldLabel": "Location",
-              "placeholder": "Example: Calgary, AB"
-            },
-            {
-              "fieldLabel": "Contract Type",
-              "fieldType": "dropdown",
-              "fieldOptions": {
-                "values": [
-                  {
-                    "option": "Full-time"
-                  },
-                  {
-                    "option": "Part-time"
-                  },
-                  {
-                    "option": "Contract"
-                  },
-                  {
-                    "option": "Temporary"
-                  },
-                  {
-                    "option": "Internship"
-                  },
-                  {
-                    "option": "Other"
-                  }
-                ]
-              }
-            },
-            {
-              "fieldLabel": "Published Date",
-              "fieldType": "date"
-            },
-            {
-              "fieldLabel": "External Job ID",
-              "placeholder": "Optional job-board or employer ID"
-            }
-          ]
-        },
+        "httpMethod": "GET",
+        "path": "manual-job-entry",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "9523cb34-8f7c-4271-8132-c22d29829e7b",
+      "name": "Open Job Entry Form",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2400,
+        128
+      ],
+      "webhookId": "c70c0209-a58f-4d2c-890f-3e10cf052391"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "<!doctype html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <title>Add a Job</title>\n  <style>\n    :root { color-scheme: light dark; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif; }\n    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #f5f6f8; color: #202124; }\n    .card { width: min(760px, calc(100% - 32px)); background: white; border: 1px solid #dadce0; border-radius: 14px; padding: 28px; box-sizing: border-box; box-shadow: 0 8px 28px rgba(0,0,0,.08); }\n    h1 { margin: 0 0 8px; font-size: 26px; }\n    .intro { margin: 0 0 24px; color: #5f6368; line-height: 1.5; }\n    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }\n    .field { display: flex; flex-direction: column; gap: 7px; }\n    .full { grid-column: 1 / -1; }\n    label { font-size: 14px; font-weight: 650; }\n    .required::after { content: \" *\"; color: #b3261e; }\n    input, select, textarea { width: 100%; box-sizing: border-box; border: 1px solid #bdc1c6; border-radius: 8px; padding: 11px 12px; font: inherit; background: white; color: #202124; }\n    textarea { min-height: 210px; resize: vertical; }\n    input:focus, select:focus, textarea:focus { outline: 2px solid #1a73e8; border-color: transparent; }\n    .hidden { display: none; }\n    button { margin-top: 22px; border: 0; border-radius: 8px; padding: 12px 18px; font: inherit; font-weight: 700; background: #1a73e8; color: white; cursor: pointer; }\n    button:disabled { opacity: .65; cursor: wait; }\n    #status { min-height: 24px; margin-top: 14px; font-size: 14px; }\n    .success { color: #137333; }\n    .error { color: #b3261e; }\n    @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } .full { grid-column: auto; } .card { padding: 20px; } }\n    @media (prefers-color-scheme: dark) {\n      body { background: #111315; color: #e8eaed; }\n      .card { background: #1f2225; border-color: #3c4043; }\n      .intro { color: #bdc1c6; }\n      input, select, textarea { background: #202124; color: #e8eaed; border-color: #5f6368; }\n    }\n  </style>\n</head>\n<body>\n  <main class=\"card\">\n    <h1>Add a Job</h1>\n    <p class=\"intro\">Choose how the job should be entered. LinkedIn requires only the job-post URL. External jobs require the core job details.</p>\n    <form id=\"jobForm\">\n      <div class=\"grid\">\n        <div class=\"field full\">\n          <label class=\"required\" for=\"entryType\">Entry type</label>\n          <select id=\"entryType\" name=\"Entry Type\" required>\n            <option value=\"External\" selected>External</option>\n            <option value=\"LinkedIn\">LinkedIn</option>\n          </select>\n        </div>\n\n        <div class=\"field full\">\n          <label class=\"required\" id=\"jobUrlLabel\" for=\"jobUrl\">Job URL</label>\n          <input id=\"jobUrl\" name=\"Job URL\" type=\"url\" placeholder=\"https://...\" required>\n        </div>\n\n        <div id=\"externalFields\" class=\"full grid\">\n          <div class=\"field\">\n            <label class=\"required\" for=\"companyName\">Company name</label>\n            <input id=\"companyName\" name=\"Company Name\" placeholder=\"Example: Alberta Health Services\">\n          </div>\n          <div class=\"field\">\n            <label class=\"required\" for=\"jobTitle\">Job title</label>\n            <input id=\"jobTitle\" name=\"Job Title\" placeholder=\"Example: Data Scientist\">\n          </div>\n          <div class=\"field full\">\n            <label class=\"required\" for=\"jobDescription\">Job description</label>\n            <textarea id=\"jobDescription\" name=\"Job Description\" placeholder=\"Paste the complete job description\"></textarea>\n          </div>\n          <div class=\"field\">\n            <label for=\"location\">Location</label>\n            <input id=\"location\" name=\"Location\" placeholder=\"Example: Calgary, AB\">\n          </div>\n          <div class=\"field\">\n            <label for=\"contractType\">Contract type</label>\n            <select id=\"contractType\" name=\"Contract Type\">\n              <option value=\"\">Not specified</option>\n              <option>Full-time</option><option>Part-time</option><option>Contract</option>\n              <option>Temporary</option><option>Internship</option><option>Other</option>\n            </select>\n          </div>\n          <div class=\"field\">\n            <label for=\"publishedDate\">Published date</label>\n            <input id=\"publishedDate\" name=\"Published Date\" type=\"date\">\n          </div>\n          <div class=\"field\">\n            <label for=\"externalJobId\">External job ID</label>\n            <input id=\"externalJobId\" name=\"External Job ID\" placeholder=\"Optional job-board or employer ID\">\n          </div>\n        </div>\n      </div>\n      <button id=\"submitButton\" type=\"submit\">Process Job</button>\n      <div id=\"status\" role=\"status\" aria-live=\"polite\"></div>\n    </form>\n  </main>\n  <script>\n    const form = document.getElementById('jobForm');\n    const entryType = document.getElementById('entryType');\n    const externalFields = document.getElementById('externalFields');\n    const jobUrl = document.getElementById('jobUrl');\n    const jobUrlLabel = document.getElementById('jobUrlLabel');\n    const companyName = document.getElementById('companyName');\n    const jobTitle = document.getElementById('jobTitle');\n    const jobDescription = document.getElementById('jobDescription');\n    const button = document.getElementById('submitButton');\n    const status = document.getElementById('status');\n\n    function updateMode() {\n      const external = entryType.value === 'External';\n      externalFields.classList.toggle('hidden', !external);\n      externalFields.setAttribute('aria-hidden', String(!external));\n\n      companyName.required = external;\n      jobTitle.required = external;\n      jobDescription.required = external;\n\n      for (const control of externalFields.querySelectorAll('input, select, textarea')) {\n        control.disabled = !external;\n      }\n\n      jobUrlLabel.textContent = external ? 'Job URL' : 'LinkedIn job URL';\n      jobUrl.placeholder = external ? 'https://...' : 'https://www.linkedin.com/jobs/view/...';\n      jobUrl.setAttribute('aria-label', jobUrlLabel.textContent);\n    }\n\n    entryType.addEventListener('change', updateMode);\n    updateMode();\n\n    form.addEventListener('submit', async (event) => {\n      event.preventDefault();\n      if (!form.reportValidity()) return;\n\n      button.disabled = true;\n      status.className = '';\n      status.textContent = 'Submitting...';\n\n      const payload = Object.fromEntries(new FormData(form).entries());\n      if (payload['Entry Type'] === 'LinkedIn') {\n        for (const key of ['Company Name','Job Title','Job Description','Location','Contract Type','Published Date','External Job ID']) {\n          delete payload[key];\n        }\n      }\n\n      try {\n        const endpoint = `${window.location.origin}${window.location.pathname.replace(/\\/manual-job-entry\\/?$/, '/manual-job-entry-submit')}`;\n        const response = await fetch(endpoint, {\n          method: 'POST',\n          headers: { 'Content-Type': 'application/json' },\n          body: JSON.stringify(payload)\n        });\n        const result = await response.json().catch(() => ({}));\n        if (!response.ok) throw new Error(result.message || `Submission failed with status ${response.status}.`);\n        status.className = 'success';\n        status.textContent = result.message || 'Job submitted successfully.';\n        form.reset();\n        entryType.value = 'External';\n        updateMode();\n      } catch (error) {\n        status.className = 'error';\n        status.textContent = error.message || 'The job could not be submitted.';\n      } finally {\n        button.disabled = false;\n      }\n    });\n  </script>\n</body>\n</html>",
         "options": {
-          "appendAttribution": false,
-          "buttonLabel": "Process Job",
-          "ignoreBots": true,
-          "useWorkflowTimezone": true
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/html; charset=utf-8"
+              }
+            ]
+          }
         }
       },
+      "id": "798523d5-abe7-4cf9-ab31-567f878b5e2f",
+      "name": "Display Conditional Job Form",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -2176,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "manual-job-entry-submit",
+        "responseMode": "responseNode",
+        "options": {}
+      },
       "id": "082b34fc-5982-40cd-b36c-87eb4312b8aa",
-      "name": "Submit External Job",
-      "type": "n8n-nodes-base.formTrigger",
-      "typeVersion": 2.2,
+      "name": "Submit Job Entry",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
       "position": [
         -2176,
         432
@@ -95,7 +70,7 @@
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1,
       "position": [
-        -1952,
+        -1280,
         432
       ]
     },
@@ -109,20 +84,20 @@
       "type": "n8n-nodes-base.extractFromFile",
       "typeVersion": 1,
       "position": [
-        -1728,
+        -1056,
         432
       ]
     },
     {
       "parameters": {
-        "jsCode": "const extracted = $(\"Extract Master CV\").first().json;\nconst form = $(\"Submit External Job\").first().json;\n\nconst parseJson = (value) => {\n  if (typeof value !== \"string\") return value;\n  try {\n    return JSON.parse(value);\n  } catch {\n    return value;\n  }\n};\n\nconst unwrapMasterCv = (value) => {\n  let current = parseJson(value);\n\n  for (let depth = 0; depth < 5; depth++) {\n    if (!current || typeof current !== \"object\" || Array.isArray(current)) break;\n    if (Array.isArray(current.projects)) return current;\n\n    const next =\n      current.master_cv ??\n      current.cv_json ??\n      current.document_data ??\n      current.data ??\n      current.json;\n\n    if (next === undefined || next === current) break;\n    current = parseJson(next);\n  }\n\n  return current;\n};\n\nconst firstValue = (source, names) => {\n  for (const name of names) {\n    const value = source?.[name];\n    if (value !== undefined && value !== null && String(value).trim() !== \"\") {\n      return value;\n    }\n  }\n  return \"\";\n};\n\nconst text = (value) => String(value ?? \"\").trim();\nconst masterCv = unwrapMasterCv(extracted);\n\nif (!masterCv || typeof masterCv !== \"object\" || Array.isArray(masterCv)) {\n  throw new Error(\"The master CV file must contain a JSON object.\");\n}\n\nif (!Array.isArray(masterCv.projects)) {\n  throw new Error(\"The master CV JSON could not be normalized: projects must be an array.\");\n}\n\nconst jobUrl = text(firstValue(form, [\"Job URL\", \"job_url\", \"jobUrl\"]));\nif (!jobUrl) throw new Error(\"Job URL is required.\");\n\nconst companyName = text(firstValue(form, [\"Company Name\", \"company_name\", \"companyName\"]));\nconst jobTitle = text(firstValue(form, [\"Job Title\", \"job_title\", \"jobTitle\"]));\nconst jobDescription = text(firstValue(form, [\"Job Description\", \"job_description\", \"jobDescription\"]));\n\nlet parsedUrl;\ntry {\n  parsedUrl = new URL(jobUrl);\n} catch {\n  throw new Error(\"Job URL must be a valid URL.\");\n}\n\nconst isLinkedIn =\n  parsedUrl.hostname === \"linkedin.com\" ||\n  parsedUrl.hostname.endsWith(\".linkedin.com\");\n\nconst missingCoreFields = !companyName || !jobTitle || !jobDescription;\nconst needsLinkedInEnrichment = isLinkedIn && missingCoreFields;\n\nif (missingCoreFields && !needsLinkedInEnrichment) {\n  throw new Error(\n    \"For non-LinkedIn jobs, Company Name, Job Title, and Job Description are required.\"\n  );\n}\n\nreturn [\n  {\n    json: {\n      companyName,\n      jobTitle,\n      jobDescription,\n      jobUrl,\n      location: text(firstValue(form, [\"Location\", \"location\"])),\n      contractType: text(firstValue(form, [\"Contract Type\", \"contract_type\", \"contractType\"])),\n      publishedAt: text(firstValue(form, [\"Published Date\", \"published_at\", \"publishedAt\"])),\n      jobId: text(firstValue(form, [\"External Job ID\", \"job_id\", \"jobId\"])),\n      source: needsLinkedInEnrichment ? \"LinkedIn URL\" : \"Manual Form\",\n      needsLinkedInEnrichment,\n      master_cv: masterCv,\n    },\n  },\n];"
+        "jsCode": "const extracted = $(\"Extract Master CV\").first().json;\nconst form = $(\"Validate Job Submission\").first().json.form;\n\nconst parseJson = (value) => {\n  if (typeof value !== \"string\") return value;\n  try { return JSON.parse(value); } catch { return value; }\n};\n\nconst unwrapMasterCv = (value) => {\n  let current = parseJson(value);\n  for (let depth = 0; depth < 5; depth++) {\n    if (!current || typeof current !== \"object\" || Array.isArray(current)) break;\n    if (Array.isArray(current.projects)) return current;\n    const next = current.master_cv ?? current.cv_json ?? current.document_data ?? current.data ?? current.json;\n    if (next === undefined || next === current) break;\n    current = parseJson(next);\n  }\n  return current;\n};\n\nconst firstValue = (source, names) => {\n  for (const name of names) {\n    const value = source?.[name];\n    if (value !== undefined && value !== null && String(value).trim() !== \"\") return value;\n  }\n  return \"\";\n};\n\nconst text = (value) => String(value ?? \"\").trim();\nconst masterCv = unwrapMasterCv(extracted);\nif (!masterCv || typeof masterCv !== \"object\" || Array.isArray(masterCv)) {\n  throw new Error(\"The master CV file must contain a JSON object.\");\n}\nif (!Array.isArray(masterCv.projects)) {\n  throw new Error(\"The master CV JSON could not be normalized: projects must be an array.\");\n}\n\nconst entryType = text(firstValue(form, [\"Entry Type\", \"entry_type\", \"entryType\"])) || \"External\";\nif (![\"External\", \"LinkedIn\"].includes(entryType)) {\n  throw new Error(\"Entry Type must be External or LinkedIn.\");\n}\n\nconst jobUrl = text(firstValue(form, [\"Job URL\", \"job_url\", \"jobUrl\"]));\nif (!jobUrl) throw new Error(\"Job URL is required.\");\n\nlet parsedUrl;\ntry { parsedUrl = new URL(jobUrl); } catch { throw new Error(\"Job URL must be a valid URL.\"); }\n\nconst companyName = text(firstValue(form, [\"Company Name\", \"company_name\", \"companyName\"]));\nconst jobTitle = text(firstValue(form, [\"Job Title\", \"job_title\", \"jobTitle\"]));\nconst jobDescription = text(firstValue(form, [\"Job Description\", \"job_description\", \"jobDescription\"]));\nconst isLinkedInUrl = parsedUrl.hostname === \"linkedin.com\" || parsedUrl.hostname.endsWith(\".linkedin.com\");\n\nif (entryType === \"LinkedIn\" && !isLinkedInUrl) {\n  throw new Error(\"LinkedIn entry type requires a linkedin.com job-post URL.\");\n}\nif (entryType === \"External\" && (!companyName || !jobTitle || !jobDescription)) {\n  throw new Error(\"External entries require Company Name, Job Title, Job Description, and Job URL.\");\n}\n\nreturn [{\n  json: {\n    entryType,\n    companyName,\n    jobTitle,\n    jobDescription,\n    jobUrl,\n    location: text(firstValue(form, [\"Location\", \"location\"])),\n    contractType: text(firstValue(form, [\"Contract Type\", \"contract_type\", \"contractType\"])),\n    publishedAt: text(firstValue(form, [\"Published Date\", \"published_at\", \"publishedAt\"])),\n    jobId: text(firstValue(form, [\"External Job ID\", \"job_id\", \"jobId\"])),\n    source: entryType === \"LinkedIn\" ? \"LinkedIn URL\" : \"Manual Form\",\n    needsLinkedInEnrichment: entryType === \"LinkedIn\",\n    master_cv: masterCv,\n  },\n}];"
       },
       "id": "cb3255ab-e313-40ad-997b-2e2fd6630e78",
       "name": "Normalize Manual Job Input",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1504,
+        -832,
         432
       ]
     },
@@ -135,7 +110,7 @@
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
       "position": [
-        -736,
+        -64,
         432
       ]
     },
@@ -465,7 +440,7 @@
     },
     {
       "parameters": {
-        "content": "## External-job workflow\n\nThis form supports two input paths:\n\n1. **LinkedIn URL only**\n   - Paste a direct LinkedIn job-post URL.\n   - Company Name, Job Title, and Job Description may be blank.\n   - The workflow uses an Apify LinkedIn job-details actor to retrieve the missing fields.\n\n2. **Full manual information from any source**\n   - Enter Job URL, Company Name, Job Title, and Job Description.\n   - Location, Contract Type, Published Date, and External Job ID remain optional.\n\nConfiguration:\n- Set `APIFY_TOKEN` in the n8n container environment.\n- The LinkedIn enrichment branch calls `apt_marble/linkedin-job-listings-scraper-by-url`.\n- If LinkedIn enrichment cannot retrieve the three core fields, the workflow stops with a clear error so incomplete documents are not generated.\n- If Published Date is blank, the Jobs row uses the submission date.\n- If External Job ID is blank, the workflow uses the scraped LinkedIn ID or derives an ID from the URL.\n- Duplicate detection remains removed. Every submission is processed and inserted into Baserow.\n- Put the master CV at `/home/node/.n8n-files/document-pipeline/master_cv.json`.\n\nThe existing downstream CV generation, cover-letter generation, Baserow uploads, table mappings, and credentials are unchanged.\n\nTable IDs:\n- Jobs: `1098021`\n- Search Criteria: `1098022` (not used here)\n- Prompts: `1098023`\n\nEach Baserow file field receives both generated formats:\n- CV: PDF and TEX\n- Cover Letter: PDF and TEX\n",
+        "content": "## Single-page conditional job entry\n\nUse the production URL from **Open Job Entry Form** after activating the workflow.\n\n- Entry Type defaults to External.\n- Switching Entry Type updates the visible fields immediately on the same page.\n- LinkedIn mode shows only LinkedIn Job URL, which is required.\n- External mode shows Job URL, Company Name, Job Title, Job Description, Location, Contract Type, Published Date, and External Job ID.\n- External required fields are Job URL, Company Name, Job Title, and Job Description. The remaining External fields are optional.\n- LinkedIn submissions use the native Apify node with actor ID `2rJKkhh7vjpX7pvjg` and the existing Apify credential.\n- Both webhook entry branches are fully connected: GET serves the form and POST validates and processes the submission.\n- Clicking Execute Workflow puts webhook triggers into test-listening mode. Open the test URL shown by **Open Job Entry Form** to use the form during testing.\n\nThe downstream CV, cover-letter, upload, Baserow, credential, mapping, and sub-workflow nodes are preserved.\n",
         "height": 520,
         "width": 1700
       },
@@ -616,7 +591,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -1408,
+        -736,
         432
       ]
     },
@@ -626,17 +601,17 @@
         "actorSource": "store",
         "actorId": {
           "__rl": true,
-          "value": "apt_marble/linkedin-job-listings-scraper-by-url",
+          "value": "2rJKkhh7vjpX7pvjg",
           "mode": "id"
         },
-        "customBody": "={\n  \"jobUrls\": [{{ JSON.stringify($json.jobUrl) }}],\n  \"proxyCountry\": \"ca\",\n  \"maxConcurrency\": 1\n}"
+        "customBody": "={\n  \"startUrls\": {{ JSON.stringify([$json.jobUrl]) }},\n  \"saveOnlyUniqueItems\": true,\n  \"maxItems\": 1\n}"
       },
       "id": "df4cbf8e-d081-47c5-85d5-c340cd199294",
       "name": "Scrape LinkedIn Job URL",
       "type": "@apify/n8n-nodes-apify.apify",
       "typeVersion": 1,
       "position": [
-        -1184,
+        -512,
         320
       ],
       "credentials": {
@@ -655,32 +630,109 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -960,
+        -288,
         432
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const webhook = $input.first().json;\nconst form = webhook?.body && typeof webhook.body === \"object\" ? webhook.body : webhook;\nconst text = (value) => String(value ?? \"\").trim();\nconst firstValue = (source, names) => {\n  for (const name of names) {\n    const value = source?.[name];\n    if (value !== undefined && value !== null && text(value) !== \"\") return value;\n  }\n  return \"\";\n};\n\nconst entryType = text(firstValue(form, [\"Entry Type\", \"entry_type\", \"entryType\"])) || \"External\";\nconst jobUrl = text(firstValue(form, [\"Job URL\", \"job_url\", \"jobUrl\"]));\nconst companyName = text(firstValue(form, [\"Company Name\", \"company_name\", \"companyName\"]));\nconst jobTitle = text(firstValue(form, [\"Job Title\", \"job_title\", \"jobTitle\"]));\nconst jobDescription = text(firstValue(form, [\"Job Description\", \"job_description\", \"jobDescription\"]));\n\nlet error = \"\";\nif (![\"External\", \"LinkedIn\"].includes(entryType)) {\n  error = \"Entry Type must be External or LinkedIn.\";\n} else if (!jobUrl) {\n  error = \"Job URL is required.\";\n} else {\n  let parsedUrl;\n  try { parsedUrl = new URL(jobUrl); } catch { error = \"Job URL must be a valid URL.\"; }\n  if (!error && entryType === \"LinkedIn\") {\n    const hostname = parsedUrl.hostname.toLowerCase();\n    const isLinkedIn = hostname === \"linkedin.com\" || hostname.endsWith(\".linkedin.com\");\n    if (!isLinkedIn) error = \"LinkedIn entry type requires a linkedin.com job URL.\";\n  }\n  if (!error && entryType === \"External\" && (!companyName || !jobTitle || !jobDescription)) {\n    error = \"External entries require Company Name, Job Title, Job Description, and Job URL.\";\n  }\n}\n\nreturn [{ json: { valid: !error, message: error, form } }];"
+      },
+      "id": "f170fe9a-e2db-442d-b8d1-521fd93b654d",
+      "name": "Validate Job Submission",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1952,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c5921fee-27f1-4bec-b8bb-42667f6170c1",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "fcd5aba1-8399-4f0b-9f7c-1ec523cfc8c3",
+      "name": "Submission Is Valid",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1728,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"accepted\":true,\"message\":\"Job submitted and processing has started.\"}",
+        "options": {
+          "responseCode": 202,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "id": "604ab7fa-a28c-442a-93f4-bb56df66ba4b",
+      "name": "Accept Job Submission",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -1504,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { accepted: false, message: $json.message || \"Invalid submission.\" } }}",
+        "options": {
+          "responseCode": 400,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json; charset=utf-8"
+              }
+            ]
+          }
+        }
+      },
+      "id": "f993d221-d2d2-497a-a6bd-2557b9968074",
+      "name": "Reject Invalid Submission",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -1504,
+        560
       ]
     }
   ],
-  "pinData": {
-    "Submit External Job": [
-      {
-        "json": {
-          "Company Name": "Smile + Co.",
-          "Job Title": "Junior Developer",
-          "Job Description": "About Smile + Co.\r\n\r\nSmile + Co. is a small, fast-moving start-up with a system spanning across iOS, Android, and Web. As a small team, everyone has real ownership and a direct impact on the product and the company's direction. We're looking for someone early in their development career who is curious, resourceful, and excited to grow their skills across our whole tech stack.\r\n\r\nWhy Join Us\r\nA small, close-knit team where your work and ideas genuinely matter\r\n\r\nBroad, hands-on experience across mobile, web, and back-end systems\r\n\r\nA culture that values work-life balance - we don't believe in burnout\r\n\r\nReal room to grow as our company grows, with mentorship along the way\r\n\r\nA flexible, collaborative environment built on trust and open communication\r\n\r\n\r\n\r\nThe Role\r\nWe're hiring a Junior Developer to support and help maintain our products across iOS, Android, and Web. This is a hands-on role, you'll have exposure to front-end and back-end work, third-party integrations, analytics, and more. It's a great opportunity for someone who wants to build broad, real-world experience quickly in a supportive, collaborative environment built on trust.\r\n\r\nWhat You'll Do\r\nSupport ongoing system maintenance across our iOS, Android, and Web platforms\r\n\r\nBuild and update user-facing interfaces and features\r\n\r\nAssist with SEO improvements and monitor/report on Google Analytics performance\r\n\r\nSupport system integrations and maintain third-party platforms and APIs (e.g., Stripe)\r\n\r\nSupport the updating and integration of AI tools and features into our products\r\n\r\nTroubleshoot bugs and technical issues, and help implement fixes\r\n\r\nCollaborate with the team on new features, communicating feedback along the way\r\n\r\nHelp document processes and systems as the product evolves\r\n\r\nWhat We're Looking For\r\nWe care more about how you think and work than a long list of credentials. You might be a great fit if you:\r\n\r\nAre comfortable thinking outside the box and proposing new ideas or approaches\r\n\r\nCommunicate clearly and are comfortable providing and receiving feedback\r\n\r\nHave strong problem-solving skills and take pride in finding solutions\r\n\r\nCan work independently, while also collaborating well in a small team\r\n\r\nAre eager to learn, grow, and take on more responsibility over time\r\n\r\nAre organized and reliable, with good follow-through on tasks\r\n\r\nTechnical Skills & Familiarity\r\nYou don't need to be an expert in all of these, familiarity or a strong willingness to learn matters most:\r\n\r\niOS development\r\n\r\nAndroid development\r\n\r\nReact Native\r\n\r\nMongoDB\r\n\r\nGoogle Cloud Platform & APIs\r\n\r\nGoogle Workspace\r\n\r\nAI\r\n\r\nHow to Apply\r\nInterested candidates should send a resume, a short note about why you're excited about this role and your wage expectations (a portfolio, GitHub, or personal projects are a big plus, but not required) to info@smile-and-company.com",
-          "Job URL": "https://www.smile-and-company.com",
-          "Location": "calgary hybrid",
-          "Contract Type": "Full-time",
-          "Published Date": "2026-07-27",
-          "External Job ID": "149314",
-          "submittedAt": "2026-07-27T05:42:58.853-06:00",
-          "formMode": "test"
-        },
-        "pairedItem": {
-          "item": 0
-        }
-      }
-    ]
-  },
+  "pinData": {},
   "connections": {
     "Read Master CV JSON": {
       "main": [
@@ -870,17 +922,6 @@
         ]
       ]
     },
-    "Submit External Job": {
-      "main": [
-        [
-          {
-            "node": "Read Master CV JSON",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Normalize Manual Job Input": {
       "main": [
         [
@@ -931,15 +972,82 @@
           }
         ]
       ]
+    },
+    "Open Job Entry Form": {
+      "main": [
+        [
+          {
+            "node": "Display Conditional Job Form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Submit Job Entry": {
+      "main": [
+        [
+          {
+            "node": "Validate Job Submission",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Job Submission": {
+      "main": [
+        [
+          {
+            "node": "Submission Is Valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Submission Is Valid": {
+      "main": [
+        [
+          {
+            "node": "Accept Job Submission",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reject Invalid Submission",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Accept Job Submission": {
+      "main": [
+        [
+          {
+            "node": "Read Master CV JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reject Invalid Submission": {
+      "main": [
+        []
+      ]
     }
   },
-  "active": true,
+  "active": false,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "9308868c-8835-4a76-ab29-732799c1c7f5",
+  "versionId": "9d2e9570-c0cd-40e8-bb9b-97b25c15797c",
   "meta": {
     "instanceId": "2d85b40e2e1a69706b539dc280f2a48f8b70729872141299d251c48887ea4c94"
   },
