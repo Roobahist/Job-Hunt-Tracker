@@ -1,15 +1,15 @@
 {
-  "name": "CV Content Creation - Parent Context",
+  "name": "CV Content Creation - Parent Context - Structured Output",
   "nodes": [
     {
       "parameters": {},
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -1568,
-        560
+        -1408,
+        832
       ],
-      "id": "b291231d-f5f8-4462-8bb9-8e4c9d5532f4",
+      "id": "f52af65e-f762-46f4-a3c7-7e810a753615",
       "name": "When clicking Execute workflow",
       "disabled": true
     },
@@ -21,10 +21,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -1344,
-        560
+        -1184,
+        832
       ],
-      "id": "af11f332-9cee-4bac-a51a-f5d37f5ca723",
+      "id": "d29f82c1-7996-481e-a78b-b03f5ca2da65",
       "name": "Sample Job and Master CV"
     },
     {
@@ -34,10 +34,10 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        -1344,
-        752
+        -1184,
+        1024
       ],
-      "id": "7c1d307e-ce30-4b83-b5dd-6dadcfc81854",
+      "id": "1fecfd27-8d7f-4169-8af0-7dc666f4c5c2",
       "name": "When Executed by Another Workflow"
     },
     {
@@ -50,10 +50,10 @@
       "type": "n8n-nodes-base.baserow",
       "typeVersion": 1,
       "position": [
-        -896,
-        656
+        -736,
+        928
       ],
-      "id": "78482209-283d-44ec-a1a4-4bf0baf17db6",
+      "id": "62506b39-973c-4601-a69f-e6c27615b908",
       "name": "Read Six Prompt Settings from Baserow",
       "credentials": {
         "baserowApi": {
@@ -65,15 +65,15 @@
     {
       "parameters": {
         "language": "pythonNative",
-        "pythonCode": "if not _items:\n    raise ValueError(\"Baserow returned no prompt records.\")\n\ndef fields_of(item):\n    data = item.get(\"json\", {})\n    nested = data.get(\"fields\")\n    return nested if isinstance(nested, dict) else data\n\ndef get_value(fields, names):\n    for name in names:\n        if name in fields and fields[name] is not None:\n            return fields[name]\n    return None\n\ndef scalar(value):\n    # Baserow select and linked-record values can be returned as objects.\n    if isinstance(value, dict):\n        for key in (\"value\", \"name\"):\n            nested = value.get(key)\n            if nested is not None:\n                return nested\n        return value.get(\"id\")\n\n    # A single linked record may be represented as a one-item list.\n    if isinstance(value, list) and len(value) == 1:\n        return scalar(value[0])\n\n    return value\n\ndef is_enabled(value):\n    value = scalar(value)\n\n    if isinstance(value, bool):\n        return value\n\n    if isinstance(value, (int, float)):\n        return value == 1\n\n    if isinstance(value, str):\n        return value.strip().lower() in (\n            \"true\",\n            \"1\",\n            \"yes\",\n            \"enabled\",\n        )\n\n    return False\n\nrequired = {\n    \"cv_project_selection\": \"project_selection\",\n    \"cv_project_rewrite\": \"project_rewrite\",\n    \"cv_work_experience_selection\": \"work_experience_selection\",\n    \"cv_work_experience_rewrite\": \"work_experience_rewrite\",\n    \"cv_skills_tailoring\": \"skills_tailoring\",\n    \"cv_summary_rewrite\": \"summary_rewrite\",\n}\n\nconfigs = {}\n\nfor item in _items:\n    fields = fields_of(item)\n\n    prompt_key = scalar(\n        get_value(fields, [\"Prompt Key\", \"Key\", \"prompt_key\"])\n    )\n    enabled = get_value(fields, [\"Enabled\", \"enabled\"])\n    status = scalar(get_value(fields, [\"Status\", \"status\"]))\n\n    if not isinstance(prompt_key, str):\n        continue\n\n    prompt_key = prompt_key.strip()\n    if prompt_key not in required:\n        continue\n\n    if not is_enabled(enabled):\n        continue\n\n    if not isinstance(status, str) or status.strip() != \"Active\":\n        continue\n\n    short_key = required[prompt_key]\n    if short_key in configs:\n        raise ValueError(\n            f\"More than one active prompt exists for '{prompt_key}'.\"\n        )\n\n    version = scalar(\n        get_value(fields, [\"Version\", \"Prompt Version\", \"version\"])\n    )\n    template = scalar(\n        get_value(\n            fields,\n            [\"Prompt Template\", \"Prompt\", \"Template\", \"prompt_template\"],\n        )\n    )\n    temperature = scalar(\n        get_value(fields, [\"Temperature\", \"temperature\"])\n    )\n\n    if not isinstance(template, str) or not template.strip():\n        raise ValueError(f\"Prompt '{prompt_key}' has no template.\")\n\n    try:\n        version_value = float(version)\n    except (TypeError, ValueError) as exc:\n        raise ValueError(\n            f\"Prompt '{prompt_key}' must have a numeric version.\"\n        ) from exc\n\n    try:\n        temperature_value = float(temperature)\n    except (TypeError, ValueError) as exc:\n        raise ValueError(\n            f\"Prompt '{prompt_key}' must have a numeric temperature.\"\n        ) from exc\n\n    configs[short_key] = {\n        \"key\": prompt_key,\n        \"version\": version_value,\n        \"template\": template.strip(),\n        \"temperature\": temperature_value,\n    }\n\nmissing = [key for key in required.values() if key not in configs]\nif missing:\n    raise ValueError(\n        \"Missing active prompts: \" + \", \".join(missing)\n    )\n\noutput = {}\nfor short_key, config in configs.items():\n    output[f\"{short_key}_prompt_key\"] = config[\"key\"]\n    output[f\"{short_key}_prompt_version\"] = config[\"version\"]\n    output[f\"{short_key}_prompt_template\"] = config[\"template\"]\n    output[f\"{short_key}_temperature\"] = config[\"temperature\"]\n\nreturn [{\"json\": output}]"
+        "pythonCode": "import json\n\nif not _items:\n    raise ValueError(\"Baserow returned no prompt records.\")\n\ndef fields_of(item):\n    data = item.get(\"json\", {})\n    nested = data.get(\"fields\")\n    return nested if isinstance(nested, dict) else data\n\ndef get_value(fields, names):\n    for name in names:\n        if name in fields and fields[name] is not None:\n            return fields[name]\n    return None\n\ndef scalar(value):\n    # Baserow select and linked-record values can be returned as objects.\n    if isinstance(value, dict):\n        for key in (\"value\", \"name\"):\n            nested = value.get(key)\n            if nested is not None:\n                return nested\n        return value.get(\"id\")\n\n    # A single linked record may be represented as a one-item list.\n    if isinstance(value, list) and len(value) == 1:\n        return scalar(value[0])\n\n    return value\n\ndef is_enabled(value):\n    value = scalar(value)\n\n    if isinstance(value, bool):\n        return value\n\n    if isinstance(value, (int, float)):\n        return value == 1\n\n    if isinstance(value, str):\n        return value.strip().lower() in (\n            \"true\",\n            \"1\",\n            \"yes\",\n            \"enabled\",\n        )\n\n    return False\n\ndef normalize_output_structure(value, prompt_key):\n    value = scalar(value)\n\n    if isinstance(value, dict):\n        schema = value\n    elif isinstance(value, str) and value.strip():\n        try:\n            schema = json.loads(value)\n        except json.JSONDecodeError as exc:\n            raise ValueError(\n                f\"Prompt '{prompt_key}' has invalid JSON in Output Structure.\"\n            ) from exc\n    else:\n        raise ValueError(\n            f\"Prompt '{prompt_key}' has no Output Structure JSON Schema.\"\n        )\n\n    if not isinstance(schema, dict):\n        raise ValueError(\n            f\"Prompt '{prompt_key}' Output Structure must be a JSON object.\"\n        )\n\n    if schema.get(\"type\") != \"object\":\n        raise ValueError(\n            f\"Prompt '{prompt_key}' Output Structure must define an object schema.\"\n        )\n\n    properties = schema.get(\"properties\")\n    if not isinstance(properties, dict) or not properties:\n        raise ValueError(\n            f\"Prompt '{prompt_key}' Output Structure must define properties.\"\n        )\n\n    # Store a normalized compact JSON string so the parser always receives valid JSON.\n    return json.dumps(\n        schema,\n        ensure_ascii=False,\n        separators=(\",\", \":\"),\n    )\n\nrequired = {\n    \"cv_project_selection\": \"project_selection\",\n    \"cv_project_rewrite\": \"project_rewrite\",\n    \"cv_work_experience_selection\": \"work_experience_selection\",\n    \"cv_work_experience_rewrite\": \"work_experience_rewrite\",\n    \"cv_skills_tailoring\": \"skills_tailoring\",\n    \"cv_summary_rewrite\": \"summary_rewrite\",\n}\n\nconfigs = {}\n\nfor item in _items:\n    fields = fields_of(item)\n\n    prompt_key = scalar(\n        get_value(fields, [\"Prompt Key\", \"Key\", \"prompt_key\"])\n    )\n    enabled = get_value(fields, [\"Enabled\", \"enabled\"])\n    status = scalar(get_value(fields, [\"Status\", \"status\"]))\n\n    if not isinstance(prompt_key, str):\n        continue\n\n    prompt_key = prompt_key.strip()\n    if prompt_key not in required:\n        continue\n\n    if not is_enabled(enabled):\n        continue\n\n    if not isinstance(status, str) or status.strip() != \"Active\":\n        continue\n\n    short_key = required[prompt_key]\n    if short_key in configs:\n        raise ValueError(\n            f\"More than one active prompt exists for '{prompt_key}'.\"\n        )\n\n    version = scalar(\n        get_value(fields, [\"Version\", \"Prompt Version\", \"version\"])\n    )\n    template = scalar(\n        get_value(\n            fields,\n            [\"Prompt Template\", \"Prompt\", \"Template\", \"prompt_template\"],\n        )\n    )\n    temperature = scalar(\n        get_value(fields, [\"Temperature\", \"temperature\"])\n    )\n    output_structure = get_value(\n        fields,\n        [\n            \"Output Structure\",\n            \"Output Schema\",\n            \"output_structure\",\n            \"output_schema\",\n        ],\n    )\n\n    if not isinstance(template, str) or not template.strip():\n        raise ValueError(f\"Prompt '{prompt_key}' has no template.\")\n\n    try:\n        version_value = float(version)\n    except (TypeError, ValueError) as exc:\n        raise ValueError(\n            f\"Prompt '{prompt_key}' must have a numeric version.\"\n        ) from exc\n\n    try:\n        temperature_value = float(temperature)\n    except (TypeError, ValueError) as exc:\n        raise ValueError(\n            f\"Prompt '{prompt_key}' must have a numeric temperature.\"\n        ) from exc\n\n    configs[short_key] = {\n        \"key\": prompt_key,\n        \"version\": version_value,\n        \"template\": template.strip(),\n        \"temperature\": temperature_value,\n        \"output_structure\": normalize_output_structure(\n            output_structure,\n            prompt_key,\n        ),\n    }\n\nmissing = [key for key in required.values() if key not in configs]\nif missing:\n    raise ValueError(\n        \"Missing active prompts: \" + \", \".join(missing)\n    )\n\noutput = {}\nfor short_key, config in configs.items():\n    output[f\"{short_key}_prompt_key\"] = config[\"key\"]\n    output[f\"{short_key}_prompt_version\"] = config[\"version\"]\n    output[f\"{short_key}_prompt_template\"] = config[\"template\"]\n    output[f\"{short_key}_temperature\"] = config[\"temperature\"]\n    output[f\"{short_key}_output_structure\"] = config[\"output_structure\"]\n\nreturn [{\"json\": output}]"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -672,
-        656
+        -512,
+        928
       ],
-      "id": "a6a2c94c-df30-435c-af95-f14349c97d1e",
+      "id": "757418db-1915-4952-8308-977349ee7b2f",
       "name": "Validate Six Prompt Settings"
     },
     {
@@ -85,10 +85,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        -448,
-        720
+        -288,
+        992
       ],
-      "id": "e660aee2-6cff-4429-97cb-2fb0031fe8ab",
+      "id": "b46379f5-6f3f-4bc3-ac65-541b2d3ca6af",
       "name": "Merge Input with Prompt Settings"
     },
     {
@@ -99,62 +99,41 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -224,
-        320
+        -64,
+        384
       ],
-      "id": "f4137721-f1de-473b-b560-5214b84c51ff",
+      "id": "28cf4ef5-f450-4c25-9135-73657c1a6a2d",
       "name": "Build Project Selection Prompt"
     },
     {
       "parameters": {
         "promptType": "define",
         "text": "={{ $json.project_selection_prompt }}",
+        "hasOutputParser": true,
         "needsFallback": true,
         "batching": {}
       },
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.7,
       "position": [
-        0,
+        224,
         0
       ],
-      "id": "fe73c89c-02fc-462c-a9dc-d2de3750bda5",
+      "id": "6385a41f-4f52-4cac-b422-f75516b63ade",
       "name": "Select Projects"
     },
     {
       "parameters": {
-        "model": "openai/gpt-oss-20b:free",
-        "options": {
-          "temperature": "={{ $json.project_selection_temperature }}"
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
-      "typeVersion": 1,
-      "position": [
-        16,
-        224
-      ],
-      "id": "f763bf92-1bec-4af7-9bbf-95bc38e7fb3e",
-      "name": "Project Selection Model",
-      "credentials": {
-        "openRouterApi": {
-          "id": "z9dqljjig300DoBw",
-          "name": "OpenRouter account"
-        }
-      }
-    },
-    {
-      "parameters": {
         "language": "pythonNative",
-        "pythonCode": "import json\nimport re\n\ndef extract_text(root):\n    try:\n        value = root[\"response\"][\"generations\"][0][0][\"text\"]\n        if isinstance(value, str):\n            return value\n    except (KeyError, IndexError, TypeError):\n        pass\n\n    for key in (\"text\", \"output\", \"content\"):\n        value = root.get(key)\n        if isinstance(value, str):\n            return value\n\n    raise ValueError(\"Could not locate the project selection model output.\")\n\nif not _items:\n    raise ValueError(\"The project selection model returned no items.\")\n\ntext = extract_text(_items[0][\"json\"]).strip()\ntext = re.sub(r\"^```(?:json)?\\s*\", \"\", text, flags=re.IGNORECASE)\ntext = re.sub(r\"\\s*```$\", \"\", text, flags=re.IGNORECASE).strip()\n\ntry:\n    parsed = json.loads(text)\nexcept json.JSONDecodeError as exc:\n    raise ValueError(\"The project selection model output must be valid JSON.\") from exc\n\nif not isinstance(parsed, dict):\n    raise ValueError(\"The project selection model output must be a JSON object.\")\n\nvalue = parsed.get(\"selected_indices\")\nif not isinstance(value, list):\n    raise ValueError(\"The model output must contain selected_indices.\")\nif any(not isinstance(index, int) or isinstance(index, bool) for index in value):\n    raise ValueError(\"Every selected index must be an integer.\")\n\nreturn [\n    {\n        \"json\": {\n            \"project_selection_response\": json.dumps(\n                parsed,\n                ensure_ascii=False,\n                separators=(\",\", \":\"),\n            )\n        }\n    }\n]"
+        "pythonCode": "import json\n\ndef extract_parsed(root):\n    output = root.get(\"output\")\n\n    if isinstance(output, dict):\n        return output\n\n    if isinstance(output, str):\n        try:\n            parsed = json.loads(output)\n        except json.JSONDecodeError as exc:\n            raise ValueError(\"Project selection output was not valid JSON after parsing.\") from exc\n        if isinstance(parsed, dict):\n            return parsed\n\n    try:\n        value = root[\"response\"][\"generations\"][0][0][\"text\"]\n    except (KeyError, IndexError, TypeError):\n        value = None\n\n    if isinstance(value, dict):\n        return value\n\n    if isinstance(value, str):\n        try:\n            parsed = json.loads(value)\n        except json.JSONDecodeError as exc:\n            raise ValueError(\"Project selection output was not valid JSON after parsing.\") from exc\n        if isinstance(parsed, dict):\n            return parsed\n\n    raise ValueError(\"Could not locate the parsed project selection output.\")\n\nif not _items:\n    raise ValueError(\"The project selection model returned no items.\")\n\nparsed = extract_parsed(_items[0][\"json\"])\n\nif not isinstance(parsed, dict):\n    raise ValueError(\"The project selection output must be a JSON object.\")\n\nvalue = parsed.get(\"selected_indices\")\nif not isinstance(value, list):\n    raise ValueError(\"The model output must contain selected_indices.\")\nif any(not isinstance(index, int) or isinstance(index, bool) for index in value):\n    raise ValueError(\"Every selected index must be an integer.\")\n\nreturn [\n    {\n        \"json\": {\n            \"project_selection_response\": json.dumps(\n                parsed,\n                ensure_ascii=False,\n                separators=(\",\", \":\"),\n            )\n        }\n    }\n]"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        352,
-        112
+        784,
+        208
       ],
-      "id": "5b74fb69-34dc-4eb1-864c-05a68ada462d",
+      "id": "94194eab-1b71-427f-9050-ead6ce7cddec",
       "name": "Prepare Project Selection Response"
     },
     {
@@ -166,10 +145,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        576,
-        320
+        1008,
+        384
       ],
-      "id": "ac1c1d1b-f4f2-4327-be05-5b9c18229ccc",
+      "id": "e2ca10e7-c2ae-4f02-ad7e-0a7ad127500b",
       "name": "Merge Project Selection with Source"
     },
     {
@@ -180,10 +159,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        800,
-        320
+        1232,
+        384
       ],
-      "id": "169ef293-6cb2-4a05-81ba-958543400d9a",
+      "id": "95852ef4-efd1-4769-acb0-96b6321dbf25",
       "name": "Parse Project Selection"
     },
     {
@@ -194,62 +173,41 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1024,
-        320
+        1456,
+        384
       ],
-      "id": "9cc8ceba-0cdb-4976-83c0-b81fa703cd8b",
+      "id": "2879b31d-24ca-4b79-a241-b8c995651622",
       "name": "Build Project Rewrite Prompt"
     },
     {
       "parameters": {
         "promptType": "define",
         "text": "={{ $json.project_rewrite_prompt }}",
+        "hasOutputParser": true,
         "needsFallback": true,
         "batching": {}
       },
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.7,
       "position": [
-        1248,
+        1744,
         0
       ],
-      "id": "e1d90dbd-72a5-4920-b00d-abbcd352ce8a",
+      "id": "44a5f541-6c68-4436-a644-068a58439f7f",
       "name": "Rewrite Project Content"
     },
     {
       "parameters": {
-        "model": "openai/gpt-oss-20b:free",
-        "options": {
-          "temperature": "={{ $json.project_rewrite_temperature }}"
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
-      "typeVersion": 1,
-      "position": [
-        1264,
-        224
-      ],
-      "id": "3c4ff8a7-a2a2-4ddd-b22a-12f9f6317425",
-      "name": "Project Rewrite Model",
-      "credentials": {
-        "openRouterApi": {
-          "id": "z9dqljjig300DoBw",
-          "name": "OpenRouter account"
-        }
-      }
-    },
-    {
-      "parameters": {
         "language": "pythonNative",
-        "pythonCode": "import json\nimport re\n\ndef extract_text(root):\n    try:\n        value = root[\"response\"][\"generations\"][0][0][\"text\"]\n        if isinstance(value, str):\n            return value\n    except (KeyError, IndexError, TypeError):\n        pass\n\n    for key in (\"text\", \"output\", \"content\"):\n        value = root.get(key)\n        if isinstance(value, str):\n            return value\n\n    raise ValueError(\"Could not locate the project rewrite model output.\")\n\nif not _items:\n    raise ValueError(\"The project rewrite model returned no items.\")\n\ntext = extract_text(_items[0][\"json\"]).strip()\ntext = re.sub(r\"^```(?:json)?\\s*\", \"\", text, flags=re.IGNORECASE)\ntext = re.sub(r\"\\s*```$\", \"\", text, flags=re.IGNORECASE).strip()\n\ntry:\n    parsed = json.loads(text)\nexcept json.JSONDecodeError as exc:\n    raise ValueError(\"The project rewrite model output must be valid JSON.\") from exc\n\nif not isinstance(parsed, dict):\n    raise ValueError(\"The project rewrite model output must be a JSON object.\")\n\nvalue = parsed.get(\"contents\")\nif not isinstance(value, list):\n    raise ValueError(\"The model output must contain contents.\")\nfor content in value:\n    if not isinstance(content, list):\n        raise ValueError(\"Every contents item must be an array.\")\n    if any(not isinstance(bullet, str) for bullet in content):\n        raise ValueError(\"Every bullet must be a string.\")\n\nreturn [\n    {\n        \"json\": {\n            \"project_rewrite_response\": json.dumps(\n                parsed,\n                ensure_ascii=False,\n                separators=(\",\", \":\"),\n            )\n        }\n    }\n]"
+        "pythonCode": "import json\n\ndef extract_parsed(root):\n    output = root.get(\"output\")\n\n    if isinstance(output, dict):\n        return output\n\n    if isinstance(output, str):\n        try:\n            parsed = json.loads(output)\n        except json.JSONDecodeError as exc:\n            raise ValueError(\"Project rewrite output was not valid JSON after parsing.\") from exc\n        if isinstance(parsed, dict):\n            return parsed\n\n    try:\n        value = root[\"response\"][\"generations\"][0][0][\"text\"]\n    except (KeyError, IndexError, TypeError):\n        value = None\n\n    if isinstance(value, dict):\n        return value\n\n    if isinstance(value, str):\n        try:\n            parsed = json.loads(value)\n        except json.JSONDecodeError as exc:\n            raise ValueError(\"Project rewrite output was not valid JSON after parsing.\") from exc\n        if isinstance(parsed, dict):\n            return parsed\n\n    raise ValueError(\"Could not locate the parsed project rewrite output.\")\n\nif not _items:\n    raise ValueError(\"The project rewrite model returned no items.\")\n\nparsed = extract_parsed(_items[0][\"json\"])\n\nif not isinstance(parsed, dict):\n    raise ValueError(\"The project rewrite output must be a JSON object.\")\n\nvalue = parsed.get(\"contents\")\nif not isinstance(value, list):\n    raise ValueError(\"The model output must contain contents.\")\nfor content in value:\n    if not isinstance(content, list):\n        raise ValueError(\"Every contents item must be an array.\")\n    if any(not isinstance(bullet, str) for bullet in content):\n        raise ValueError(\"Every bullet must be a string.\")\n\nreturn [\n    {\n        \"json\": {\n            \"project_rewrite_response\": json.dumps(\n                parsed,\n                ensure_ascii=False,\n                separators=(\",\", \":\"),\n            )\n        }\n    }\n]"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1600,
-        112
+        2304,
+        208
       ],
-      "id": "b8d0eeda-efb1-4bab-8674-bf2f11f715c9",
+      "id": "c181bb7e-01d2-4174-bfd1-3ac54de6c3fc",
       "name": "Prepare Project Rewrite Response"
     },
     {
@@ -261,24 +219,24 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        1824,
-        320
+        2528,
+        384
       ],
-      "id": "6ae1065c-0644-4a84-81a4-cf09ba10f3f6",
+      "id": "31a7b324-d826-4392-98cb-2fa90f9da1cc",
       "name": "Merge Project Rewrite with Source"
     },
     {
       "parameters": {
         "language": "pythonNative",
-        "pythonCode": "import json\n\ndata = _items[0][\"json\"]\ncontents = json.loads(data[\"project_rewrite_response\"]).get(\"contents\")\nindices = data.get(\"selected_project_indices\")\n\nif not isinstance(contents, list):\n    raise ValueError(\"Project rewrite must contain contents.\")\nif len(contents) != len(indices):\n    raise ValueError(\"Project contents count does not match selected projects.\")\n\nsource = data[\"master_cv\"][\"projects\"]\ntailored = []\n\nfor position, index in enumerate(indices):\n    bullets = contents[position]\n    if not isinstance(bullets, list) or any(\n        not isinstance(bullet, str) for bullet in bullets\n    ):\n        raise ValueError(\"Each project content must be an array of strings.\")\n\n    rebuilt = {\n        key: value\n        for key, value in source[index].items()\n        if key != \"description\"\n    }\n    rebuilt[\"content\"] = bullets\n    tailored.append(rebuilt)\n\nreturn [{\"json\": {**data, \"tailored_projects\": tailored}}]"
+        "pythonCode": "import json\n\ndata = _items[0][\"json\"]\ncontents = json.loads(data[\"project_rewrite_response\"]).get(\"contents\")\nindices = data.get(\"selected_project_indices\")\n\nif not isinstance(contents, list):\n    raise ValueError(\"Project rewrite must contain contents.\")\nif len(contents) != len(indices):\n    raise ValueError(\"Project contents count does not match selected projects.\")\nif len(contents) != len(indices):\n\n    raise ValueError(\"Project contents count does not match selected projects.\")\n\nsource = data[\"master_cv\"][\"projects\"]\ntailored = []\n\nfor position, index in enumerate(indices):\n    bullets = contents[position]\n    if not isinstance(bullets, list) or any(\n        not isinstance(bullet, str) for bullet in bullets\n    ):\n        raise ValueError(\"Each project content must be an array of strings.\")\n\n    rebuilt = {\n        key: value\n        for key, value in source[index].items()\n        if key != \"description\"\n    }\n    rebuilt[\"content\"] = bullets\n    tailored.append(rebuilt)\n\nreturn [{\"json\": {**data, \"tailored_projects\": tailored}}]"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2048,
-        320
+        2752,
+        384
       ],
-      "id": "a6e72220-a133-410a-85ba-74383e39d972",
+      "id": "3cb396b7-721f-4af9-829d-14fa65c0414b",
       "name": "Apply Project Rewrite"
     },
     {
@@ -289,10 +247,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -224,
-        816
+        -64,
+        1088
       ],
-      "id": "7825fcb0-f31b-483e-bdd1-3a5108f9ab93",
+      "id": "41f69a26-0349-4f1a-aa4b-ff2f7347c429",
       "name": "Build Work Selection Prompt"
     },
     {
@@ -306,46 +264,24 @@
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.7,
       "position": [
-        0,
-        608
+        224,
+        912
       ],
-      "id": "b1540a53-8537-4249-bffe-fdb32976ad46",
+      "id": "c2001981-e31a-4033-8392-66b5f21c45ef",
       "name": "Select Work Experiences"
     },
     {
       "parameters": {
-        "model": "openai/gpt-oss-20b:free",
-        "options": {
-          "temperature": "={{ $json.work_experience_selection_temperature }}"
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
-      "typeVersion": 1,
-      "position": [
-        16,
-        832
-      ],
-      "id": "6d2e3770-9160-48a3-a09a-af5f8df70438",
-      "name": "Work Selection Model",
-      "credentials": {
-        "openRouterApi": {
-          "id": "z9dqljjig300DoBw",
-          "name": "OpenRouter account"
-        }
-      }
-    },
-    {
-      "parameters": {
         "language": "pythonNative",
-        "pythonCode": "import json\nimport re\n\ndef extract_text(root):\n    try:\n        value = root[\"response\"][\"generations\"][0][0][\"text\"]\n        if isinstance(value, str):\n            return value\n    except (KeyError, IndexError, TypeError):\n        pass\n\n    for key in (\"text\", \"output\", \"content\"):\n        value = root.get(key)\n        if isinstance(value, str):\n            return value\n\n    raise ValueError(\"Could not locate the work-experience selection model output.\")\n\nif not _items:\n    raise ValueError(\"The work-experience selection model returned no items.\")\n\ntext = extract_text(_items[0][\"json\"]).strip()\ntext = re.sub(r\"^```(?:json)?\\s*\", \"\", text, flags=re.IGNORECASE)\ntext = re.sub(r\"\\s*```$\", \"\", text, flags=re.IGNORECASE).strip()\n\ntry:\n    parsed = json.loads(text)\nexcept json.JSONDecodeError as exc:\n    raise ValueError(\"The work-experience selection model output must be valid JSON.\") from exc\n\nif not isinstance(parsed, dict):\n    raise ValueError(\"The work-experience selection model output must be a JSON object.\")\n\nvalue = parsed.get(\"selected_indices\")\nif not isinstance(value, list):\n    raise ValueError(\"The model output must contain selected_indices.\")\nif any(not isinstance(index, int) or isinstance(index, bool) for index in value):\n    raise ValueError(\"Every selected index must be an integer.\")\n\nreturn [\n    {\n        \"json\": {\n            \"work_experience_selection_response\": json.dumps(\n                parsed,\n                ensure_ascii=False,\n                separators=(\",\", \":\"),\n            )\n        }\n    }\n]"
+        "pythonCode": "import json\n\n\ndef extract_parsed(root):\n    output = root.get(\"output\")\n\n    if isinstance(output, dict):\n        return output\n\n    if isinstance(output, str):\n        try:\n            parsed = json.loads(output)\n        except json.JSONDecodeError as exc:\n            raise ValueError(\n                \"Work-experience selection output was not valid JSON \"\n                \"after parsing.\"\n            ) from exc\n\n        if isinstance(parsed, dict):\n            return parsed\n\n    try:\n        value = root[\"response\"][\"generations\"][0][0][\"text\"]\n    except (KeyError, IndexError, TypeError):\n        value = None\n\n    if isinstance(value, dict):\n        return value\n\n    if isinstance(value, str):\n        try:\n            parsed = json.loads(value)\n        except json.JSONDecodeError as exc:\n            raise ValueError(\n                \"Work-experience selection output was not valid JSON \"\n                \"after parsing.\"\n            ) from exc\n\n        if isinstance(parsed, dict):\n            return parsed\n\n    raise ValueError(\n        \"Could not locate the parsed work-experience selection output.\"\n    )\n\n\nif not _items:\n    raise ValueError(\n        \"The work-experience selection model returned no items.\"\n    )\n\nparsed = extract_parsed(_items[0][\"json\"])\n\nif not isinstance(parsed, dict):\n    raise ValueError(\n        \"The work-experience selection output must be a JSON object.\"\n    )\n\nvalue = parsed.get(\"selected_indices\")\n\nif not isinstance(value, list):\n    raise ValueError(\n        \"The model output must contain selected_indices.\"\n    )\n\nif any(\n    not isinstance(index, int) or isinstance(index, bool)\n    for index in value\n):\n    raise ValueError(\n        \"Every selected index must be an integer.\"\n    )\n\nif len(set(value)) != len(value):\n    raise ValueError(\n        \"Selected work-experience indices must be unique.\"\n    )\n\nif any(index < 0 for index in value):\n    raise ValueError(\n        \"Selected work-experience indices cannot be negative.\"\n    )\n\nif value != sorted(value):\n    raise ValueError(\n        \"Selected work-experience indices must preserve the original order.\"\n    )\n\nreturn [\n    {\n        \"json\": {\n            \"work_experience_selection_response\": json.dumps(\n                {\n                    \"selected_indices\": value,\n                },\n                ensure_ascii=False,\n                separators=(\",\", \":\"),\n            )\n        }\n    }\n]"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        352,
-        608
+        784,
+        912
       ],
-      "id": "20d56c4b-4edb-489f-9bd9-a74ed6b357fe",
+      "id": "5ef9b852-537e-405c-b5b4-1bda126117e8",
       "name": "Prepare Work Selection Response"
     },
     {
@@ -357,10 +293,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        576,
-        816
+        1008,
+        1088
       ],
-      "id": "1726641c-97ff-440a-afea-0087b5a63786",
+      "id": "aecdbe68-dc2d-4364-9415-23e1adf9aeb5",
       "name": "Merge Work Selection with Source"
     },
     {
@@ -371,10 +307,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        800,
-        816
+        1232,
+        1088
       ],
-      "id": "fed8df1a-c99a-47f3-a773-71e505924786",
+      "id": "0794e9be-02b8-44cf-b866-ebf01f4f58b1",
       "name": "Parse Work Selection"
     },
     {
@@ -385,62 +321,41 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1024,
-        816
+        1456,
+        1088
       ],
-      "id": "6a56b287-99f4-4fdf-9223-74f9be9fede5",
+      "id": "1cf15cd0-5e1c-4948-b6af-f3a543b84ede",
       "name": "Build Work Rewrite Prompt"
     },
     {
       "parameters": {
         "promptType": "define",
         "text": "={{ $json.work_experience_rewrite_prompt }}",
+        "hasOutputParser": true,
         "needsFallback": true,
         "batching": {}
       },
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.7,
       "position": [
-        1248,
-        496
+        1744,
+        704
       ],
-      "id": "bab0b6b9-ff78-4584-b0dd-19928c410d0e",
+      "id": "c97a801f-5c14-4ad9-8425-b810d91a0aad",
       "name": "Rewrite Work Content"
     },
     {
       "parameters": {
-        "model": "openai/gpt-oss-20b:free",
-        "options": {
-          "temperature": "={{ $json.work_experience_rewrite_temperature }}"
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
-      "typeVersion": 1,
-      "position": [
-        1264,
-        720
-      ],
-      "id": "190ae4f8-1ff7-422f-9522-0e43213d01ee",
-      "name": "Work Rewrite Model",
-      "credentials": {
-        "openRouterApi": {
-          "id": "z9dqljjig300DoBw",
-          "name": "OpenRouter account"
-        }
-      }
-    },
-    {
-      "parameters": {
         "language": "pythonNative",
-        "pythonCode": "import json\nimport re\n\ndef extract_text(root):\n    try:\n        value = root[\"response\"][\"generations\"][0][0][\"text\"]\n        if isinstance(value, str):\n            return value\n    except (KeyError, IndexError, TypeError):\n        pass\n\n    for key in (\"text\", \"output\", \"content\"):\n        value = root.get(key)\n        if isinstance(value, str):\n            return value\n\n    raise ValueError(\"Could not locate the work-experience rewrite model output.\")\n\nif not _items:\n    raise ValueError(\"The work-experience rewrite model returned no items.\")\n\ntext = extract_text(_items[0][\"json\"]).strip()\ntext = re.sub(r\"^```(?:json)?\\s*\", \"\", text, flags=re.IGNORECASE)\ntext = re.sub(r\"\\s*```$\", \"\", text, flags=re.IGNORECASE).strip()\n\ntry:\n    parsed = json.loads(text)\nexcept json.JSONDecodeError as exc:\n    raise ValueError(\"The work-experience rewrite model output must be valid JSON.\") from exc\n\nif not isinstance(parsed, dict):\n    raise ValueError(\"The work-experience rewrite model output must be a JSON object.\")\n\nvalue = parsed.get(\"contents\")\nif not isinstance(value, list):\n    raise ValueError(\"The model output must contain contents.\")\nfor content in value:\n    if not isinstance(content, list):\n        raise ValueError(\"Every contents item must be an array.\")\n    if any(not isinstance(bullet, str) for bullet in content):\n        raise ValueError(\"Every bullet must be a string.\")\n\nreturn [\n    {\n        \"json\": {\n            \"work_experience_rewrite_response\": json.dumps(\n                parsed,\n                ensure_ascii=False,\n                separators=(\",\", \":\"),\n            )\n        }\n    }\n]"
+        "pythonCode": "import json\n\ndef extract_parsed(root):\n    output = root.get(\"output\")\n\n    if isinstance(output, dict):\n        return output\n\n    if isinstance(output, str):\n        try:\n            parsed = json.loads(output)\n        except json.JSONDecodeError as exc:\n            raise ValueError(\"Work-experience rewrite output was not valid JSON after parsing.\") from exc\n        if isinstance(parsed, dict):\n            return parsed\n\n    try:\n        value = root[\"response\"][\"generations\"][0][0][\"text\"]\n    except (KeyError, IndexError, TypeError):\n        value = None\n\n    if isinstance(value, dict):\n        return value\n\n    if isinstance(value, str):\n        try:\n            parsed = json.loads(value)\n        except json.JSONDecodeError as exc:\n            raise ValueError(\"Work-experience rewrite output was not valid JSON after parsing.\") from exc\n        if isinstance(parsed, dict):\n            return parsed\n\n    raise ValueError(\"Could not locate the parsed work-experience rewrite output.\")\n\nif not _items:\n    raise ValueError(\"The work-experience rewrite model returned no items.\")\n\nparsed = extract_parsed(_items[0][\"json\"])\n\nif not isinstance(parsed, dict):\n    raise ValueError(\"The work-experience rewrite output must be a JSON object.\")\n\nvalue = parsed.get(\"contents\")\nif not isinstance(value, list):\n    raise ValueError(\"The model output must contain contents.\")\nfor content in value:\n    if not isinstance(content, list):\n        raise ValueError(\"Every contents item must be an array.\")\n    if any(not isinstance(bullet, str) for bullet in content):\n        raise ValueError(\"Every bullet must be a string.\")\n\nreturn [\n    {\n        \"json\": {\n            \"work_experience_rewrite_response\": json.dumps(\n                parsed,\n                ensure_ascii=False,\n                separators=(\",\", \":\"),\n            )\n        }\n    }\n]"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1600,
-        608
+        2304,
+        912
       ],
-      "id": "12df63ec-f7f6-4390-8306-5ae69be489da",
+      "id": "3ca16819-bd0a-4f57-9756-a4428fa02016",
       "name": "Prepare Work Rewrite Response"
     },
     {
@@ -452,10 +367,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        1824,
-        816
+        2528,
+        1088
       ],
-      "id": "62becc0b-f731-4fbb-bb35-2d8d758f1ddb",
+      "id": "3f01e85b-ee87-45c2-a029-1c9e15a7d8b9",
       "name": "Merge Work Rewrite with Source"
     },
     {
@@ -466,10 +381,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2048,
-        816
+        2752,
+        1088
       ],
-      "id": "d1166cad-2ceb-408b-ad82-270000e74807",
+      "id": "193b8446-e21f-42a7-b25b-3095679c216e",
       "name": "Apply Work Rewrite"
     },
     {
@@ -480,62 +395,41 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1024,
-        1312
+        1456,
+        1792
       ],
-      "id": "613b9bec-de41-47fc-a3a7-09121375c548",
+      "id": "7cc26b8a-3be7-4999-943c-8f741875c858",
       "name": "Build Skills Prompt"
     },
     {
       "parameters": {
         "promptType": "define",
         "text": "={{ $json.skills_tailoring_prompt }}",
+        "hasOutputParser": true,
         "needsFallback": true,
         "batching": {}
       },
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.7,
       "position": [
-        1248,
-        1104
+        1744,
+        1616
       ],
-      "id": "a2554871-fcd4-4299-896f-cdedcea43d4c",
+      "id": "d103a718-589d-4fbe-9790-4d4dbed04bd4",
       "name": "Tailor Skills"
     },
     {
       "parameters": {
-        "model": "openai/gpt-oss-20b:free",
-        "options": {
-          "temperature": "={{ $json.skills_tailoring_temperature }}"
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
-      "typeVersion": 1,
-      "position": [
-        1264,
-        1328
-      ],
-      "id": "19c8a175-42bf-4ef6-b84a-bee00ebda77b",
-      "name": "Skills Model",
-      "credentials": {
-        "openRouterApi": {
-          "id": "z9dqljjig300DoBw",
-          "name": "OpenRouter account"
-        }
-      }
-    },
-    {
-      "parameters": {
         "language": "pythonNative",
-        "pythonCode": "import json\nimport re\n\ndef extract_text(root):\n    try:\n        value = root[\"response\"][\"generations\"][0][0][\"text\"]\n        if isinstance(value, str):\n            return value\n    except (KeyError, IndexError, TypeError):\n        pass\n\n    for key in (\"text\", \"output\", \"content\"):\n        value = root.get(key)\n        if isinstance(value, str):\n            return value\n\n    raise ValueError(\"Could not locate the skills tailoring model output.\")\n\nif not _items:\n    raise ValueError(\"The skills tailoring model returned no items.\")\n\ntext = extract_text(_items[0][\"json\"]).strip()\ntext = re.sub(r\"^```(?:json)?\\s*\", \"\", text, flags=re.IGNORECASE)\ntext = re.sub(r\"\\s*```$\", \"\", text, flags=re.IGNORECASE).strip()\n\ntry:\n    parsed = json.loads(text)\nexcept json.JSONDecodeError as exc:\n    raise ValueError(\"The skills tailoring model output must be valid JSON.\") from exc\n\nif not isinstance(parsed, dict):\n    raise ValueError(\"The skills tailoring model output must be a JSON object.\")\n\nvalue = parsed.get(\"groups\")\nif not isinstance(value, list):\n    raise ValueError(\"The model output must contain groups.\")\nfor group in value:\n    if not isinstance(group, dict):\n        raise ValueError(\"Every skill group must be an object.\")\n\nreturn [\n    {\n        \"json\": {\n            \"skills_tailoring_response\": json.dumps(\n                parsed,\n                ensure_ascii=False,\n                separators=(\",\", \":\"),\n            )\n        }\n    }\n]"
+        "pythonCode": "import json\n\ndef extract_parsed(root):\n    output = root.get(\"output\")\n\n    if isinstance(output, dict):\n        return output\n\n    if isinstance(output, str):\n        try:\n            parsed = json.loads(output)\n        except json.JSONDecodeError as exc:\n            raise ValueError(\"Skills tailoring output was not valid JSON after parsing.\") from exc\n        if isinstance(parsed, dict):\n            return parsed\n\n    try:\n        value = root[\"response\"][\"generations\"][0][0][\"text\"]\n    except (KeyError, IndexError, TypeError):\n        value = None\n\n    if isinstance(value, dict):\n        return value\n\n    if isinstance(value, str):\n        try:\n            parsed = json.loads(value)\n        except json.JSONDecodeError as exc:\n            raise ValueError(\"Skills tailoring output was not valid JSON after parsing.\") from exc\n        if isinstance(parsed, dict):\n            return parsed\n\n    raise ValueError(\"Could not locate the parsed skills tailoring output.\")\n\nif not _items:\n    raise ValueError(\"The skills tailoring model returned no items.\")\n\nparsed = extract_parsed(_items[0][\"json\"])\n\nif not isinstance(parsed, dict):\n    raise ValueError(\"The skills tailoring output must be a JSON object.\")\n\nvalue = parsed.get(\"groups\")\nif not isinstance(value, list):\n    raise ValueError(\"The model output must contain groups.\")\nfor group in value:\n    if not isinstance(group, dict):\n        raise ValueError(\"Every skill group must be an object.\")\n\nreturn [\n    {\n        \"json\": {\n            \"skills_tailoring_response\": json.dumps(\n                parsed,\n                ensure_ascii=False,\n                separators=(\",\", \":\"),\n            )\n        }\n    }\n]"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1600,
-        1104
+        2304,
+        1616
       ],
-      "id": "7df86c0b-6e00-4a94-b170-e4f4422c1257",
+      "id": "d53bc6f1-7c41-4fde-a7ab-fd7dd5f7a62f",
       "name": "Prepare Skills Response"
     },
     {
@@ -547,24 +441,24 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        1824,
-        1312
+        2528,
+        1792
       ],
-      "id": "f7f7526c-041f-49d7-87f0-c20daee4f1ba",
+      "id": "9c320646-2f91-4dce-a23d-e7f38218f610",
       "name": "Merge Skills Response with Source"
     },
     {
       "parameters": {
         "language": "pythonNative",
-        "pythonCode": "import json\n\ndata = _items[0][\"json\"]\ngroups = json.loads(data[\"skills_tailoring_response\"]).get(\"groups\")\ninventory = data.get(\"original_skill_inventory\", [])\n\nif not isinstance(groups, list) or len(groups) != 3:\n    raise ValueError(\"Skills output must contain exactly three groups.\")\n\nlookup = {\n    skill.strip().casefold(): skill\n    for skill in inventory\n    if isinstance(skill, str) and skill.strip()\n}\n\ntailored = []\nfor group in groups:\n    if not isinstance(group, dict):\n        raise ValueError(\"Each skill group must be an object.\")\n\n    label = group.get(\"label\")\n    returned = group.get(\"skills\")\n\n    if not isinstance(label, str) or not label.strip():\n        raise ValueError(\"Each skill group must have a label.\")\n    if not isinstance(returned, list):\n        raise ValueError(\"Each skill group must have a skills array.\")\n\n    exact_skills = []\n    seen = set()\n\n    for skill in returned:\n        if not isinstance(skill, str):\n            raise ValueError(\"Every returned skill must be a string.\")\n\n        key = skill.strip().casefold()\n        if key not in lookup:\n            raise ValueError(\n                f\"The skills model returned a skill absent from the CV: {skill}\"\n            )\n        if key not in seen:\n            exact_skills.append(lookup[key])\n            seen.add(key)\n\n    tailored.append({\n        \"label\": label.strip(),\n        \"value\": \", \".join(exact_skills),\n    })\n\nreturn [{\"json\": {**data, \"tailored_skills\": tailored}}]"
+        "pythonCode": "import json\n\ndata = _items[0][\"json\"]\ngroups = json.loads(data[\"skills_tailoring_response\"]).get(\"groups\")\n\nif not isinstance(groups, list):\n    raise ValueError(\"Skills output must contain a groups array.\")\n\ntailored = []\n\nfor group in groups:\n    if not isinstance(group, dict):\n        raise ValueError(\"Each skill group must be an object.\")\n\n    label = group.get(\"label\")\n    returned = group.get(\"skills\")\n\n    if not isinstance(label, str) or not label.strip():\n        raise ValueError(\"Each skill group must have a label.\")\n\n    if not isinstance(returned, list):\n        raise ValueError(\"Each skill group must have a skills array.\")\n\n    skills = []\n    seen = set()\n\n    for skill in returned:\n        if not isinstance(skill, str) or not skill.strip():\n            raise ValueError(\"Every returned skill must be a non-empty string.\")\n\n        normalized = skill.strip()\n        key = normalized.casefold()\n\n        if key not in seen:\n            skills.append(normalized)\n            seen.add(key)\n\n    tailored.append({\n        \"label\": label.strip(),\n        \"value\": \", \".join(skills),\n    })\n\nreturn [{\"json\": {**data, \"tailored_skills\": tailored}}]"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2048,
-        1312
+        2752,
+        1792
       ],
-      "id": "66354320-d22e-4a12-b39f-8c0a580dab6b",
+      "id": "fc041be1-ec7d-435e-ad0c-c63378f53872",
       "name": "Apply Tailored Skills"
     },
     {
@@ -575,62 +469,41 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2496,
-        816
+        3200,
+        1088
       ],
-      "id": "6bd23f4e-a293-460b-a307-ff16ce09d878",
+      "id": "284a5288-aab8-4070-91ef-7481c6c0c924",
       "name": "Build Summary Prompt"
     },
     {
       "parameters": {
         "promptType": "define",
         "text": "={{ $json.summary_rewrite_prompt }}",
+        "hasOutputParser": true,
         "needsFallback": true,
         "batching": {}
       },
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.7,
       "position": [
-        2720,
-        704
+        3488,
+        912
       ],
-      "id": "c285685e-9765-42c1-9879-7b46f3ad7dbc",
+      "id": "fb79fb59-67e0-4cfd-852d-8dbe44c90719",
       "name": "Rewrite Summary"
     },
     {
       "parameters": {
-        "model": "openai/gpt-oss-20b:free",
-        "options": {
-          "temperature": "={{ $json.summary_rewrite_temperature }}"
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
-      "typeVersion": 1,
-      "position": [
-        2736,
-        928
-      ],
-      "id": "6b2e1273-93a3-4f00-b245-502e7fd0b879",
-      "name": "Summary Model",
-      "credentials": {
-        "openRouterApi": {
-          "id": "z9dqljjig300DoBw",
-          "name": "OpenRouter account"
-        }
-      }
-    },
-    {
-      "parameters": {
         "language": "pythonNative",
-        "pythonCode": "import json\nimport re\n\ndef extract_text(root):\n    try:\n        value = root[\"response\"][\"generations\"][0][0][\"text\"]\n        if isinstance(value, str):\n            return value\n    except (KeyError, IndexError, TypeError):\n        pass\n\n    for key in (\"text\", \"output\", \"content\"):\n        value = root.get(key)\n        if isinstance(value, str):\n            return value\n\n    raise ValueError(\"Could not locate the summary rewrite model output.\")\n\nif not _items:\n    raise ValueError(\"The summary rewrite model returned no items.\")\n\ntext = extract_text(_items[0][\"json\"]).strip()\ntext = re.sub(r\"^```(?:json)?\\s*\", \"\", text, flags=re.IGNORECASE)\ntext = re.sub(r\"\\s*```$\", \"\", text, flags=re.IGNORECASE).strip()\n\ntry:\n    parsed = json.loads(text)\nexcept json.JSONDecodeError as exc:\n    raise ValueError(\"The summary rewrite model output must be valid JSON.\") from exc\n\nif not isinstance(parsed, dict):\n    raise ValueError(\"The summary rewrite model output must be a JSON object.\")\n\nvalue = parsed.get(\"summary\")\nif not isinstance(value, list):\n    raise ValueError(\"The model output must contain summary.\")\nif any(not isinstance(line, str) for line in value):\n    raise ValueError(\"Every summary item must be a string.\")\n\nreturn [\n    {\n        \"json\": {\n            \"summary_rewrite_response\": json.dumps(\n                parsed,\n                ensure_ascii=False,\n                separators=(\",\", \":\"),\n            )\n        }\n    }\n]"
+        "pythonCode": "import json\n\ndef extract_parsed(root):\n    output = root.get(\"output\")\n\n    if isinstance(output, dict):\n        return output\n\n    if isinstance(output, str):\n        try:\n            parsed = json.loads(output)\n        except json.JSONDecodeError as exc:\n            raise ValueError(\"Summary rewrite output was not valid JSON after parsing.\") from exc\n        if isinstance(parsed, dict):\n            return parsed\n\n    try:\n        value = root[\"response\"][\"generations\"][0][0][\"text\"]\n    except (KeyError, IndexError, TypeError):\n        value = None\n\n    if isinstance(value, dict):\n        return value\n\n    if isinstance(value, str):\n        try:\n            parsed = json.loads(value)\n        except json.JSONDecodeError as exc:\n            raise ValueError(\"Summary rewrite output was not valid JSON after parsing.\") from exc\n        if isinstance(parsed, dict):\n            return parsed\n\n    raise ValueError(\"Could not locate the parsed summary rewrite output.\")\n\nif not _items:\n    raise ValueError(\"The summary rewrite model returned no items.\")\n\nparsed = extract_parsed(_items[0][\"json\"])\n\nif not isinstance(parsed, dict):\n    raise ValueError(\"The summary rewrite output must be a JSON object.\")\n\nvalue = parsed.get(\"summary\")\nif not isinstance(value, list):\n    raise ValueError(\"The model output must contain summary.\")\nif any(not isinstance(line, str) for line in value):\n    raise ValueError(\"Every summary item must be a string.\")\n\nreturn [\n    {\n        \"json\": {\n            \"summary_rewrite_response\": json.dumps(\n                parsed,\n                ensure_ascii=False,\n                separators=(\",\", \":\"),\n            )\n        }\n    }\n]"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3072,
-        704
+        4048,
+        912
       ],
-      "id": "d6b036fe-62e5-4f14-8047-9e860b2f847c",
+      "id": "93d4894f-e2fb-47f7-bd1e-a457edad0173",
       "name": "Prepare Summary Response"
     },
     {
@@ -642,10 +515,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        3296,
-        816
+        4272,
+        1088
       ],
-      "id": "ce594c0b-dbb3-42ef-8d2b-24ed361a1853",
+      "id": "4e6c5cb4-8f71-406b-ae4d-19af45cfcbfa",
       "name": "Merge Summary Response with Source"
     },
     {
@@ -656,10 +529,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3520,
-        816
+        4496,
+        1088
       ],
-      "id": "7834dfc6-6aca-42d5-994a-1676782ee387",
+      "id": "be4b39cf-04ce-43b0-b2c2-755828144868",
       "name": "Build Final CV Output"
     },
     {
@@ -672,10 +545,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        2272,
-        800
+        2976,
+        1072
       ],
-      "id": "72ab04c5-2b23-4d8f-94b2-290a11c595dc",
+      "id": "6d5ae122-6ab2-45a6-9010-26b2cbf381b3",
       "name": "Merge Parallel Branches"
     },
     {
@@ -688,98 +561,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
-        144,
-        224
+        1808,
+        1840
       ],
-      "id": "3d753fab-1df1-4458-a67b-a5152d43f71b",
-      "name": "OpenRouter Chat Model",
-      "credentials": {
-        "openRouterApi": {
-          "id": "z9dqljjig300DoBw",
-          "name": "OpenRouter account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "model": "google/gemma-4-31b-it:free",
-        "options": {
-          "temperature": "={{ $json.project_selection_temperature }}"
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
-      "typeVersion": 1,
-      "position": [
-        1392,
-        224
-      ],
-      "id": "feec0f9b-9b85-44d1-8a42-20890e5fbd0b",
-      "name": "OpenRouter Chat Model1",
-      "credentials": {
-        "openRouterApi": {
-          "id": "z9dqljjig300DoBw",
-          "name": "OpenRouter account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "model": "google/gemma-4-31b-it:free",
-        "options": {
-          "temperature": "={{ $json.project_selection_temperature }}"
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
-      "typeVersion": 1,
-      "position": [
-        144,
-        832
-      ],
-      "id": "00d5aa05-2e43-4ef7-bf22-31268fa80a8b",
-      "name": "OpenRouter Chat Model2",
-      "credentials": {
-        "openRouterApi": {
-          "id": "z9dqljjig300DoBw",
-          "name": "OpenRouter account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "model": "google/gemma-4-31b-it:free",
-        "options": {
-          "temperature": "={{ $json.project_selection_temperature }}"
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
-      "typeVersion": 1,
-      "position": [
-        1392,
-        720
-      ],
-      "id": "463ed959-9666-4f87-9d6d-13ce04989d53",
-      "name": "OpenRouter Chat Model3",
-      "credentials": {
-        "openRouterApi": {
-          "id": "z9dqljjig300DoBw",
-          "name": "OpenRouter account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "model": "google/gemma-4-31b-it:free",
-        "options": {
-          "temperature": "={{ $json.project_selection_temperature }}"
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
-      "typeVersion": 1,
-      "position": [
-        1392,
-        1328
-      ],
-      "id": "32e07f88-04d3-4fc5-b43a-630a52267e1b",
+      "id": "f4e02ae1-d73c-4cf4-8636-9f860d72fb51",
       "name": "OpenRouter Chat Model4",
       "credentials": {
         "openRouterApi": {
@@ -798,10 +583,10 @@
       "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
-        2864,
-        928
+        3552,
+        1136
       ],
-      "id": "b767d041-8380-4956-bd3a-f438efc46f80",
+      "id": "388d287f-75ee-48c3-b349-46369fc316db",
       "name": "OpenRouter Chat Model5",
       "credentials": {
         "openRouterApi": {
@@ -838,10 +623,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -1120,
-        656
+        -960,
+        928
       ],
-      "id": "730167a5-de70-4249-9c9a-edb3fe5ae2bf",
+      "id": "0bcafb8e-56f0-4e2c-9c1f-f47690908660",
       "name": "Test Mode?"
     },
     {
@@ -852,11 +637,429 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -896,
-        464
+        -736,
+        736
       ],
-      "id": "ee13ff82-12e1-4d5f-bbad-2bca83b7a49f",
+      "id": "17015be0-d82c-4dbe-98ea-5ee4d87744af",
       "name": "Return Test CV Output"
+    },
+    {
+      "parameters": {
+        "model": "google/gemma-4-31b-it:free",
+        "options": {
+          "temperature": "={{ $json.project_selection_temperature }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1808,
+        928
+      ],
+      "id": "f5aba518-557f-4dcb-8f12-7c32bb55efa9",
+      "name": "OpenRouter Chat Model3",
+      "credentials": {
+        "openRouterApi": {
+          "id": "z9dqljjig300DoBw",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "google/gemma-4-31b-it:free",
+        "options": {
+          "temperature": "={{ $json.project_selection_temperature }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        288,
+        1136
+      ],
+      "id": "ac87b16d-e1ef-433a-93f4-5bf01b271f1f",
+      "name": "OpenRouter Chat Model2",
+      "credentials": {
+        "openRouterApi": {
+          "id": "z9dqljjig300DoBw",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "google/gemma-4-31b-it:free",
+        "options": {
+          "temperature": "={{ $json.project_selection_temperature }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1808,
+        224
+      ],
+      "id": "14214f0a-f261-4e70-9d23-152b76290085",
+      "name": "OpenRouter Chat Model1",
+      "credentials": {
+        "openRouterApi": {
+          "id": "z9dqljjig300DoBw",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "google/gemma-4-31b-it:free",
+        "options": {
+          "temperature": "={{ $json.project_selection_temperature }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        288,
+        224
+      ],
+      "id": "fd2e9d5e-922e-4693-be56-69d5167bde01",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "z9dqljjig300DoBw",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        160,
+        224
+      ],
+      "id": "cf0c81a6-b592-4b15-b526-a41527ece896",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "aPx4VUVA3p6ZhC3v",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        160,
+        1136
+      ],
+      "id": "76803792-59fe-43af-9943-ed230b9e5a2b",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "aPx4VUVA3p6ZhC3v",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1680,
+        224
+      ],
+      "id": "a6ccf49c-f7a0-4e38-a4ac-2d1618b29d4a",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "aPx4VUVA3p6ZhC3v",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1680,
+        928
+      ],
+      "id": "08631d04-cc7d-4164-978f-29c4f7679eae",
+      "name": "Google Gemini Chat Model3",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "aPx4VUVA3p6ZhC3v",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1680,
+        1840
+      ],
+      "id": "cf957e8e-28c0-4183-bef2-333061723a02",
+      "name": "Google Gemini Chat Model4",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "aPx4VUVA3p6ZhC3v",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        3424,
+        1136
+      ],
+      "id": "963bb0fd-6bf6-4bed-9cff-3553708346a1",
+      "name": "Google Gemini Chat Model5",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "aPx4VUVA3p6ZhC3v",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "={{ $json.project_selection_output_structure }}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        416,
+        224
+      ],
+      "id": "7d76402d-0ef6-4b8a-bd7a-83e03af5de04",
+      "name": "Select Projects Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        496,
+        432
+      ],
+      "id": "f7780489-7f18-4f40-9dd4-0e7334829272",
+      "name": "Select Projects Auto-Fix Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "aPx4VUVA3p6ZhC3v",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "={{ $json.project_rewrite_output_structure }}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1936,
+        224
+      ],
+      "id": "06335415-ee2d-43e5-a2bd-9ed07aa45eea",
+      "name": "Rewrite Project Content Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        2016,
+        432
+      ],
+      "id": "2a0fca68-f94e-4bfc-abc7-094064ef8598",
+      "name": "Rewrite Project Content Auto-Fix Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "aPx4VUVA3p6ZhC3v",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "={{ $json.work_experience_selection_output_structure }}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        416,
+        1136
+      ],
+      "id": "2836b5f1-fa33-417a-9706-30440d2eb1f0",
+      "name": "Select Work Experiences Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        496,
+        1344
+      ],
+      "id": "e5795e5d-1fb5-40b3-9394-634de2802906",
+      "name": "Select Work Experiences Auto-Fix Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "aPx4VUVA3p6ZhC3v",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "={{ $json.work_experience_rewrite_output_structure }}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1936,
+        928
+      ],
+      "id": "d42ac719-48ca-4f3f-9b4d-b34eaa738412",
+      "name": "Rewrite Work Content Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        2016,
+        1136
+      ],
+      "id": "8f0fa867-c2f5-4d1c-b001-4cba68998bcb",
+      "name": "Rewrite Work Content Auto-Fix Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "aPx4VUVA3p6ZhC3v",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "={{ $json.skills_tailoring_output_structure }}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1936,
+        1840
+      ],
+      "id": "dbb004a7-fffc-449f-aefd-aadc40547d71",
+      "name": "Tailor Skills Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        2016,
+        2048
+      ],
+      "id": "46836a57-3ff0-4d98-ab7c-d1787e56e716",
+      "name": "Tailor Skills Auto-Fix Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "aPx4VUVA3p6ZhC3v",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "={{ $json.summary_rewrite_output_structure }}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        3680,
+        1136
+      ],
+      "id": "98f4515a-a356-47f8-9772-8f3b3effcfea",
+      "name": "Rewrite Summary Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        3760,
+        1344
+      ],
+      "id": "00ac6f2c-c306-485d-8461-f2fb2a9801c8",
+      "name": "Rewrite Summary Auto-Fix Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "aPx4VUVA3p6ZhC3v",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
     }
   ],
   "pinData": {},
@@ -942,17 +1145,6 @@
         ]
       ]
     },
-    "Project Selection Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Select Projects",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Select Projects": {
       "main": [
         [
@@ -1009,17 +1201,6 @@
             "node": "Merge Project Rewrite with Source",
             "type": "main",
             "index": 1
-          }
-        ]
-      ]
-    },
-    "Project Rewrite Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Rewrite Project Content",
-            "type": "ai_languageModel",
-            "index": 0
           }
         ]
       ]
@@ -1084,17 +1265,6 @@
         ]
       ]
     },
-    "Work Selection Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Select Work Experiences",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Select Work Experiences": {
       "main": [
         [
@@ -1151,17 +1321,6 @@
             "node": "Merge Work Rewrite with Source",
             "type": "main",
             "index": 1
-          }
-        ]
-      ]
-    },
-    "Work Rewrite Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Rewrite Work Content",
-            "type": "ai_languageModel",
-            "index": 0
           }
         ]
       ]
@@ -1226,17 +1385,6 @@
         ]
       ]
     },
-    "Skills Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Tailor Skills",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Tailor Skills": {
       "main": [
         [
@@ -1297,17 +1445,6 @@
         ]
       ]
     },
-    "Summary Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Rewrite Summary",
-            "type": "ai_languageModel",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Rewrite Summary": {
       "main": [
         [
@@ -1348,50 +1485,6 @@
             "node": "Build Summary Prompt",
             "type": "main",
             "index": 0
-          }
-        ]
-      ]
-    },
-    "OpenRouter Chat Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Select Projects",
-            "type": "ai_languageModel",
-            "index": 1
-          }
-        ]
-      ]
-    },
-    "OpenRouter Chat Model1": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Rewrite Project Content",
-            "type": "ai_languageModel",
-            "index": 1
-          }
-        ]
-      ]
-    },
-    "OpenRouter Chat Model2": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Select Work Experiences",
-            "type": "ai_languageModel",
-            "index": 1
-          }
-        ]
-      ]
-    },
-    "OpenRouter Chat Model3": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Rewrite Work Content",
-            "type": "ai_languageModel",
-            "index": 1
           }
         ]
       ]
@@ -1451,6 +1544,248 @@
           }
         ]
       ]
+    },
+    "OpenRouter Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Rewrite Work Content",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Select Work Experiences",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Rewrite Project Content",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Select Projects",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Select Projects",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Select Work Experiences",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Rewrite Project Content",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Rewrite Work Content",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Tailor Skills",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Rewrite Summary",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select Projects Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Select Projects",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select Projects Auto-Fix Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Select Projects Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rewrite Project Content Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Rewrite Project Content",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rewrite Project Content Auto-Fix Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Rewrite Project Content Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select Work Experiences Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Select Work Experiences",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select Work Experiences Auto-Fix Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Select Work Experiences Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rewrite Work Content Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Rewrite Work Content",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rewrite Work Content Auto-Fix Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Rewrite Work Content Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tailor Skills Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Tailor Skills",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tailor Skills Auto-Fix Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Tailor Skills Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rewrite Summary Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Rewrite Summary",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rewrite Summary Auto-Fix Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Rewrite Summary Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -1459,12 +1794,11 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "4af0f417-1571-4b9f-b859-2571fcb2bf3e",
+  "versionId": "8884c4b6-3f9d-4430-ba6a-bf7a59fb3d1e",
   "meta": {
-    "templateCredsSetupCompleted": true,
     "instanceId": "2d85b40e2e1a69706b539dc280f2a48f8b70729872141299d251c48887ea4c94"
   },
   "nodeGroups": [],
-  "id": "NTyHpEu6JpWlafcj",
+  "id": "qWB5UMZoKmMpFV4I",
   "tags": []
 }
