@@ -172,28 +172,6 @@
     },
     {
       "parameters": {
-        "model": "google/gemma-4-31b-it:free",
-        "options": {
-          "temperature": "={{ $json.cover_letter_temperature }}"
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
-      "typeVersion": 1,
-      "position": [
-        272,
-        272
-      ],
-      "id": "cb071c44-dc3c-4241-a7e5-0f022f6ca956",
-      "name": "Cover Letter Fallback Model",
-      "credentials": {
-        "openRouterApi": {
-          "id": "z9dqljjig300DoBw",
-          "name": "OpenRouter account"
-        }
-      }
-    },
-    {
-      "parameters": {
         "language": "pythonNative",
         "pythonCode": "import json\n\n\ndef extract_parsed(root):\n    output = root.get(\"output\")\n\n    if isinstance(output, dict):\n        return output\n\n    if isinstance(output, str):\n        try:\n            parsed = json.loads(output)\n        except json.JSONDecodeError as exc:\n            raise ValueError(\n                \"Cover-letter output was not valid JSON after parsing.\"\n            ) from exc\n\n        if isinstance(parsed, dict):\n            return parsed\n\n    try:\n        value = root[\"response\"][\"generations\"][0][0][\"text\"]\n    except (KeyError, IndexError, TypeError):\n        value = None\n\n    if isinstance(value, dict):\n        return value\n\n    if isinstance(value, str):\n        try:\n            parsed = json.loads(value)\n        except json.JSONDecodeError as exc:\n            raise ValueError(\n                \"Cover-letter output was not valid JSON after parsing.\"\n            ) from exc\n\n        if isinstance(parsed, dict):\n            return parsed\n\n    raise ValueError(\"Could not locate the parsed cover-letter output.\")\n\n\nif not _items:\n    raise ValueError(\"The cover-letter model returned no items.\")\n\nparsed = extract_parsed(_items[0][\"json\"])\n\nif not isinstance(parsed, dict):\n    raise ValueError(\n        \"The cover-letter output must be a JSON object.\"\n    )\n\nparagraphs = parsed.get(\"paragraphs\")\nif not isinstance(paragraphs, list) or len(paragraphs) != 3:\n    raise ValueError(\n        \"The model output must contain exactly three paragraphs.\"\n    )\n\nif any(\n    not isinstance(paragraph, str) or not paragraph.strip()\n    for paragraph in paragraphs\n):\n    raise ValueError(\n        \"Every cover-letter paragraph must be a non-empty string.\"\n    )\n\nnormalized = {\n    \"paragraphs\": [paragraph.strip() for paragraph in paragraphs],\n}\n\nreturn [\n    {\n        \"json\": {\n            \"cover_letter_response\": json.dumps(\n                normalized,\n                ensure_ascii=False,\n                separators=(\",\", \":\"),\n            )\n        }\n    }\n]"
       },
@@ -283,6 +261,26 @@
       ],
       "id": "502fea3d-94d2-492e-933d-234247445a55",
       "name": "Cover Letter Auto-Fix Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "aPx4VUVA3p6ZhC3v",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        272,
+        272
+      ],
+      "id": "ed077d5f-0a3b-4f0c-8f28-8ba60e151a17",
+      "name": "Google Gemini Chat Model1",
       "credentials": {
         "googlePalmApi": {
           "id": "aPx4VUVA3p6ZhC3v",
@@ -398,17 +396,6 @@
         ]
       ]
     },
-    "Cover Letter Fallback Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Generate Cover Letter",
-            "type": "ai_languageModel",
-            "index": 1
-          }
-        ]
-      ]
-    },
     "Prepare Cover Letter Response": {
       "main": [
         [
@@ -474,6 +461,17 @@
           }
         ]
       ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate Cover Letter",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -482,8 +480,9 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "1041a62b-0e92-4b90-9600-928a413c204e",
+  "versionId": "5cfa8770-56e4-49cc-a7e0-b2528e65a863",
   "meta": {
+    "templateCredsSetupCompleted": true,
     "instanceId": "2d85b40e2e1a69706b539dc280f2a48f8b70729872141299d251c48887ea4c94"
   },
   "nodeGroups": [],

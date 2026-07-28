@@ -6,10 +6,10 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        2016,
-        3968
+        2944,
+        4752
       ],
-      "id": "9b0e9056-1e77-4a29-9ef3-8b5a67c974bb",
+      "id": "299508b2-7b67-4b64-96ed-461b788fa03a",
       "name": "Manual Trigger",
       "disabled": true
     },
@@ -25,7 +25,8 @@
               "type": "object"
             },
             {
-              "name": "job_id"
+              "name": "job_id",
+              "type": "number"
             },
             {
               "name": "company_name"
@@ -42,38 +43,38 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        2240,
-        4160
+        3168,
+        4944
       ],
-      "id": "5727045a-adb0-4903-a9fa-c41744c75329",
+      "id": "ee002154-a749-456d-aa4f-6032f17fe0f2",
       "name": "Called by Parent Workflow"
     },
     {
       "parameters": {
         "language": "pythonNative",
-        "pythonCode": "return [{\n    \"json\": {\n        \"document_type\": \"cv\",\n        \"document_data\": {\n            \"summary\": [\"Sample summary\"],\n            \"skills\": [],\n            \"projects\": [],\n            \"work_experience\": [],\n            \"awards\": []\n        },\n        \"job_id\": \"sample-job-001\",\n        \"company_name\": \"Example Company\",\n        \"job_title\": \"Machine Learning Engineer\",\n        \"application_id\": \"example-company-machine-learning-engineer-sample-job-001\"\n    }\n}]"
+        "pythonCode": "return [{\n    \"json\": {\n        \"document_type\": \"cv\",\n        \"document_data\": {\n            \"summary\": [\"Sample summary\"],\n            \"skills\": [],\n            \"projects\": [],\n            \"work_experience\": [],\n            \"awards\": []\n        },\n        \"job_id\": 1234567890,\n        \"company_name\": \"Example Company\",\n        \"job_title\": \"Machine Learning Engineer\",\n        \"application_id\": \"example-company-machine-learning-engineer-1234567890\"\n    }\n}]"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2240,
-        3968
+        3168,
+        4752
       ],
-      "id": "bd4724df-73f6-4a73-9baf-f7c05797d228",
+      "id": "63235c43-ab0a-48d4-bb21-b5126f12d4ba",
       "name": "Sample Input"
     },
     {
       "parameters": {
         "language": "pythonNative",
-        "pythonCode": "import re\n\n\ndef required_text(data, key):\n    value = data.get(key)\n    if not isinstance(value, str) or not value.strip():\n        raise ValueError(f\"'{key}' must be a non-empty string.\")\n    return value.strip()\n\n\ndef slugify(value):\n    normalized = value.lower().strip()\n    normalized = re.sub(r\"[^a-z0-9]+\", \"-\", normalized)\n    normalized = re.sub(r\"-+\", \"-\", normalized).strip(\"-\")\n    return normalized or \"unknown\"\n\n\nif not _items:\n    raise ValueError(\"The workflow received no input.\")\n\ndata = dict(_items[0].get(\"json\", {}))\n\ndocument_type = str(data.get(\"document_type\", \"\")).strip().lower()\nif document_type not in {\"cv\", \"cover-letter\"}:\n    raise ValueError(\"'document_type' must be either 'cv' or 'cover-letter'.\")\n\ndocument_data = data.get(\"document_data\")\nif not isinstance(document_data, dict):\n    raise ValueError(\"'document_data' must be an object.\")\n\njob_id = slugify(required_text(data, \"job_id\"))\ncompany_slug = slugify(required_text(data, \"company_name\"))\nrole_slug = slugify(required_text(data, \"job_title\"))\n\napplication_id = data.get(\"application_id\")\nif not isinstance(application_id, str) or not application_id.strip():\n    application_id = f\"{company_slug}-{role_slug}-{job_id}\"\napplication_id = slugify(application_id)\n\nartifact_prefix = \"cv\" if document_type == \"cv\" else \"cover-letter\"\nartifact_base_name = f\"{artifact_prefix}_{application_id}\"\ncloudinary_folder = f\"job-applications/{job_id}\"\n\nreturn [\n    {\n        \"json\": {\n            **data,\n            \"document_type\": document_type,\n            \"document_data\": document_data,\n            \"job_id\": job_id,\n            \"application_id\": application_id,\n            \"artifact_prefix\": artifact_prefix,\n            \"artifact_base_name\": artifact_base_name,\n            \"cloudinary_folder\": cloudinary_folder,\n            \"pdf_public_id\": f\"{artifact_base_name}.pdf\",\n            \"tex_public_id\": f\"{artifact_base_name}.tex\",\n        },\n        \"pairedItem\": {\"item\": 0},\n    }\n]"
+        "pythonCode": "import re\n\n\ndef required_text(data, key):\n    value = data.get(key)\n    if not isinstance(value, str) or not value.strip():\n        raise ValueError(f\"'{key}' must be a non-empty string.\")\n    return value.strip()\n\n\ndef slugify(value):\n    normalized = value.lower().strip()\n    normalized = re.sub(r\"[^a-z0-9]+\", \"-\", normalized)\n    normalized = re.sub(r\"-+\", \"-\", normalized).strip(\"-\")\n    return normalized or \"unknown\"\n\n\nif not _items:\n    raise ValueError(\"The workflow received no input.\")\n\ndata = dict(_items[0].get(\"json\", {}))\n\ndocument_type = str(data.get(\"document_type\", \"\")).strip().lower()\nif document_type not in {\"cv\", \"cover-letter\"}:\n    raise ValueError(\"'document_type' must be either 'cv' or 'cover-letter'.\")\n\ndocument_data = data.get(\"document_data\")\nif not isinstance(document_data, dict):\n    raise ValueError(\"'document_data' must be an object.\")\n\njob_id = data.get(\"job_id\")\nif isinstance(job_id, bool) or not isinstance(job_id, int):\n    raise ValueError(\"'job_id' must be an integer.\")\n\ncompany_slug = slugify(required_text(data, \"company_name\"))\nrole_slug = slugify(required_text(data, \"job_title\"))\n\napplication_id = data.get(\"application_id\")\nif not isinstance(application_id, str) or not application_id.strip():\n    application_id = f\"{company_slug}-{role_slug}-{job_id}\"\napplication_id = slugify(application_id)\n\nartifact_prefix = \"cv\" if document_type == \"cv\" else \"cover-letter\"\nartifact_base_name = f\"{artifact_prefix}_{application_id}\"\ncloudinary_folder = f\"job-applications/{job_id}\"\n\nreturn [\n    {\n        \"json\": {\n            **data,\n            \"document_type\": document_type,\n            \"document_data\": document_data,\n            \"job_id\": job_id,\n            \"application_id\": application_id,\n            \"artifact_prefix\": artifact_prefix,\n            \"artifact_base_name\": artifact_base_name,\n            \"cloudinary_folder\": cloudinary_folder,\n            \"pdf_public_id\": f\"{artifact_base_name}.pdf\",\n            \"tex_public_id\": f\"{artifact_base_name}.tex\",\n        },\n        \"pairedItem\": {\"item\": 0},\n    }\n]"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2464,
-        4064
+        3392,
+        4848
       ],
-      "id": "0caddb3c-eda0-4cdd-8592-fb0d8feb7da9",
+      "id": "0f59b579-1852-485c-8dfc-8a68dec1d8bc",
       "name": "Normalize Input"
     },
     {
@@ -89,10 +90,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2688,
-        4064
+        3616,
+        4848
       ],
-      "id": "44ef22ef-3386-48b7-a073-160acfc2dfbc",
+      "id": "e09d5820-127f-4410-856d-3a218297de74",
       "name": "Generate Document"
     },
     {
@@ -110,10 +111,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2912,
-        3968
+        3840,
+        4752
       ],
-      "id": "58515127-5e21-45f7-b93f-c6c4e58767ec",
+      "id": "8c88671a-695b-4f2e-a72e-f0874d3833a0",
       "name": "Download Document TEX"
     },
     {
@@ -130,10 +131,10 @@
       "type": "n8n-nodes-cloudinary.cloudinary",
       "typeVersion": 1,
       "position": [
-        3136,
-        3968
+        4064,
+        4752
       ],
-      "id": "a54f2b49-e01b-4188-a3cf-f5f7ad39966c",
+      "id": "c6972897-cb0d-4fd7-93e8-099f4c19f804",
       "name": "Upload Document TEX to Cloudinary",
       "credentials": {
         "cloudinaryApi": {
@@ -157,10 +158,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2912,
-        4160
+        3840,
+        4944
       ],
-      "id": "e16dc3f8-3d5b-49ca-ace3-d84a63eca311",
+      "id": "708e6baf-8ea6-477c-b7a3-ac81df52ead0",
       "name": "Download Document PDF"
     },
     {
@@ -177,10 +178,10 @@
       "type": "n8n-nodes-cloudinary.cloudinary",
       "typeVersion": 1,
       "position": [
-        3136,
-        4160
+        4064,
+        4944
       ],
-      "id": "f045b1f6-7edd-4867-a681-99fac1b16267",
+      "id": "49e22f3a-f452-46b5-abf2-02472951f350",
       "name": "Upload Document PDF to Cloudinary",
       "credentials": {
         "cloudinaryApi": {
@@ -191,16 +192,15 @@
     },
     {
       "parameters": {
-        "language": "pythonNative",
-        "pythonCode": "uploads = [\n    item.get(\"json\", {}) if isinstance(item, dict) else {}\n    for item in _items\n]\n\nif len(uploads) < 2:\n    raise ValueError(\"Expected two Cloudinary upload items.\")\n\n\ndef text_value(item, key):\n    value = item.get(key)\n    return \"\" if value is None else str(value).lower()\n\n\ndef is_tex_upload(item):\n    public_id = text_value(item, \"public_id\")\n    secure_url = text_value(item, \"secure_url\")\n    url = text_value(item, \"url\")\n\n    return (\n        public_id.endswith(\".tex\")\n        or secure_url.endswith(\".tex\")\n        or url.endswith(\".tex\")\n    )\n\n\ndef is_pdf_upload(item):\n    file_format = text_value(item, \"format\")\n    public_id = text_value(item, \"public_id\")\n    secure_url = text_value(item, \"secure_url\")\n    url = text_value(item, \"url\")\n\n    return (\n        file_format == \"pdf\"\n        or public_id.endswith(\".pdf\")\n        or secure_url.endswith(\".pdf\")\n        or url.endswith(\".pdf\")\n    )\n\n\ntex_upload = next((item for item in uploads if is_tex_upload(item)), None)\npdf_upload = next((item for item in uploads if is_pdf_upload(item)), None)\n\nif tex_upload is None:\n    raise ValueError(\"Could not identify the TEX upload result.\")\n\nif pdf_upload is None:\n    raise ValueError(\"Could not identify the PDF upload result.\")\n\ntex_url = tex_upload.get(\"secure_url\") or tex_upload.get(\"url\")\npdf_url = pdf_upload.get(\"secure_url\") or pdf_upload.get(\"url\")\n\nif not tex_url or not pdf_url:\n    raise ValueError(\"Cloudinary did not return both TEX and PDF URLs.\")\n\nsource = _(\"Normalize Input\").first()[\"json\"]\n\nreturn [\n    {\n        \"json\": {\n            \"document_type\": source.get(\"document_type\"),\n            \"application_id\": source.get(\"application_id\"),\n            \"job_id\": source.get(\"job_id\"),\n            \"company_name\": source.get(\"company_name\"),\n            \"job_title\": source.get(\"job_title\"),\n            \"tex_url\": tex_url,\n            \"pdf_url\": pdf_url,\n            \"tex_public_id\": tex_upload.get(\"public_id\"),\n            \"pdf_public_id\": pdf_upload.get(\"public_id\"),\n        }\n    }\n]\n"
+        "jsCode": "const uploads = $input.all().map((item) => {\n  const data = item && typeof item.json === \"object\" && item.json !== null\n    ? item.json\n    : {};\n  return data;\n});\n\nif (uploads.length < 2) {\n  throw new Error(\"Expected two Cloudinary upload items.\");\n}\n\nconst textValue = (item, key) => {\n  const value = item[key];\n  return value == null ? \"\" : String(value).toLowerCase();\n};\n\nconst isTexUpload = (item) => {\n  const publicId = textValue(item, \"public_id\");\n  const secureUrl = textValue(item, \"secure_url\");\n  const url = textValue(item, \"url\");\n\n  return (\n    publicId.endsWith(\".tex\") ||\n    secureUrl.endsWith(\".tex\") ||\n    url.endsWith(\".tex\")\n  );\n};\n\nconst isPdfUpload = (item) => {\n  const fileFormat = textValue(item, \"format\");\n  const publicId = textValue(item, \"public_id\");\n  const secureUrl = textValue(item, \"secure_url\");\n  const url = textValue(item, \"url\");\n\n  return (\n    fileFormat === \"pdf\" ||\n    publicId.endsWith(\".pdf\") ||\n    secureUrl.endsWith(\".pdf\") ||\n    url.endsWith(\".pdf\")\n  );\n};\n\nconst texUpload = uploads.find(isTexUpload);\nconst pdfUpload = uploads.find(isPdfUpload);\n\nif (!texUpload) {\n  throw new Error(\"Could not identify the TEX upload result.\");\n}\n\nif (!pdfUpload) {\n  throw new Error(\"Could not identify the PDF upload result.\");\n}\n\nconst texUrl = texUpload.secure_url || texUpload.url;\nconst pdfUrl = pdfUpload.secure_url || pdfUpload.url;\n\nif (!texUrl || !pdfUrl) {\n  throw new Error(\"Cloudinary did not return both TEX and PDF URLs.\");\n}\n\nconst source = $(\"Normalize Input\").first().json;\n\nreturn [\n  {\n    json: {\n      document_type: source.document_type,\n      application_id: source.application_id,\n      job_id: source.job_id,\n      company_name: source.company_name,\n      job_title: source.job_title,\n      tex_url: texUrl,\n      pdf_url: pdfUrl,\n      tex_public_id: texUpload.public_id,\n      pdf_public_id: pdfUpload.public_id,\n    },\n  },\n];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3584,
-        4064
+        4512,
+        4848
       ],
-      "id": "9f1485f0-792d-4732-9571-712ca3633d2d",
+      "id": "595050ef-f57b-4ec3-a6aa-5c42ba8dd703",
       "name": "Final Output"
     },
     {
@@ -212,10 +212,10 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        2688,
-        3296
+        3616,
+        4080
       ],
-      "id": "643606d4-0821-4540-b32c-9764da9a8eb2",
+      "id": "05669e13-a365-4aa4-8dca-aa813252e666",
       "name": "Setup Notes"
     },
     {
@@ -223,10 +223,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        3360,
-        4064
+        4288,
+        4848
       ],
-      "id": "ee47c34e-46c3-466c-b94b-adf591ef47ae",
+      "id": "845ae105-6987-40e0-8557-40392adfd6fa",
       "name": "Merge Document Uploads"
     }
   ],
@@ -354,7 +354,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "bcf5fd7d-92aa-4655-b8a9-86b21c76675d",
+  "versionId": "6e3a9d99-8f5c-42a6-9aad-83db57b8fae6",
   "meta": {
     "instanceId": "2d85b40e2e1a69706b539dc280f2a48f8b70729872141299d251c48887ea4c94"
   },

@@ -553,50 +553,6 @@
     },
     {
       "parameters": {
-        "model": "google/gemma-4-31b-it:free",
-        "options": {
-          "temperature": "={{ $json.project_selection_temperature }}"
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
-      "typeVersion": 1,
-      "position": [
-        1584,
-        1840
-      ],
-      "id": "72b73fb8-5193-44bf-bdfe-6a5169715ade",
-      "name": "OpenRouter Chat Model4",
-      "credentials": {
-        "openRouterApi": {
-          "id": "z9dqljjig300DoBw",
-          "name": "OpenRouter account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "model": "google/gemma-4-31b-it:free",
-        "options": {
-          "temperature": "={{ $json.project_selection_temperature }}"
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
-      "typeVersion": 1,
-      "position": [
-        3328,
-        1136
-      ],
-      "id": "f5f80f07-06ca-4208-8a22-35acfd65d137",
-      "name": "OpenRouter Chat Model5",
-      "credentials": {
-        "openRouterApi": {
-          "id": "z9dqljjig300DoBw",
-          "name": "OpenRouter account"
-        }
-      }
-    },
-    {
-      "parameters": {
         "conditions": {
           "options": {
             "caseSensitive": true,
@@ -642,94 +598,6 @@
       ],
       "id": "94c62d4c-4342-4981-9b23-e2207c7c7186",
       "name": "Return Test CV Output"
-    },
-    {
-      "parameters": {
-        "model": "google/gemma-4-31b-it:free",
-        "options": {
-          "temperature": "={{ $json.project_selection_temperature }}"
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
-      "typeVersion": 1,
-      "position": [
-        1584,
-        928
-      ],
-      "id": "fad3d7e4-19b2-466f-99f9-833d9241278b",
-      "name": "OpenRouter Chat Model3",
-      "credentials": {
-        "openRouterApi": {
-          "id": "z9dqljjig300DoBw",
-          "name": "OpenRouter account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "model": "google/gemma-4-31b-it:free",
-        "options": {
-          "temperature": "={{ $json.project_selection_temperature }}"
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
-      "typeVersion": 1,
-      "position": [
-        64,
-        1136
-      ],
-      "id": "b4b5fe45-8e6c-4381-89f7-7ca46190d7d7",
-      "name": "OpenRouter Chat Model2",
-      "credentials": {
-        "openRouterApi": {
-          "id": "z9dqljjig300DoBw",
-          "name": "OpenRouter account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "model": "google/gemma-4-31b-it:free",
-        "options": {
-          "temperature": "={{ $json.project_selection_temperature }}"
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
-      "typeVersion": 1,
-      "position": [
-        1584,
-        224
-      ],
-      "id": "bcbab8c0-56b6-4bad-ba38-9965c10fbabb",
-      "name": "OpenRouter Chat Model1",
-      "credentials": {
-        "openRouterApi": {
-          "id": "z9dqljjig300DoBw",
-          "name": "OpenRouter account"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "model": "google/gemma-4-31b-it:free",
-        "options": {
-          "temperature": "={{ $json.project_selection_temperature }}"
-        }
-      },
-      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
-      "typeVersion": 1,
-      "position": [
-        64,
-        224
-      ],
-      "id": "e28c62c1-b44a-4f4b-ad99-9babe0b78d58",
-      "name": "OpenRouter Chat Model",
-      "credentials": {
-        "openRouterApi": {
-          "id": "z9dqljjig300DoBw",
-          "name": "OpenRouter account"
-        }
-      }
     },
     {
       "parameters": {
@@ -1054,6 +922,126 @@
       ],
       "id": "881c6790-d527-4482-9375-a394d907943c",
       "name": "Rewrite Summary Auto-Fix Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "aPx4VUVA3p6ZhC3v",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        64,
+        224
+      ],
+      "id": "376946dc-173b-414b-b1fb-3c9c10e476a5",
+      "name": "Google Gemini Chat Model6",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "aPx4VUVA3p6ZhC3v",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1584,
+        224
+      ],
+      "id": "57713e28-b0c2-4d63-b8c2-2ce318708b74",
+      "name": "Google Gemini Chat Model7",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "aPx4VUVA3p6ZhC3v",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        64,
+        1136
+      ],
+      "id": "e87b2d52-3c2c-4f14-8ab3-bcbb3618916d",
+      "name": "Google Gemini Chat Model8",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "aPx4VUVA3p6ZhC3v",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1584,
+        928
+      ],
+      "id": "f28f21f2-026f-4c6f-90c1-36c166c909f0",
+      "name": "Google Gemini Chat Model9",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "aPx4VUVA3p6ZhC3v",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        1584,
+        1840
+      ],
+      "id": "202a2431-54b8-4b26-a2fb-fea7f4e05874",
+      "name": "Google Gemini Chat Model10",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "aPx4VUVA3p6ZhC3v",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        3328,
+        1136
+      ],
+      "id": "7e236aa1-a772-4cf5-ae1d-c1b958e31d03",
+      "name": "Google Gemini Chat Model11",
       "credentials": {
         "googlePalmApi": {
           "id": "aPx4VUVA3p6ZhC3v",
@@ -1489,28 +1477,6 @@
         ]
       ]
     },
-    "OpenRouter Chat Model4": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Tailor Skills",
-            "type": "ai_languageModel",
-            "index": 1
-          }
-        ]
-      ]
-    },
-    "OpenRouter Chat Model5": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Rewrite Summary",
-            "type": "ai_languageModel",
-            "index": 1
-          }
-        ]
-      ]
-    },
     "Test Mode?": {
       "main": [
         [
@@ -1541,50 +1507,6 @@
             "node": "Validate Six Prompt Settings",
             "type": "main",
             "index": 0
-          }
-        ]
-      ]
-    },
-    "OpenRouter Chat Model3": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Rewrite Work Content",
-            "type": "ai_languageModel",
-            "index": 1
-          }
-        ]
-      ]
-    },
-    "OpenRouter Chat Model2": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Select Work Experiences",
-            "type": "ai_languageModel",
-            "index": 1
-          }
-        ]
-      ]
-    },
-    "OpenRouter Chat Model1": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Rewrite Project Content",
-            "type": "ai_languageModel",
-            "index": 1
-          }
-        ]
-      ]
-    },
-    "OpenRouter Chat Model": {
-      "ai_languageModel": [
-        [
-          {
-            "node": "Select Projects",
-            "type": "ai_languageModel",
-            "index": 1
           }
         ]
       ]
@@ -1786,6 +1708,72 @@
           }
         ]
       ]
+    },
+    "Google Gemini Chat Model6": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Select Projects",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model7": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Rewrite Project Content",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model8": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Select Work Experiences",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model9": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Rewrite Work Content",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model10": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Tailor Skills",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model11": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Rewrite Summary",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -1794,8 +1782,9 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "71c15794-0231-43d7-b822-3a10458c756a",
+  "versionId": "4530306b-4c6c-4e2c-b955-17fd1814a0bb",
   "meta": {
+    "templateCredsSetupCompleted": true,
     "instanceId": "2d85b40e2e1a69706b539dc280f2a48f8b70729872141299d251c48887ea4c94"
   },
   "nodeGroups": [],
