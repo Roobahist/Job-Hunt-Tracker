@@ -11,13 +11,13 @@
           ]
         }
       },
-      "id": "7eaafe50-81a3-4ab6-b44c-db8423e7653b",
+      "id": "afc7f8fe-9ae3-4f42-bd86-2ea6438c269f",
       "name": "Every Hour",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
-        -9088,
-        192
+        -10688,
+        -896
       ]
     },
     {
@@ -39,13 +39,13 @@
         },
         "options": {}
       },
-      "id": "b9f10048-1352-4d16-8a6e-3762dcc8c0fd",
+      "id": "8b34b91d-576e-434e-9c02-ff4ea12f5290",
       "name": "Generate Active LinkedIn URLs",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        -8864,
-        304
+        -10464,
+        -784
       ]
     },
     {
@@ -53,13 +53,13 @@
         "fileSelector": "/home/node/.n8n-files/document-pipeline/master_cv.json",
         "options": {}
       },
-      "id": "2ae77df3-1354-4cc1-8614-a9b1aafbc570",
+      "id": "a44d1655-8cc7-4896-9403-1a168dc03dcb",
       "name": "Read Master CV JSON",
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1,
       "position": [
-        -8640,
-        304
+        -10240,
+        -784
       ]
     },
     {
@@ -67,13 +67,13 @@
         "operation": "fromJson",
         "options": {}
       },
-      "id": "2bcbbbda-cfe4-4746-b924-05765d8d5de1",
+      "id": "77cbbca8-a877-4704-ab66-342bc9a8406f",
       "name": "Extract Master CV",
       "type": "n8n-nodes-base.extractFromFile",
       "typeVersion": 1,
       "position": [
-        -8416,
-        304
+        -10016,
+        -784
       ]
     },
     {
@@ -83,13 +83,13 @@
         "returnAll": true,
         "additionalOptions": {}
       },
-      "id": "9f245edb-1439-43ce-9989-c7dbb2cd619f",
+      "id": "b50c537c-9e79-4d29-bcca-9331f7bf43d5",
       "name": "Read Search Criteria",
       "type": "n8n-nodes-base.baserow",
       "typeVersion": 1.1,
       "position": [
-        -8192,
-        304
+        -9792,
+        -784
       ],
       "credentials": {
         "baserowApi": {
@@ -100,17 +100,15 @@
     },
     {
       "parameters": {
-        "mode": "runOnceForAllItems",
-        "language": "pythonNative",
-        "pythonCode": "import json\n\n\ndef parse_json(value):\n    if not isinstance(value, str):\n        return value\n    try:\n        return json.loads(value)\n    except (json.JSONDecodeError, TypeError):\n        return value\n\n\ndef unwrap_master_cv(value):\n    current = parse_json(value)\n    for _depth in range(5):\n        if not isinstance(current, dict):\n            break\n        if isinstance(current.get(\"projects\"), list):\n            return current\n        next_value = None\n        found = False\n        for key in (\"master_cv\", \"cv_json\", \"document_data\", \"data\", \"json\"):\n            if key in current:\n                next_value = current[key]\n                found = True\n                break\n        if not found or next_value is current:\n            break\n        current = parse_json(next_value)\n    return current\n\n\ndef is_true(value):\n    if isinstance(value, bool):\n        return value\n    if isinstance(value, (int, float)) and not isinstance(value, bool):\n        return value == 1\n    if isinstance(value, dict):\n        for key in (\"value\", \"name\", \"id\"):\n            if key in value:\n                value = value[key]\n                break\n    return str(value if value is not None else \"\").strip().lower() in {\n        \"true\", \"1\", \"yes\", \"active\", \"enabled\"\n    }\n\n\nmaster_cv = None\ncriteria_rows = []\nfor item in _input.all():\n    item_json = item.json\n    candidate = unwrap_master_cv(item_json)\n    if master_cv is None and isinstance(candidate, dict) and isinstance(candidate.get(\"projects\"), list):\n        master_cv = candidate\n        continue\n    fields = item_json.get(\"fields\") if isinstance(item_json, dict) else None\n    row = fields if isinstance(fields, dict) else item_json\n    if isinstance(row, dict) and (\"Generated URL\" in row or \"Active\" in row):\n        criteria_rows.append(row)\n\nif not isinstance(master_cv, dict):\n    raise ValueError(\"The master CV file must contain a JSON object.\")\nif not isinstance(master_cv.get(\"projects\"), list):\n    raise ValueError(\"The master CV JSON could not be normalized: projects must be an array.\")\n\nseen = set()\nstart_urls = []\nfor row in criteria_rows:\n    url = row.get(\"Generated URL\")\n    if not is_true(row.get(\"Active\")) or not isinstance(url, str) or not url.strip():\n        continue\n    normalized = url.strip()\n    if normalized not in seen:\n        seen.add(normalized)\n        start_urls.append({\"url\": normalized})\n\nif not start_urls:\n    raise ValueError(\"No active Search Criteria rows contain a Generated URL.\")\n\nreturn [{\"json\": {\"master_cv\": master_cv, \"startUrls\": start_urls}}]\n"
+        "jsCode": "const extracted = $(\"Extract Master CV\").first().json;\n\nconst parseJson = (value) => {\n  if (typeof value !== \"string\") return value;\n\n  try {\n    return JSON.parse(value);\n  } catch {\n    return value;\n  }\n};\n\nconst unwrapMasterCv = (value) => {\n  let current = parseJson(value);\n\n  for (let depth = 0; depth < 5; depth++) {\n    if (!current || typeof current !== \"object\" || Array.isArray(current)) {\n      break;\n    }\n\n    if (Array.isArray(current.projects)) {\n      return current;\n    }\n\n    const next =\n      current.master_cv ??\n      current.cv_json ??\n      current.document_data ??\n      current.data ??\n      current.json;\n\n    if (next === undefined || next === current) {\n      break;\n    }\n\n    current = parseJson(next);\n  }\n\n  return current;\n};\n\nconst masterCv = unwrapMasterCv(extracted);\n\nif (!masterCv || typeof masterCv !== \"object\" || Array.isArray(masterCv)) {\n  throw new Error(\"The master CV file must contain a JSON object.\");\n}\n\nif (!Array.isArray(masterCv.projects)) {\n  throw new Error(\n    \"The master CV JSON could not be normalized: projects must be an array.\"\n  );\n}\n\nconst isTrue = (value) => {\n  if (typeof value === \"boolean\") return value;\n  if (typeof value === \"number\") return value === 1;\n\n  if (value && typeof value === \"object\") {\n    value = value.value ?? value.name ?? value.id;\n  }\n\n  return [\"true\", \"1\", \"yes\", \"active\", \"enabled\"].includes(\n    String(value ?? \"\").trim().toLowerCase()\n  );\n};\n\nconst seen = new Set();\nconst startUrls = [];\n\nfor (const item of $input.all()) {\n  const row =\n    item.json.fields && typeof item.json.fields === \"object\"\n      ? item.json.fields\n      : item.json;\n\n  const url = row[\"Generated URL\"];\n\n  if (!isTrue(row.Active) || typeof url !== \"string\" || !url.trim()) {\n    continue;\n  }\n\n  const normalized = url.trim();\n\n  if (!seen.has(normalized)) {\n    seen.add(normalized);\n    startUrls.push({ url: normalized });\n  }\n}\n\nif (startUrls.length === 0) {\n  throw new Error(\n    \"No active Search Criteria rows contain a Generated URL.\"\n  );\n}\n\nreturn [\n  {\n    json: {\n      master_cv: masterCv,\n      startUrls,\n    },\n  },\n];"
       },
-      "id": "dbd50f83-eafe-4cbd-8e0e-162cbeed0a80",
+      "id": "be5e1ec6-b837-40dd-8e58-26cfc581a141",
       "name": "Collect Active Start URLs",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -7968,
-        304
+        -9568,
+        -784
       ]
     },
     {
@@ -122,15 +120,15 @@
           "value": "2rJKkhh7vjpX7pvjg",
           "mode": "id"
         },
-        "customBody": "={\n  \"startUrls\": {{ JSON.stringify($json.startUrls) }},\n  \"saveOnlyUniqueItems\": true,\n  \"companyExclude\": [\"Quik Hire Staffing\", \"Get Offers\", \"Keystone Recruitment\", \"Mercor\", \"Crossing Hurdles\", \"Lensa\", \"Hire Feed\", \"Jobs AI\", \"Jobright.ai\"],\n  \"maxItems\": 150\n}"
+        "customBody": "={\n  \"startUrls\": {{ JSON.stringify($json.startUrls) }},\n  \"saveOnlyUniqueItems\": true,\n  \"companyExclude\": [\"Quik Hire Staffing\", \"Get Offers\", \"Keystone Recruitment\", \"Mercor\", \"Crossing Hurdles\", \"Lensa\", \"Hire Feed\", \"Jobs AI\", \"Jobright.ai\", \"Alignerr\"],\n  \"maxItems\": 150\n}"
       },
-      "id": "5187c7c0-adf6-4e60-8fa7-887227763c24",
+      "id": "8159f6d4-b7f9-46c2-b9e1-c294e022dae5",
       "name": "Scrape LinkedIn Jobs with Apify",
       "type": "@apify/n8n-nodes-apify.apify",
       "typeVersion": 1,
       "position": [
-        -7744,
-        304
+        -9344,
+        -784
       ],
       "credentials": {
         "apifyApi": {
@@ -143,13 +141,13 @@
       "parameters": {
         "options": {}
       },
-      "id": "464a9a68-f54b-4c77-b3ae-abe8d98d9783",
+      "id": "9f5b48aa-b032-4651-8891-44a8d7a5e054",
       "name": "Loop Over Jobs",
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
       "position": [
-        -7520,
-        304
+        -9120,
+        -784
       ]
     },
     {
@@ -159,13 +157,13 @@
         "returnAll": true,
         "additionalOptions": {}
       },
-      "id": "f0eded11-7795-49c8-9f23-a52bc036170b",
+      "id": "0ecf80ab-120a-4dec-967a-6af66e19c45a",
       "name": "Read Existing Jobs",
       "type": "n8n-nodes-base.baserow",
       "typeVersion": 1.1,
       "position": [
-        -7296,
-        160
+        -8896,
+        -928
       ],
       "alwaysOutputData": true,
       "credentials": {
@@ -177,17 +175,15 @@
     },
     {
       "parameters": {
-        "mode": "runOnceForAllItems",
-        "language": "pythonNative",
-        "pythonCode": "import re\n\n\ndef canonical(value):\n    normalized = str(value if value is not None else \"\").strip()\n    normalized = re.sub(r\"[?#].*$\", \"\", normalized)\n    normalized = re.sub(r\"/$\", \"\", normalized)\n    return normalized.lower()\n\n\njob = None\nexisting_rows = []\nfor item in _input.all():\n    item_json = item.json\n    if not isinstance(item_json, dict):\n        continue\n    if \"jobUrl\" in item_json:\n        job = item_json\n        continue\n    fields = item_json.get(\"fields\")\n    row = fields if isinstance(fields, dict) else item_json\n    if \"Link\" in row:\n        existing_rows.append(row)\n\nif job is None:\n    raise ValueError(\"The current scraped job was not found in the node input.\")\ntarget = canonical(job.get(\"jobUrl\"))\nif not target:\n    return [{\"json\": {}}]\nif any(canonical(row.get(\"Link\")) == target for row in existing_rows):\n    return [{\"json\": {}}]\nreturn [{\"json\": job}]\n"
+        "jsCode": "const job = $(\"Loop Over Jobs\").item.json;\nconst canonical = (value) => String(value ?? \"\").trim().replace(/[?#].*$/, \"\").replace(/\\/$/, \"\").toLowerCase();\nconst target = canonical(job.jobUrl);\n\nif (!target) {\n  return [{ json: {} }];\n}\n\nconst exists = $input.all().some((item) => {\n  const row = item.json.fields && typeof item.json.fields === \"object\"\n    ? item.json.fields\n    : item.json;\n  return canonical(row.Link) === target;\n});\n\nif (exists) {\n  return [{ json: {} }];\n}\n\nreturn [{ json: job }];"
       },
-      "id": "e30d213a-f54e-4bdd-b986-75d04e3fd228",
+      "id": "45249d4a-79ed-4cac-979a-83ff3cf155e0",
       "name": "Keep Only New Job",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -7072,
-        160
+        -8672,
+        -928
       ]
     },
     {
@@ -214,28 +210,26 @@
         },
         "options": {}
       },
-      "id": "72dd5b32-4d2e-4977-aad6-d2b3301c93ad",
+      "id": "074ae376-739f-49b3-b69f-91e28a687f40",
       "name": "Is New Job?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -6848,
-        160
+        -8448,
+        -928
       ]
     },
     {
       "parameters": {
-        "mode": "runOnceForAllItems",
-        "language": "pythonNative",
-        "pythonCode": "import re\n\n\ndef slugify(value):\n    text = str(value if value is not None else \"\").lower().strip()\n    text = re.sub(r\"[^a-z0-9]+\", \"-\", text)\n    text = re.sub(r\"-+\", \"-\", text).strip(\"-\")\n    return text or \"unknown\"\n\n\njob = _input.first().json\nmaster_cv = job.get(\"_pipeline_master_cv\")\nif not isinstance(master_cv, dict):\n    raise ValueError(\"master_cv must be an object.\")\nif not isinstance(master_cv.get(\"projects\"), list):\n    raise ValueError(\"master_cv.projects must be an array.\")\nif not isinstance(master_cv.get(\"work_experience\"), list):\n    raise ValueError(\"master_cv.work_experience must be an array.\")\nif not isinstance(master_cv.get(\"skills\"), list):\n    raise ValueError(\"master_cv.skills must be an array.\")\n\njob_id = str(job.get(\"jobId\") or \"\").strip() or slugify(job.get(\"jobUrl\"))\napplication_id = \"-\".join((slugify(job.get(\"companyName\")), slugify(job.get(\"jobTitle\")), slugify(job_id)))\nsource_job = {key: value for key, value in job.items() if key != \"_pipeline_master_cv\"}\nreturn [{\"json\": {\n    \"test_mode\": False,\n    \"job_id\": job_id,\n    \"company_name\": job.get(\"companyName\"),\n    \"job_title\": job.get(\"jobTitle\"),\n    \"job_description\": job.get(\"jobDescription\"),\n    \"job_url\": job.get(\"jobUrl\"),\n    \"published_at\": job.get(\"publishedAt\"),\n    \"location\": job.get(\"location\"),\n    \"contract_type\": job.get(\"contractType\"),\n    \"application_id\": application_id,\n    \"project_selection_count\": 4,\n    \"work_experience_selection_count\": 3,\n    \"master_cv\": master_cv,\n    \"source_job\": source_job,\n}}]\n"
+        "jsCode": "const job = $json;\nconst collected = $(\"Collect Active Start URLs\").first().json;\nconst masterCv = collected.master_cv;\n\nif (!masterCv || typeof masterCv !== \"object\" || Array.isArray(masterCv)) {\n  throw new Error(\"master_cv must be an object.\");\n}\n\nif (!Array.isArray(masterCv.projects)) {\n  throw new Error(\"master_cv.projects must be an array.\");\n}\n\nif (!Array.isArray(masterCv.work_experience)) {\n  throw new Error(\"master_cv.work_experience must be an array.\");\n}\n\nif (!Array.isArray(masterCv.skills)) {\n  throw new Error(\"master_cv.skills must be an array.\");\n}\n\nconst slugify = (value) =>\n  String(value ?? \"\")\n    .toLowerCase()\n    .trim()\n    .replace(/[^a-z0-9]+/g, \"-\")\n    .replace(/-+/g, \"-\")\n    .replace(/^-|-$/g, \"\") || \"unknown\";\n\nconst jobId =\n  String(job.jobId ?? \"\").trim() || slugify(job.jobUrl);\n\nconst applicationId =\n  `${slugify(job.companyName)}-${slugify(job.jobTitle)}-${slugify(jobId)}`;\n\nreturn [\n  {\n    json: {\n      test_mode: false,\n      job_id: jobId,\n      company_name: job.companyName,\n      job_title: job.jobTitle,\n      job_description: job.jobDescription,\n      job_url: job.jobUrl,\n      published_at: job.publishedAt,\n      location: job.location,\n      contract_type: job.contractType,\n      application_id: applicationId,\n      project_selection_count: 4,\n      work_experience_selection_count: 3,\n      master_cv: masterCv,\n      source_job: job,\n    },\n  },\n];"
       },
-      "id": "d4c2bffb-cc34-40a5-a4d2-e93997e45279",
+      "id": "608754fa-6b30-465a-8dc3-9ff528bafd61",
       "name": "Prepare CV Content Input",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -6624,
-        160
+        -8224,
+        -928
       ]
     },
     {
@@ -257,28 +251,27 @@
         },
         "options": {}
       },
-      "id": "37032147-52f8-4415-8fc6-b0fe2fb63e67",
+      "id": "5b5e708d-9e24-48d5-9d86-7930f8b68b36",
       "name": "Create Tailored CV Content",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        -6400,
-        160
+        -8000,
+        -928
       ]
     },
     {
       "parameters": {
-        "mode": "runOnceForAllItems",
         "language": "pythonNative",
-        "pythonCode": "input_json = _input.first().json\ncv_json = input_json.get(\"cv_json\")\n\nif not isinstance(cv_json, dict):\n    raise ValueError(\"CV content workflow did not return cv_json.\")\n\noutput = dict(input_json)\noutput[\"document_type\"] = \"cv\"\noutput[\"document_data\"] = cv_json\n\nreturn [{\"json\": output}]\n"
+        "pythonCode": "output = []\n\nfor item in _items:\n    data = item.get(\"json\", {})\n    cv_json = data.get(\"cv_json\")\n\n    if not isinstance(cv_json, (dict, list)):\n        raise ValueError(\"CV content workflow did not return cv_json.\")\n\n    output.append({\n        \"json\": {\n            **data,\n            \"document_type\": \"cv\",\n            \"document_data\": cv_json,\n        }\n    })\n\nreturn output"
       },
-      "id": "c915fbf1-0132-49ef-9d0f-cc5e62b5f256",
+      "id": "8fc672ad-ee8a-4cad-a867-0db41bc7df45",
       "name": "Prepare CV Document",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -6176,
-        160
+        -7776,
+        -928
       ]
     },
     {
@@ -361,28 +354,26 @@
         },
         "options": {}
       },
-      "id": "ce8c7631-33c7-4f37-8f3e-84e5bb8deed3",
+      "id": "e97ae47c-4169-47e2-aa87-cf65e291a41f",
       "name": "Generate CV Files",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        -5952,
-        160
+        -7552,
+        -928
       ]
     },
     {
       "parameters": {
-        "mode": "runOnceForAllItems",
-        "language": "pythonNative",
-        "pythonCode": "cv_result = None\nfor item in _input.all():\n    item_json = item.json\n    if isinstance(item_json, dict) and isinstance(item_json.get(\"cv_json\"), dict):\n        cv_result = item_json\n        break\nif cv_result is None:\n    raise ValueError(\"CV content workflow output containing cv_json was not found.\")\njob = cv_result.get(\"source_job\") or {}\nreturn [{\"json\": {\n    \"test_mode\": False,\n    \"job_id\": cv_result.get(\"job_id\"),\n    \"company_name\": cv_result.get(\"company_name\"),\n    \"job_title\": cv_result.get(\"job_title\"),\n    \"job_description\": cv_result.get(\"job_description\"),\n    \"job_url\": cv_result.get(\"job_url\"),\n    \"published_at\": cv_result.get(\"published_at\"),\n    \"location\": cv_result.get(\"location\"),\n    \"contract_type\": cv_result.get(\"contract_type\"),\n    \"application_id\": cv_result.get(\"application_id\"),\n    \"master_cv\": cv_result.get(\"cv_json\"),\n    \"source_job\": job,\n}}]\n"
+        "jsCode": "const cvResult = $(\"Create Tailored CV Content\").item.json;\nconst job = cvResult.source_job;\n\nreturn [{\n  json: {\n    test_mode: false,\n    job_id: cvResult.job_id,\n    company_name: cvResult.company_name,\n    job_title: cvResult.job_title,\n    job_description: cvResult.job_description,\n    job_url: cvResult.job_url,\n    published_at: cvResult.published_at,\n    location: cvResult.location,\n    contract_type: cvResult.contract_type,\n    application_id: cvResult.application_id,\n    master_cv: cvResult.cv_json,\n    source_job: job,\n  },\n}];"
       },
-      "id": "ffc63e7c-2867-4474-9fe5-8d2389b520e9",
+      "id": "54eee0ce-f4f8-4469-b366-de4827bbc4fe",
       "name": "Prepare Cover Letter Input",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -5728,
-        160
+        -7328,
+        -928
       ]
     },
     {
@@ -404,28 +395,27 @@
         },
         "options": {}
       },
-      "id": "fc0afc70-aa67-40f9-a110-f72770eb68b9",
+      "id": "8bacb0fb-4d1b-40fa-912f-090927c3a53d",
       "name": "Create Cover Letter Content",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        -5504,
-        160
+        -7104,
+        -928
       ]
     },
     {
       "parameters": {
-        "mode": "runOnceForAllItems",
         "language": "pythonNative",
-        "pythonCode": "input_json = _input.first().json\ncover_letter_json = input_json.get(\"cover_letter_json\")\n\nif not isinstance(cover_letter_json, dict):\n    raise ValueError(\"Cover letter workflow did not return cover_letter_json.\")\n\noutput = dict(input_json)\noutput[\"document_type\"] = \"cover-letter\"\noutput[\"document_data\"] = cover_letter_json\n\nreturn [{\"json\": output}]\n"
+        "pythonCode": "output = []\n\nfor item in _items:\n    data = item.get(\"json\", {})\n    cover_letter_json = data.get(\"cover_letter_json\")\n\n    if not isinstance(cover_letter_json, (dict, list)):\n        raise ValueError(\"Cover letter workflow did not return cover_letter_json.\")\n\n    output.append({\n        \"json\": {\n            **data,\n            \"document_type\": \"cover-letter\",\n            \"document_data\": cover_letter_json,\n        }\n    })\n\nreturn output"
       },
-      "id": "00764f74-9f8f-4aa9-b986-82e752bd799d",
+      "id": "e055581b-ee75-40f2-a927-5db406bbafa7",
       "name": "Prepare Cover Letter Document",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -5280,
-        160
+        -6880,
+        -928
       ]
     },
     {
@@ -508,28 +498,26 @@
         },
         "options": {}
       },
-      "id": "fd9f6f63-768a-411f-8059-7be2c52b6041",
+      "id": "1134d210-240e-4d3c-b6b0-82d77d646b9e",
       "name": "Generate Cover Letter Files",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        -5056,
-        160
+        -6656,
+        -928
       ]
     },
     {
       "parameters": {
-        "mode": "runOnceForAllItems",
-        "language": "pythonNative",
-        "pythonCode": "from datetime import datetime, timezone\n\n\ndef require_upload(upload, label):\n    name = upload.get(\"name\") if isinstance(upload, dict) else None\n    if not isinstance(name, str) or not name.strip():\n        raise ValueError(f\"{label} did not return a valid Baserow user-file name.\")\n    return upload\n\n\ncv_content = None\nuploads = {}\nfor item in _input.all():\n    item_json = item.json\n    if not isinstance(item_json, dict):\n        continue\n    if isinstance(item_json.get(\"cv_json\"), dict) and \"application_id\" in item_json:\n        cv_content = item_json\n    kind = item_json.get(\"_upload_kind\")\n    if isinstance(kind, str) and isinstance(item_json.get(\"upload\"), dict):\n        uploads[kind] = item_json[\"upload\"]\n\nif cv_content is None:\n    raise ValueError(\"CV content context was not found.\")\ncv_pdf = require_upload(uploads.get(\"cv_pdf\"), \"CV PDF upload\")\ncv_tex = require_upload(uploads.get(\"cv_tex\"), \"CV TEX upload\")\ncover_pdf = require_upload(uploads.get(\"cover_pdf\"), \"Cover letter PDF upload\")\ncover_tex = require_upload(uploads.get(\"cover_tex\"), \"Cover letter TEX upload\")\njob = cv_content.get(\"source_job\") or {}\napplication_id = str(cv_content.get(\"application_id\") or \"application\")\npublished_at = job.get(\"publishedAt\")\ndate_value = str(published_at)[:10] if published_at else datetime.now(timezone.utc).date().isoformat()\nreturn [{\"json\": {\n    \"Job ID\": str(cv_content.get(\"job_id\") or \"\"),\n    \"Date\": date_value,\n    \"Company Name\": job.get(\"companyName\") or \"\",\n    \"Title\": job.get(\"jobTitle\") or \"\",\n    \"Location\": job.get(\"location\") or \"\",\n    \"Job Description\": job.get(\"jobDescription\") or \"\",\n    \"Contract Type\": job.get(\"contractType\") or \"\",\n    \"Cover Letter\": [\n        {\"name\": cover_pdf[\"name\"], \"visible_name\": f\"cover-letter_{application_id}.pdf\"},\n        {\"name\": cover_tex[\"name\"], \"visible_name\": f\"cover-letter_{application_id}.tex\"},\n    ],\n    \"CV\": [\n        {\"name\": cv_pdf[\"name\"], \"visible_name\": f\"cv_{application_id}.pdf\"},\n        {\"name\": cv_tex[\"name\"], \"visible_name\": f\"cv_{application_id}.tex\"},\n    ],\n    \"Link\": job.get(\"jobUrl\") or \"\",\n    \"Status\": \"New\",\n}}]\n"
+        "jsCode": "const cvContent = $(\"Create Tailored CV Content\").item.json;\nconst job = cvContent.source_job;\n\nconst cvPdf = $(\"Upload CV PDF to Baserow\").first().json;\nconst cvTex = $(\"Upload CV TEX to Baserow\").first().json;\nconst coverPdf = $(\"Upload Cover Letter PDF to Baserow\").first().json;\nconst coverTex = $(\"Upload Cover Letter TEX to Baserow\").first().json;\n\nconst requiredUpload = (upload, label) => {\n  if (!upload || typeof upload.name !== \"string\" || !upload.name.trim()) {\n    throw new Error(`${label} did not return a valid Baserow user-file name.`);\n  }\n  return upload;\n};\n\nrequiredUpload(cvPdf, \"CV PDF upload\");\nrequiredUpload(cvTex, \"CV TEX upload\");\nrequiredUpload(coverPdf, \"Cover letter PDF upload\");\nrequiredUpload(coverTex, \"Cover letter TEX upload\");\n\nconst applicationId = String(cvContent.application_id ?? \"application\");\n\nconst dateValue = job.publishedAt\n  ? String(job.publishedAt).slice(0, 10)\n  : new Date().toISOString().slice(0, 10);\n\nreturn [{\n  json: {\n    \"Job ID\": String(cvContent.job_id ?? \"\"),\n    \"Date\": dateValue,\n    \"Company Name\": job.companyName ?? \"\",\n    \"Title\": job.jobTitle ?? \"\",\n    \"Location\": job.location ?? \"\",\n    \"Job Description\": job.jobDescription ?? \"\",\n    \"Contract Type\": job.contractType ?? \"\",\n    \"Cover Letter\": [\n      {\n        \"name\": coverPdf.name,\n        \"visible_name\": `cover-letter_${applicationId}.pdf`\n      },\n      {\n        \"name\": coverTex.name,\n        \"visible_name\": `cover-letter_${applicationId}.tex`\n      }\n    ],\n    \"CV\": [\n      {\n        \"name\": cvPdf.name,\n        \"visible_name\": `cv_${applicationId}.pdf`\n      },\n      {\n        \"name\": cvTex.name,\n        \"visible_name\": `cv_${applicationId}.tex`\n      }\n    ],\n    \"Link\": job.jobUrl ?? \"\",\n    \"Status\": \"New\"\n  }\n}];"
       },
-      "id": "d79eaf4d-a73c-464e-be2e-ee22d334bf09",
+      "id": "ed377993-22af-4043-8e8d-83926c3ddd60",
       "name": "Build Jobs Row",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -3936,
-        160
+        -5536,
+        -928
       ]
     },
     {
@@ -539,13 +527,13 @@
         "tableId": 1098021,
         "dataToSend": "autoMapInputData"
       },
-      "id": "526d3809-3703-44ba-8f59-5afc74d70fd3",
+      "id": "bf08dd47-20ea-4e93-97c8-daf5f3dd5953",
       "name": "Create Job Row in Baserow",
       "type": "n8n-nodes-base.baserow",
       "typeVersion": 1.1,
       "position": [
-        -3712,
-        240
+        -5312,
+        -848
       ],
       "credentials": {
         "baserowApi": {
@@ -560,13 +548,13 @@
         "height": 520,
         "width": 1700
       },
-      "id": "3a5115fb-b135-47ee-980f-8da681cb7d15",
+      "id": "67548ec7-b2fd-44d7-b27b-e8c5b8e075f7",
       "name": "Setup Notes",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -9088,
-        784
+        -10688,
+        -304
       ]
     },
     {
@@ -581,13 +569,13 @@
         "body": "={{ JSON.stringify({ url: $(\"Generate CV Files\").first().json.pdf_url }) }}",
         "options": {}
       },
-      "id": "0856b88b-3f88-440e-bb64-b7f5bda0dafe",
+      "id": "470487dd-b66b-45b6-a40e-4771e23119d8",
       "name": "Upload CV PDF to Baserow",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -4832,
-        160
+        -6432,
+        -928
       ],
       "credentials": {
         "httpHeaderAuth": {
@@ -608,13 +596,13 @@
         "body": "={{ JSON.stringify({ url: $(\"Generate CV Files\").first().json.tex_url }) }}",
         "options": {}
       },
-      "id": "179962f7-5c40-4dc2-a000-94c85221c450",
+      "id": "58556fb3-ad74-4403-b586-a430de612174",
       "name": "Upload CV TEX to Baserow",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -4608,
-        160
+        -6208,
+        -928
       ],
       "credentials": {
         "httpHeaderAuth": {
@@ -635,13 +623,13 @@
         "body": "={{ JSON.stringify({ url: $(\"Generate Cover Letter Files\").first().json.pdf_url }) }}",
         "options": {}
       },
-      "id": "4797c663-4eb5-422e-9cec-8a287da8d721",
+      "id": "91be5167-c4f5-42dc-959c-02897e93a560",
       "name": "Upload Cover Letter PDF to Baserow",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -4384,
-        160
+        -5984,
+        -928
       ],
       "credentials": {
         "httpHeaderAuth": {
@@ -662,13 +650,13 @@
         "body": "={{ JSON.stringify({ url: $(\"Generate Cover Letter Files\").first().json.tex_url }) }}",
         "options": {}
       },
-      "id": "76d3d1d5-c4aa-41dc-9712-04baf2b9b1e9",
+      "id": "22870de6-ba8b-4eda-a2bc-04b718810f72",
       "name": "Upload Cover Letter TEX to Baserow",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -4160,
-        160
+        -5760,
+        -928
       ],
       "credentials": {
         "httpHeaderAuth": {
@@ -682,191 +670,12 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        -9088,
-        384
+        -10688,
+        -704
       ],
-      "id": "b0801099-03b8-44b3-83c3-f7de6ef11da5",
+      "id": "1b740f44-bd62-42c5-8dc6-06d99823aa36",
       "name": "When clicking ‘Execute workflow’",
       "disabled": true
-    },
-    {
-      "parameters": {
-        "mode": "append"
-      },
-      "id": "b85e3c3f-4f00-44e4-a1b4-fe41fe59cf65",
-      "name": "Merge Master CV and Search Criteria",
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3.2,
-      "position": [
-        -8080,
-        304
-      ]
-    },
-    {
-      "parameters": {
-        "mode": "append"
-      },
-      "id": "6fa6bdf9-a1b9-48d4-8c32-4c9cb232e653",
-      "name": "Merge Pipeline Context and Scraped Jobs",
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3.2,
-      "position": [
-        -7632,
-        304
-      ]
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForAllItems",
-        "language": "pythonNative",
-        "pythonCode": "context = None\njobs = []\nfor item in _input.all():\n    item_json = item.json\n    if isinstance(item_json, dict) and isinstance(item_json.get(\"master_cv\"), dict):\n        context = item_json\n    elif isinstance(item_json, dict):\n        jobs.append(item_json)\n\nif context is None:\n    raise ValueError(\"Pipeline context containing master_cv was not found.\")\nmaster_cv = context.get(\"master_cv\")\nif not isinstance(master_cv, dict):\n    raise ValueError(\"Pipeline master_cv must be an object.\")\n\noutput = []\nfor job in jobs:\n    enriched = dict(job)\n    enriched[\"_pipeline_master_cv\"] = master_cv\n    output.append({\"json\": enriched})\nreturn output\n"
-      },
-      "id": "5b1e08db-ac78-445f-bc80-cb64d23a1270",
-      "name": "Attach Master CV to Scraped Jobs",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -7520,
-        304
-      ]
-    },
-    {
-      "parameters": {
-        "mode": "append"
-      },
-      "id": "ee2a6127-00ba-4031-8356-c546ddc3d310",
-      "name": "Merge Current Job and Existing Jobs",
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3.2,
-      "position": [
-        -7184,
-        160
-      ]
-    },
-    {
-      "parameters": {
-        "mode": "append"
-      },
-      "id": "16c1c318-5321-4ef7-8ba2-be5de48a98a4",
-      "name": "Merge CV Content and File Result",
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3.2,
-      "position": [
-        -5840,
-        160
-      ]
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForAllItems",
-        "language": "pythonNative",
-        "pythonCode": "upload = _input.first().json\nif not isinstance(upload, dict):\n    raise ValueError(\"Upload response must be an object.\")\nreturn [{\"json\": {\"_upload_kind\": \"cv_pdf\", \"upload\": upload}}]\n"
-      },
-      "id": "f4df0bb2-c856-4868-9a75-2b094fdbafbc",
-      "name": "Tag CV PDF Upload",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -4720,
-        160
-      ]
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForAllItems",
-        "language": "pythonNative",
-        "pythonCode": "upload = _input.first().json\nif not isinstance(upload, dict):\n    raise ValueError(\"Upload response must be an object.\")\nreturn [{\"json\": {\"_upload_kind\": \"cv_tex\", \"upload\": upload}}]\n"
-      },
-      "id": "8e574565-f5ea-40c9-bcc5-5803ab4ee0bf",
-      "name": "Tag CV TEX Upload",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -4496,
-        160
-      ]
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForAllItems",
-        "language": "pythonNative",
-        "pythonCode": "upload = _input.first().json\nif not isinstance(upload, dict):\n    raise ValueError(\"Upload response must be an object.\")\nreturn [{\"json\": {\"_upload_kind\": \"cover_pdf\", \"upload\": upload}}]\n"
-      },
-      "id": "ed5adaca-f7b0-4501-b721-c15e9f91bddd",
-      "name": "Tag Cover Letter PDF Upload",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -4272,
-        160
-      ]
-    },
-    {
-      "parameters": {
-        "mode": "runOnceForAllItems",
-        "language": "pythonNative",
-        "pythonCode": "upload = _input.first().json\nif not isinstance(upload, dict):\n    raise ValueError(\"Upload response must be an object.\")\nreturn [{\"json\": {\"_upload_kind\": \"cover_tex\", \"upload\": upload}}]\n"
-      },
-      "id": "2a9bbf4e-e430-4108-ab98-2e9a2fbe26e2",
-      "name": "Tag Cover Letter TEX Upload",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        -4048,
-        160
-      ]
-    },
-    {
-      "parameters": {
-        "mode": "append"
-      },
-      "id": "d446bbeb-e517-46c0-8ecf-299007a9c202",
-      "name": "Merge Build Context 1",
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3.2,
-      "position": [
-        -4560,
-        400
-      ]
-    },
-    {
-      "parameters": {
-        "mode": "append"
-      },
-      "id": "07d91a02-affd-41dc-b92b-cb847b192090",
-      "name": "Merge Build Context 2",
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3.2,
-      "position": [
-        -4340,
-        400
-      ]
-    },
-    {
-      "parameters": {
-        "mode": "append"
-      },
-      "id": "38b7a143-ecf0-4d6a-b99b-307e3565e949",
-      "name": "Merge Build Context 3",
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3.2,
-      "position": [
-        -4120,
-        400
-      ]
-    },
-    {
-      "parameters": {
-        "mode": "append"
-      },
-      "id": "318f0332-13ed-4a61-b8b4-7c8f333852a0",
-      "name": "Merge Build Context 4",
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3.2,
-      "position": [
-        -3900,
-        400
-      ]
     }
   ],
   "pinData": {},
@@ -911,11 +720,6 @@
             "node": "Read Search Criteria",
             "type": "main",
             "index": 0
-          },
-          {
-            "node": "Merge Master CV and Search Criteria",
-            "type": "main",
-            "index": 0
           }
         ]
       ]
@@ -924,9 +728,9 @@
       "main": [
         [
           {
-            "node": "Merge Master CV and Search Criteria",
+            "node": "Collect Active Start URLs",
             "type": "main",
-            "index": 1
+            "index": 0
           }
         ]
       ]
@@ -938,11 +742,6 @@
             "node": "Scrape LinkedIn Jobs with Apify",
             "type": "main",
             "index": 0
-          },
-          {
-            "node": "Merge Pipeline Context and Scraped Jobs",
-            "type": "main",
-            "index": 0
           }
         ]
       ]
@@ -951,9 +750,9 @@
       "main": [
         [
           {
-            "node": "Merge Pipeline Context and Scraped Jobs",
+            "node": "Loop Over Jobs",
             "type": "main",
-            "index": 1
+            "index": 0
           }
         ]
       ]
@@ -966,11 +765,6 @@
             "node": "Read Existing Jobs",
             "type": "main",
             "index": 0
-          },
-          {
-            "node": "Merge Current Job and Existing Jobs",
-            "type": "main",
-            "index": 0
           }
         ]
       ]
@@ -979,9 +773,9 @@
       "main": [
         [
           {
-            "node": "Merge Current Job and Existing Jobs",
+            "node": "Keep Only New Job",
             "type": "main",
-            "index": 1
+            "index": 0
           }
         ]
       ]
@@ -1033,16 +827,6 @@
             "node": "Prepare CV Document",
             "type": "main",
             "index": 0
-          },
-          {
-            "node": "Merge CV Content and File Result",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Merge Build Context 1",
-            "type": "main",
-            "index": 0
           }
         ]
       ]
@@ -1062,9 +846,9 @@
       "main": [
         [
           {
-            "node": "Merge CV Content and File Result",
+            "node": "Prepare Cover Letter Input",
             "type": "main",
-            "index": 1
+            "index": 0
           }
         ]
       ]
@@ -1139,7 +923,7 @@
       "main": [
         [
           {
-            "node": "Tag CV PDF Upload",
+            "node": "Upload CV TEX to Baserow",
             "type": "main",
             "index": 0
           }
@@ -1150,7 +934,7 @@
       "main": [
         [
           {
-            "node": "Tag CV TEX Upload",
+            "node": "Upload Cover Letter PDF to Baserow",
             "type": "main",
             "index": 0
           }
@@ -1161,7 +945,7 @@
       "main": [
         [
           {
-            "node": "Tag Cover Letter PDF Upload",
+            "node": "Upload Cover Letter TEX to Baserow",
             "type": "main",
             "index": 0
           }
@@ -1172,7 +956,7 @@
       "main": [
         [
           {
-            "node": "Tag Cover Letter TEX Upload",
+            "node": "Build Jobs Row",
             "type": "main",
             "index": 0
           }
@@ -1189,164 +973,6 @@
           }
         ]
       ]
-    },
-    "Merge Master CV and Search Criteria": {
-      "main": [
-        [
-          {
-            "node": "Collect Active Start URLs",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Merge Pipeline Context and Scraped Jobs": {
-      "main": [
-        [
-          {
-            "node": "Attach Master CV to Scraped Jobs",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Attach Master CV to Scraped Jobs": {
-      "main": [
-        [
-          {
-            "node": "Loop Over Jobs",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Merge Current Job and Existing Jobs": {
-      "main": [
-        [
-          {
-            "node": "Keep Only New Job",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Merge CV Content and File Result": {
-      "main": [
-        [
-          {
-            "node": "Prepare Cover Letter Input",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Tag CV PDF Upload": {
-      "main": [
-        [
-          {
-            "node": "Upload CV TEX to Baserow",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Merge Build Context 1",
-            "type": "main",
-            "index": 1
-          }
-        ]
-      ]
-    },
-    "Tag CV TEX Upload": {
-      "main": [
-        [
-          {
-            "node": "Upload Cover Letter PDF to Baserow",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Merge Build Context 2",
-            "type": "main",
-            "index": 1
-          }
-        ]
-      ]
-    },
-    "Tag Cover Letter PDF Upload": {
-      "main": [
-        [
-          {
-            "node": "Upload Cover Letter TEX to Baserow",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Merge Build Context 3",
-            "type": "main",
-            "index": 1
-          }
-        ]
-      ]
-    },
-    "Merge Build Context 1": {
-      "main": [
-        [
-          {
-            "node": "Merge Build Context 2",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Merge Build Context 2": {
-      "main": [
-        [
-          {
-            "node": "Merge Build Context 3",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Merge Build Context 3": {
-      "main": [
-        [
-          {
-            "node": "Merge Build Context 4",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Tag Cover Letter TEX Upload": {
-      "main": [
-        [
-          {
-            "node": "Merge Build Context 4",
-            "type": "main",
-            "index": 1
-          }
-        ]
-      ]
-    },
-    "Merge Build Context 4": {
-      "main": [
-        [
-          {
-            "node": "Build Jobs Row",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
     }
   },
   "active": true,
@@ -1355,7 +981,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "39a80c0f-58b3-4a73-ba16-013972784554",
+  "versionId": "6b250fbb-4ed6-41c0-9d2b-c0317e5870f4",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "2d85b40e2e1a69706b539dc280f2a48f8b70729872141299d251c48887ea4c94"
