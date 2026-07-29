@@ -6,10 +6,10 @@
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
-        2944,
-        4752
+        2160,
+        4672
       ],
-      "id": "299508b2-7b67-4b64-96ed-461b788fa03a",
+      "id": "7f8b7385-5c66-4c6d-9dd4-ff47956cf398",
       "name": "Manual Trigger",
       "disabled": true
     },
@@ -43,10 +43,10 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        3168,
-        4944
+        2384,
+        4864
       ],
-      "id": "ee002154-a749-456d-aa4f-6032f17fe0f2",
+      "id": "3770d5ee-fb0c-4952-8c48-288b25a3331e",
       "name": "Called by Parent Workflow"
     },
     {
@@ -57,10 +57,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3168,
-        4752
+        2384,
+        4672
       ],
-      "id": "63235c43-ab0a-48d4-bb21-b5126f12d4ba",
+      "id": "dd1b3882-9c16-4715-96a0-8daefd2e4f89",
       "name": "Sample Input"
     },
     {
@@ -71,10 +71,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        3392,
-        4848
+        2608,
+        4768
       ],
-      "id": "0f59b579-1852-485c-8dfc-8a68dec1d8bc",
+      "id": "8b7c4d96-5f85-40d5-8fe4-5ef157326f41",
       "name": "Normalize Input"
     },
     {
@@ -90,10 +90,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        3616,
-        4848
+        2832,
+        4768
       ],
-      "id": "e09d5820-127f-4410-856d-3a218297de74",
+      "id": "445f3a9f-4c38-40d1-96f6-99e73d83a55d",
       "name": "Generate Document"
     },
     {
@@ -111,10 +111,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        3840,
-        4752
+        3056,
+        4672
       ],
-      "id": "8c88671a-695b-4f2e-a72e-f0874d3833a0",
+      "id": "40bbaf16-01d9-42d9-9074-667a3e380e28",
       "name": "Download Document TEX"
     },
     {
@@ -131,10 +131,10 @@
       "type": "n8n-nodes-cloudinary.cloudinary",
       "typeVersion": 1,
       "position": [
-        4064,
-        4752
+        3280,
+        4672
       ],
-      "id": "c6972897-cb0d-4fd7-93e8-099f4c19f804",
+      "id": "0fc8dd78-be72-41b7-acf9-e9ce2d066a36",
       "name": "Upload Document TEX to Cloudinary",
       "credentials": {
         "cloudinaryApi": {
@@ -158,10 +158,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        3840,
-        4944
+        3056,
+        4864
       ],
-      "id": "708e6baf-8ea6-477c-b7a3-ac81df52ead0",
+      "id": "4459d6e7-2290-4a53-aa24-bafb71d4afbe",
       "name": "Download Document PDF"
     },
     {
@@ -178,10 +178,10 @@
       "type": "n8n-nodes-cloudinary.cloudinary",
       "typeVersion": 1,
       "position": [
-        4064,
-        4944
+        3280,
+        4864
       ],
-      "id": "49e22f3a-f452-46b5-abf2-02472951f350",
+      "id": "44a15898-9ef4-4a73-bafe-853802bc87a3",
       "name": "Upload Document PDF to Cloudinary",
       "credentials": {
         "cloudinaryApi": {
@@ -197,10 +197,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        4512,
-        4848
+        3728,
+        4768
       ],
-      "id": "595050ef-f57b-4ec3-a6aa-5c42ba8dd703",
+      "id": "697cb041-47c0-4349-8741-c08b6435f0d9",
       "name": "Final Output"
     },
     {
@@ -212,10 +212,10 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        3616,
-        4080
+        2832,
+        4000
       ],
-      "id": "05669e13-a365-4aa4-8dca-aa813252e666",
+      "id": "0e78d9cd-7db0-4703-b431-61a20ae459e6",
       "name": "Setup Notes"
     },
     {
@@ -223,10 +223,10 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        4288,
-        4848
+        3504,
+        4768
       ],
-      "id": "845ae105-6987-40e0-8557-40392adfd6fa",
+      "id": "f3eecca0-aeeb-42a1-bb1f-ecb848c21a80",
       "name": "Merge Document Uploads"
     }
   ],
@@ -354,7 +354,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "6e3a9d99-8f5c-42a6-9aad-83db57b8fae6",
+  "versionId": "fd0f0fe3-db0f-41e6-8c4e-47e1a3f9c6f9",
   "meta": {
     "instanceId": "2d85b40e2e1a69706b539dc280f2a48f8b70729872141299d251c48887ea4c94"
   },
