@@ -30,6 +30,7 @@ node_modules/
 backups/
 exports/
 source-exports/
+/final/
 /*.json
 /*.py
 /README 2.md
