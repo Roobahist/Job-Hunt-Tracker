@@ -270,7 +270,7 @@
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.1-flash-lite",
+        "modelName": "models/gemini-3.5-flash-lite",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
@@ -283,8 +283,8 @@
       "name": "Google Gemini Chat Model1",
       "credentials": {
         "googlePalmApi": {
-          "id": "aPx4VUVA3p6ZhC3v",
-          "name": "Google Gemini(PaLM) Api account"
+          "id": "BG94TcoWRne9VKl3",
+          "name": "Google Gemini(PaLM) Api account 2"
         }
       }
     }
@@ -480,7 +480,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "5cfa8770-56e4-49cc-a7e0-b2528e65a863",
+  "versionId": "33ee8f04-a3ed-4986-8ff1-e4f8b67e892e",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "2d85b40e2e1a69706b539dc280f2a48f8b70729872141299d251c48887ea4c94"

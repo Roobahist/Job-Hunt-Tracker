@@ -1,5 +1,5 @@
 {
-  "name": "Unified LinkedIn External and AI Job Entry - Job ID Upsert",
+  "name": "Unified LinkedIn External and AI Job Entry - Baserow Structured LangChain",
   "nodes": [
     {
       "parameters": {
@@ -532,8 +532,8 @@
     },
     {
       "parameters": {
-        "content": "## Unified Fillout job workflow\n\n1. Install and enable the verified `n8n-nodes-fillout` integration.\n2. Open **Fillout Submission**, select your Fillout credential, and choose the deployed form created from the attached Fillout export.\n3. Activate the workflow so the Fillout trigger can register its webhook.\n4. **Submit Job** maps the Fillout question IDs into stable field names.\n5. Entry types:\n   - **LinkedIn**: builds the LinkedIn URL from the numeric job ID and uses the existing native Apify actor.\n   - **External**: uses the manually entered fields.\n   - **AI**: sends the copied Page Content to OpenRouter, extracts all job fields as structured JSON, and creates a stable numeric Job ID when the page contains no explicit numeric ID.\n6. Set `OPENROUTER_API_KEY` in the n8n environment. Optionally set `JOB_PARSER_MODEL`; otherwise the workflow uses `google/gemini-2.5-flash-lite`.\n7. All three branches normalize to the same downstream schema and reconnect at **Loop Over Jobs**.\n8. Put the master CV at `/home/node/.n8n-files/document-pipeline/master_cv.json`.\n9. Each submission upserts the Jobs table by exact numeric `Job ID`, then creates and attaches the CV and cover letter files.\n\nFillout widget IDs mapped by **Submit Job**:\n- Entry Type: `entryType`\n- LinkedIn Job ID: `6Ze685Zcm27s3sV6xAdg6w`\n- Company Name: `tccyk1pB8iRUf1NGCDbcP5`\n- Job Title: `mV2wYQbu1b1Jhf1gTDAbK8`\n- Job Description: `98TcaL2qnS8Y31TQxgZaZD`\n- Job URL: `1gZ3kT2Db3G3y2QhYfjT8X`\n- Location: `oc63gzWN4vxEJwx8nzZrAK`\n- Contract Type: `g2VK5MiabTgDTUXGYhnV4q`\n- Published Date: `sYghUzUtSwi8T4yaReYefR`\n- External Job ID: `2XDTXJHaY2BJEndo3EgEAV`\n- Page Content: `uAXUdaYv4cjhWqtZiFYWc7`\n",
-        "height": 650,
+        "content": "## Unified Fillout job workflow\n\n1. Install and enable the verified `n8n-nodes-fillout` integration.\n2. Open **Fillout Submission**, select your Fillout credential, and choose the deployed form created from the attached Fillout export.\n3. Activate the workflow so the Fillout trigger can register its webhook.\n4. **Submit Job** maps the Fillout question IDs into stable field names.\n5. Entry types:\n   - **LinkedIn**: builds the LinkedIn URL from the numeric job ID and uses the existing native Apify actor.\n   - **External**: uses the manually entered fields.\n   - **AI**: sends the copied Page Content to OpenRouter, extracts all job fields as structured JSON, and creates a stable numeric Job ID when the page contains no explicit numeric ID.\n6. Set `OPENROUTER_API_KEY` in the n8n environment. Optionally set `JOB_PARSER_MODEL`; otherwise the workflow uses `google/gemini-2.5-flash-lite`.\n7. All three branches normalize to the same downstream schema and reconnect at **Loop Over Jobs**.\n8. Put the master CV at `/home/node/.n8n-files/document-pipeline/master_cv.json`.\n9. Each submission upserts the Jobs table by exact numeric `Job ID`, then creates and attaches the CV and cover letter files.\n\nFillout widget IDs mapped by **Submit Job**:\n- Entry Type: `entryType`\n- LinkedIn Job ID: `6Ze685Zcm27s3sV6xAdg6w`\n- Company Name: `tccyk1pB8iRUf1NGCDbcP5`\n- Job Title: `mV2wYQbu1b1Jhf1gTDAbK8`\n- Job Description: `98TcaL2qnS8Y31TQxgZaZD`\n- Job URL: `1gZ3kT2Db3G3y2QhYfjT8X`\n- Location: `oc63gzWN4vxEJwx8nzZrAK`\n- Contract Type: `g2VK5MiabTgDTUXGYhnV4q`\n- Published Date: `sYghUzUtSwi8T4yaReYefR`\n- External Job ID: `2XDTXJHaY2BJEndo3EgEAV`\n- Page Content: `uAXUdaYv4cjhWqtZiFYWc7`\n\n9. AI prompt configuration is loaded from the Baserow Prompts table using:\n   - Prompt Key: `job-page-content-extraction`\n   - Status: `Active`\n   - Enabled: `true`\n   - Highest Version wins when multiple matching rows exist.\n10. Set `BASEROW_PROMPTS_TABLE_ID` to the numeric ID of the Prompts table. The workflow reads Prompt Template, Output Structure, and Temperature from the selected row.\n11. The Prompt Template may contain `{{PAGE_CONTENT}}`, `{{page_content}}`, or `[PAGE_CONTENT]`. If no placeholder is present, the workflow appends the copied page content automatically.\n\n\n### AI page-content entry\n- Prompt table: `Prompts` (table ID `1098023`)\n- Prompt Key: `job_page_content_extraction`\n- Exactly one row must have Status `Active` and Enabled checked.\n- The workflow reads Prompt Template, Output Structure, Version, and Temperature from Baserow.\n- Use `[[page_content]]` in the Prompt Template where the pasted page text should be inserted.\n- Output Structure must be a JSON Schema object.\n",
+        "height": 760,
         "width": 1800
       },
       "id": "117f4b9d-1d78-4171-be9b-330bcbd46b65",
@@ -825,62 +825,183 @@
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "https://openrouter.ai/api/v1/chat/completions",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "=Bearer {{ $env.OPENROUTER_API_KEY }}"
-            },
-            {
-              "name": "Content-Type",
-              "value": "application/json"
-            },
-            {
-              "name": "HTTP-Referer",
-              "value": "https://n8n.io"
-            },
-            {
-              "name": "X-Title",
-              "value": "Job Hunt AI Page Parser"
-            }
-          ]
-        },
-        "sendBody": true,
-        "contentType": "raw",
-        "rawContentType": "application/json",
-        "body": "={{ JSON.stringify({ model: $env.JOB_PARSER_MODEL || 'google/gemini-2.5-flash-lite', temperature: 0, messages: [{ role: 'system', content: 'Extract one job posting from copied webpage text. Return only valid JSON matching the supplied schema. Do not invent facts. Preserve the complete useful job description, including responsibilities, qualifications, compensation, benefits, and application details when present. For jobId, return digits only when a numeric job identifier is explicitly present in the page or URL; otherwise return an empty string. For publishedAt, use YYYY-MM-DD only when a date can be reliably determined; otherwise return an empty string. For contractType, prefer one of Full-time, Part-time, Contract, Temporary, Internship, or Other.' }, { role: 'user', content: $('Submit Job').first().json.pageContent }], response_format: { type: 'json_schema', json_schema: { name: 'job_page_fields', strict: true, schema: { type: 'object', additionalProperties: false, properties: { companyName: { type: 'string' }, jobTitle: { type: 'string' }, jobDescription: { type: 'string' }, jobUrl: { type: 'string' }, location: { type: 'string' }, contractType: { type: 'string' }, publishedAt: { type: 'string' }, jobId: { type: 'string' } }, required: ['companyName','jobTitle','jobDescription','jobUrl','location','contractType','publishedAt','jobId'] } } } }) }}",
-        "options": {
-          "response": {
-            "response": {
-              "neverError": false
-            }
-          }
-        }
+        "databaseId": 504349,
+        "tableId": 1098023,
+        "returnAll": true,
+        "additionalOptions": {}
       },
-      "id": "2c9a9cd1-ce04-4c72-bac9-f8a35556e954",
-      "name": "Extract Job Fields with AI",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1,
       "position": [
-        -3808,
-        464
-      ]
+        -3840,
+        544
+      ],
+      "id": "166f8676-28c9-479e-a6b0-77d3dda2a176",
+      "name": "Read AI Extraction Prompt from Baserow",
+      "credentials": {
+        "baserowApi": {
+          "id": "6f5zUFzwe8YPXrNX",
+          "name": "Baserow account"
+        }
+      }
     },
     {
       "parameters": {
-        "jsCode": "const extracted = $(\"Extract Master CV\").first().json;\nconst form = $(\"Submit Job\").first().json;\nconst response = $input.first().json;\n\nconst parseJson = (value) => {\n  if (typeof value !== \"string\") return value;\n  const cleaned = value.trim().replace(/^```(?:json)?\\s*/i, \"\").replace(/\\s*```$/, \"\");\n  try {\n    return JSON.parse(cleaned);\n  } catch {\n    return value;\n  }\n};\n\nconst unwrapMasterCv = (value) => {\n  let current = parseJson(value);\n  for (let depth = 0; depth < 5; depth++) {\n    if (!current || typeof current !== \"object\" || Array.isArray(current)) break;\n    if (Array.isArray(current.projects)) return current;\n    const next = current.master_cv ?? current.cv_json ?? current.document_data ?? current.data ?? current.json;\n    if (next === undefined || next === current) break;\n    current = parseJson(next);\n  }\n  return current;\n};\n\nconst text = (value) => String(value ?? \"\").trim();\nconst masterCv = unwrapMasterCv(extracted);\nif (!masterCv || typeof masterCv !== \"object\" || Array.isArray(masterCv)) {\n  throw new Error(\"The master CV file must contain a JSON object.\");\n}\nif (!Array.isArray(masterCv.projects)) {\n  throw new Error(\"The master CV JSON could not be normalized: projects must be an array.\");\n}\n\nconst rawContent = response?.choices?.[0]?.message?.content ?? response?.output ?? response?.text ?? response;\nconst fields = parseJson(rawContent);\nif (!fields || typeof fields !== \"object\" || Array.isArray(fields)) {\n  throw new Error(\"The AI job parser did not return a valid JSON object.\");\n}\n\nconst companyName = text(fields.companyName);\nconst jobTitle = text(fields.jobTitle);\nconst jobDescription = text(fields.jobDescription);\nconst jobUrl = text(fields.jobUrl);\nif (!companyName) throw new Error(\"AI extraction could not identify the company name.\");\nif (!jobTitle) throw new Error(\"AI extraction could not identify the job title.\");\nif (!jobDescription) throw new Error(\"AI extraction could not identify the job description.\");\n\nconst explicitId = text(fields.jobId).replace(/\\D/g, \"\");\nconst urlId = (jobUrl.match(/(?:jobs?\\/view\\/|job(?:Id|ID|id)?[=\\/-])(\\d{5,})/i) || [])[1] ?? \"\";\n\nconst stableNumericId = (value) => {\n  let h1 = 2166136261;\n  let h2 = 2246822519;\n  for (let i = 0; i < value.length; i++) {\n    const c = value.charCodeAt(i);\n    h1 = Math.imul(h1 ^ c, 16777619) >>> 0;\n    h2 = Math.imul(h2 ^ c, 3266489917) >>> 0;\n  }\n  const combined = (BigInt(h1) << 21n) | BigInt(h2 & 0x1fffff);\n  return Number((combined % 899999999999999n) + 100000000000000n);\n};\n\nconst numericJobId = explicitId || urlId;\nconst jobId = numericJobId\n  ? Number(numericJobId)\n  : stableNumericId([companyName, jobTitle, jobUrl, text(form.pageContent).slice(0, 2000)].join(\"\\n\"));\n\nif (!Number.isSafeInteger(jobId) || jobId <= 0) {\n  throw new Error(\"AI extraction could not produce a safe integer Job ID.\");\n}\n\nreturn [{\n  json: {\n    companyName,\n    jobTitle,\n    jobDescription,\n    jobUrl,\n    location: text(fields.location),\n    contractType: text(fields.contractType),\n    publishedAt: text(fields.publishedAt),\n    jobId,\n    source: \"AI\",\n    master_cv: masterCv,\n  },\n  pairedItem: { item: 0 },\n}];"
+        "language": "pythonNative",
+        "pythonCode": "import json\n\nif not _items:\n    raise ValueError(\"Baserow returned no AI extraction prompt records.\")\n\n\ndef fields_of(item):\n    data = item.get(\"json\", {})\n    nested = data.get(\"fields\")\n    return nested if isinstance(nested, dict) else data\n\n\ndef get_value(fields, names):\n    for name in names:\n        if name in fields and fields[name] is not None:\n            return fields[name]\n    return None\n\n\ndef scalar(value):\n    if isinstance(value, dict):\n        for key in (\"value\", \"name\", \"label\"):\n            nested = value.get(key)\n            if nested is not None:\n                return nested\n        return value.get(\"id\")\n    if isinstance(value, list) and len(value) == 1:\n        return scalar(value[0])\n    return value\n\n\ndef is_enabled(value):\n    value = scalar(value)\n    if isinstance(value, bool):\n        return value\n    if isinstance(value, (int, float)):\n        return value == 1\n    if isinstance(value, str):\n        return value.strip().lower() in (\"true\", \"1\", \"yes\", \"enabled\")\n    return False\n\n\ndef normalize_output_structure(value, prompt_key):\n    value = scalar(value)\n    if isinstance(value, dict):\n        schema = value\n    elif isinstance(value, str) and value.strip():\n        try:\n            schema = json.loads(value)\n        except json.JSONDecodeError as exc:\n            raise ValueError(\n                f\"Prompt '{prompt_key}' has invalid JSON in Output Structure.\"\n            ) from exc\n    else:\n        raise ValueError(\n            f\"Prompt '{prompt_key}' has no Output Structure JSON Schema.\"\n        )\n\n    if not isinstance(schema, dict):\n        raise ValueError(\n            f\"Prompt '{prompt_key}' Output Structure must be a JSON object.\"\n        )\n    if schema.get(\"type\") != \"object\":\n        raise ValueError(\n            f\"Prompt '{prompt_key}' Output Structure must define an object schema.\"\n        )\n    properties = schema.get(\"properties\")\n    if not isinstance(properties, dict) or not properties:\n        raise ValueError(\n            f\"Prompt '{prompt_key}' Output Structure must define properties.\"\n        )\n\n    return json.dumps(schema, ensure_ascii=False, separators=(\",\", \":\"))\n\n\nPROMPT_KEY = \"job_page_content_extraction\"\nrecords = []\n\nfor item in _items:\n    fields = fields_of(item)\n    prompt_key = scalar(get_value(fields, [\"Prompt Key\", \"Key\", \"prompt_key\"]))\n    if not isinstance(prompt_key, str) or prompt_key.strip() != PROMPT_KEY:\n        continue\n\n    enabled = get_value(fields, [\"Enabled\", \"enabled\"])\n    status = scalar(get_value(fields, [\"Status\", \"status\"]))\n    if not is_enabled(enabled):\n        continue\n    if not isinstance(status, str) or status.strip() != \"Active\":\n        continue\n\n    template = scalar(get_value(fields, [\"Prompt Template\", \"Prompt\", \"Template\", \"prompt_template\"]))\n    version = scalar(get_value(fields, [\"Version\", \"Prompt Version\", \"version\"]))\n    temperature = scalar(get_value(fields, [\"Temperature\", \"temperature\"]))\n    output_structure = get_value(fields, [\"Output Structure\", \"Output Schema\", \"output_structure\", \"output_schema\"])\n\n    if not isinstance(template, str) or not template.strip():\n        raise ValueError(f\"Prompt '{PROMPT_KEY}' has no template.\")\n    try:\n        version_value = float(version)\n    except (TypeError, ValueError) as exc:\n        raise ValueError(f\"Prompt '{PROMPT_KEY}' must have a numeric version.\") from exc\n    try:\n        temperature_value = float(temperature)\n    except (TypeError, ValueError) as exc:\n        raise ValueError(f\"Prompt '{PROMPT_KEY}' must have a numeric temperature.\") from exc\n    if not 0 <= temperature_value <= 2:\n        raise ValueError(f\"Prompt '{PROMPT_KEY}' temperature must be between 0 and 2.\")\n\n    records.append({\n        \"ai_extraction_prompt_key\": PROMPT_KEY,\n        \"ai_extraction_prompt_version\": version_value,\n        \"ai_extraction_prompt_template\": template.strip(),\n        \"ai_extraction_temperature\": temperature_value,\n        \"ai_extraction_output_structure\": normalize_output_structure(output_structure, PROMPT_KEY),\n    })\n\nif not records:\n    raise ValueError(\n        \"No enabled Active prompt found with Prompt Key 'job_page_content_extraction'.\"\n    )\nif len(records) > 1:\n    raise ValueError(\n        \"More than one enabled Active prompt exists for 'job_page_content_extraction'.\"\n    )\n\nreturn [{\"json\": records[0]}]"
       },
-      "id": "577e1086-2ad4-4e8c-b8b5-4ba777970860",
-      "name": "Normalize AI Job Input",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -3584,
-        464
-      ]
+        -3616,
+        544
+      ],
+      "id": "bca237d8-ec5d-4dc2-a742-a025279a359f",
+      "name": "Validate AI Extraction Prompt"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -3392,
+        448
+      ],
+      "id": "d3769687-e3df-4e08-be88-6b974e36b964",
+      "name": "Merge AI Input with Prompt"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json ?? {};\nconst template = String(data.ai_extraction_prompt_template ?? \"\").trim();\nconst pageContent = String($(\"Submit Job\").first().json.pageContent ?? \"\").trim();\n\nif (!template) throw new Error(\"AI extraction prompt template is missing.\");\nif (!pageContent) throw new Error(\"Page Content is required for AI entries.\");\n\nlet prompt = template;\nlet replaced = false;\nfor (const placeholder of [\n  \"[[page_content]]\",\n  \"[[PAGE_CONTENT]]\",\n  \"{{page_content}}\",\n  \"{{PAGE_CONTENT}}\",\n  \"[PAGE_CONTENT]\",\n]) {\n  if (prompt.includes(placeholder)) {\n    prompt = prompt.split(placeholder).join(pageContent);\n    replaced = true;\n  }\n}\nif (!replaced) prompt = `${prompt.trim()}\\n\\nPage content:\\n${pageContent}`;\n\nreturn [{ json: { ...data, page_content: pageContent, ai_extraction_prompt: prompt } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3168,
+        448
+      ],
+      "id": "edb14a7f-5855-4150-a74a-89f3f444bc88",
+      "name": "Build AI Extraction Prompt"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.ai_extraction_prompt }}",
+        "hasOutputParser": true,
+        "needsFallback": false,
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -2880,
+        304
+      ],
+      "id": "fa2ba7c7-6790-4914-851d-8ad53c8f4722",
+      "name": "Extract Job Fields with AI"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash-lite",
+        "options": {
+          "temperature": "={{ $(\"Build AI Extraction Prompt\").first().json.ai_extraction_temperature }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -2944,
+        544
+      ],
+      "id": "d9132487-ebc4-4ea8-a52e-4a14da780fe4",
+      "name": "Gemini 3.5 Flash Lite",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "aPx4VUVA3p6ZhC3v",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "={{ $json.ai_extraction_output_structure }}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -2720,
+        544
+      ],
+      "id": "1a9a1aa8-c8f8-4c0e-8cfd-9af9196bf8ac",
+      "name": "AI Extraction Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -2672,
+        736
+      ],
+      "id": "6f94f548-cdfa-4b1d-a091-1f6659087b22",
+      "name": "AI Extraction Auto-Fix Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "aPx4VUVA3p6ZhC3v",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "import json\n\nif not _items:\n    raise ValueError(\"The AI extraction model returned no items.\")\n\nroot = _items[0].get(\"json\", {})\noutput = root.get(\"output\")\n\nif isinstance(output, dict):\n    parsed = output\nelif isinstance(output, str):\n    try:\n        parsed = json.loads(output)\n    except json.JSONDecodeError as exc:\n        raise ValueError(\"AI extraction output was not valid JSON after parsing.\") from exc\nelse:\n    try:\n        value = root[\"response\"][\"generations\"][0][0][\"text\"]\n    except (KeyError, IndexError, TypeError):\n        value = None\n    if isinstance(value, dict):\n        parsed = value\n    elif isinstance(value, str):\n        try:\n            parsed = json.loads(value)\n        except json.JSONDecodeError as exc:\n            raise ValueError(\"AI extraction output was not valid JSON after parsing.\") from exc\n    else:\n        raise ValueError(\"Could not locate the parsed AI extraction output.\")\n\nif not isinstance(parsed, dict):\n    raise ValueError(\"AI extraction output must be a JSON object.\")\n\nreturn [{\"json\": {\"ai_extraction_response\": json.dumps(parsed, ensure_ascii=False, separators=(\",\", \":\"))}}]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2448,
+        304
+      ],
+      "id": "1ebf0ec8-b8ff-47cd-8101-5cc568456376",
+      "name": "Prepare AI Extraction Response"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -2224,
+        448
+      ],
+      "id": "4d3c6a61-5608-413b-afbe-929418c1cd28",
+      "name": "Merge AI Response with Source"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json ?? {};\nconst extracted = $(\"Extract Master CV\").first().json;\nconst form = $(\"Submit Job\").first().json;\n\nconst parseJson = (value) => {\n  if (typeof value !== \"string\") return value;\n  try { return JSON.parse(value); } catch { return value; }\n};\nconst unwrapMasterCv = (value) => {\n  let current = parseJson(value);\n  for (let depth = 0; depth < 5; depth++) {\n    if (!current || typeof current !== \"object\" || Array.isArray(current)) break;\n    if (Array.isArray(current.projects)) return current;\n    const next = current.master_cv ?? current.cv_json ?? current.document_data ?? current.data ?? current.json;\n    if (next === undefined || next === current) break;\n    current = parseJson(next);\n  }\n  return current;\n};\nconst text = (value) => String(value ?? \"\").trim();\nconst masterCv = unwrapMasterCv(extracted);\nif (!masterCv || typeof masterCv !== \"object\" || Array.isArray(masterCv)) {\n  throw new Error(\"The master CV file must contain a JSON object.\");\n}\nif (!Array.isArray(masterCv.projects)) {\n  throw new Error(\"The master CV JSON could not be normalized: projects must be an array.\");\n}\n\nconst fields = parseJson(data.ai_extraction_response);\nif (!fields || typeof fields !== \"object\" || Array.isArray(fields)) {\n  throw new Error(\"The AI job parser did not return a valid JSON object.\");\n}\n\nconst companyName = text(fields.companyName ?? fields.company_name);\nconst jobTitle = text(fields.jobTitle ?? fields.job_title);\nconst jobDescription = text(fields.jobDescription ?? fields.job_description);\nconst jobUrl = text(fields.jobUrl ?? fields.job_url);\nif (!companyName) throw new Error(\"AI extraction could not identify the company name.\");\nif (!jobTitle) throw new Error(\"AI extraction could not identify the job title.\");\nif (!jobDescription) throw new Error(\"AI extraction could not identify the job description.\");\n\nconst explicitId = text(fields.jobId ?? fields.job_id).replace(/\\D/g, \"\");\nconst urlId = (jobUrl.match(/(?:jobs?\\/view\\/|job(?:Id|ID|id)?[=\\/-])(\\d{5,})/i) || [])[1] ?? \"\";\nconst stableNumericId = (value) => {\n  let h1 = 2166136261;\n  let h2 = 2246822519;\n  for (let i = 0; i < value.length; i++) {\n    const c = value.charCodeAt(i);\n    h1 = Math.imul(h1 ^ c, 16777619) >>> 0;\n    h2 = Math.imul(h2 ^ c, 3266489917) >>> 0;\n  }\n  const combined = (BigInt(h1) << 21n) | BigInt(h2 & 0x1fffff);\n  return Number((combined % 899999999999999n) + 100000000000000n);\n};\nconst numericJobId = explicitId || urlId;\nconst jobId = numericJobId\n  ? Number(numericJobId)\n  : stableNumericId([companyName, jobTitle, jobUrl, text(form.pageContent).slice(0, 2000)].join(\"\\n\"));\nif (!Number.isSafeInteger(jobId) || jobId <= 0) {\n  throw new Error(\"AI extraction could not produce a safe integer Job ID.\");\n}\n\nreturn [{\n  json: {\n    companyName,\n    jobTitle,\n    jobDescription,\n    jobUrl,\n    location: text(fields.location),\n    contractType: text(fields.contractType ?? fields.contract_type),\n    publishedAt: text(fields.publishedAt ?? fields.published_at),\n    jobId,\n    source: \"AI\",\n    master_cv: masterCv,\n    prompt_usage: {\n      job_page_content_extraction: {\n        prompt_key: data.ai_extraction_prompt_key,\n        version: data.ai_extraction_prompt_version,\n        temperature: data.ai_extraction_temperature,\n      },\n    },\n  },\n  pairedItem: { item: 0 },\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2000,
+        448
+      ],
+      "id": "08f09e16-4e85-42e5-94d9-f33fd006040d",
+      "name": "Normalize AI Job Input"
     }
   ],
   "pinData": {},
@@ -1106,7 +1227,12 @@
         ],
         [
           {
-            "node": "Extract Job Fields with AI",
+            "node": "Read AI Extraction Prompt from Baserow",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge AI Input with Prompt",
             "type": "main",
             "index": 0
           }
@@ -1263,7 +1389,78 @@
         ]
       ]
     },
+    "Read AI Extraction Prompt from Baserow": {
+      "main": [
+        [
+          {
+            "node": "Validate AI Extraction Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate AI Extraction Prompt": {
+      "main": [
+        [
+          {
+            "node": "Merge AI Input with Prompt",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge AI Input with Prompt": {
+      "main": [
+        [
+          {
+            "node": "Build AI Extraction Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build AI Extraction Prompt": {
+      "main": [
+        [
+          {
+            "node": "Extract Job Fields with AI",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge AI Response with Source",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
     "Extract Job Fields with AI": {
+      "main": [
+        [
+          {
+            "node": "Prepare AI Extraction Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare AI Extraction Response": {
+      "main": [
+        [
+          {
+            "node": "Merge AI Response with Source",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge AI Response with Source": {
       "main": [
         [
           {
@@ -1284,6 +1481,39 @@
           }
         ]
       ]
+    },
+    "Gemini 3.5 Flash Lite": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Extract Job Fields with AI",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Extraction Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Extract Job Fields with AI",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Extraction Auto-Fix Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Extraction Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -1292,7 +1522,7 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "f33cfb9a-c0ff-4438-8858-547c25d5edf7",
+  "versionId": "9e3acef8-9174-4324-9785-c6ec23e0ac96",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "2d85b40e2e1a69706b539dc280f2a48f8b70729872141299d251c48887ea4c94"
