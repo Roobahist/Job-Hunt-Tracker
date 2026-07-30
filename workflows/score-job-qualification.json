@@ -111,8 +111,8 @@
       "name": "Qualification Scoring Gemini Primary",
       "credentials": {
         "googlePalmApi": {
-          "id": "BG94TcoWRne9VKl3",
-          "name": "Google Gemini(PaLM) Api account 2"
+          "id": "aPx4VUVA3p6ZhC3v",
+          "name": "Google Gemini(PaLM) Api account"
         }
       }
     },
@@ -155,7 +155,7 @@
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.1-flash-lite",
+        "modelName": "models/gemini-3.5-flash-lite",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",

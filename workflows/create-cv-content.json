@@ -736,7 +736,7 @@
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.1-flash-lite",
+        "modelName": "models/gemini-3.5-flash-lite",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
@@ -749,8 +749,8 @@
       "name": "Select Projects Auto-Fix Model",
       "credentials": {
         "googlePalmApi": {
-          "id": "aPx4VUVA3p6ZhC3v",
-          "name": "Google Gemini(PaLM) Api account"
+          "id": "BG94TcoWRne9VKl3",
+          "name": "Google Gemini(PaLM) Api account 2"
         }
       }
     },
@@ -771,7 +771,7 @@
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.1-flash-lite",
+        "modelName": "models/gemini-3.5-flash-lite",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
@@ -784,8 +784,8 @@
       "name": "Rewrite Project Content Auto-Fix Model",
       "credentials": {
         "googlePalmApi": {
-          "id": "aPx4VUVA3p6ZhC3v",
-          "name": "Google Gemini(PaLM) Api account"
+          "id": "BG94TcoWRne9VKl3",
+          "name": "Google Gemini(PaLM) Api account 2"
         }
       }
     },
@@ -806,7 +806,7 @@
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.1-flash-lite",
+        "modelName": "models/gemini-3.5-flash-lite",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
@@ -819,8 +819,8 @@
       "name": "Select Work Experiences Auto-Fix Model",
       "credentials": {
         "googlePalmApi": {
-          "id": "aPx4VUVA3p6ZhC3v",
-          "name": "Google Gemini(PaLM) Api account"
+          "id": "BG94TcoWRne9VKl3",
+          "name": "Google Gemini(PaLM) Api account 2"
         }
       }
     },
@@ -841,7 +841,7 @@
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.1-flash-lite",
+        "modelName": "models/gemini-3.5-flash-lite",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
@@ -854,8 +854,8 @@
       "name": "Rewrite Work Content Auto-Fix Model",
       "credentials": {
         "googlePalmApi": {
-          "id": "aPx4VUVA3p6ZhC3v",
-          "name": "Google Gemini(PaLM) Api account"
+          "id": "BG94TcoWRne9VKl3",
+          "name": "Google Gemini(PaLM) Api account 2"
         }
       }
     },
@@ -876,7 +876,7 @@
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.1-flash-lite",
+        "modelName": "models/gemini-3.5-flash-lite",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
@@ -889,8 +889,8 @@
       "name": "Tailor Skills Auto-Fix Model",
       "credentials": {
         "googlePalmApi": {
-          "id": "aPx4VUVA3p6ZhC3v",
-          "name": "Google Gemini(PaLM) Api account"
+          "id": "BG94TcoWRne9VKl3",
+          "name": "Google Gemini(PaLM) Api account 2"
         }
       }
     },
@@ -911,7 +911,7 @@
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.1-flash-lite",
+        "modelName": "models/gemini-3.5-flash-lite",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
@@ -924,8 +924,8 @@
       "name": "Rewrite Summary Auto-Fix Model",
       "credentials": {
         "googlePalmApi": {
-          "id": "aPx4VUVA3p6ZhC3v",
-          "name": "Google Gemini(PaLM) Api account"
+          "id": "BG94TcoWRne9VKl3",
+          "name": "Google Gemini(PaLM) Api account 2"
         }
       }
     },

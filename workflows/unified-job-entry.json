@@ -1032,8 +1032,8 @@
       "name": "AI Extraction Auto-Fix Model",
       "credentials": {
         "googlePalmApi": {
-          "id": "aPx4VUVA3p6ZhC3v",
-          "name": "Google Gemini(PaLM) Api account"
+          "id": "BG94TcoWRne9VKl3",
+          "name": "Google Gemini(PaLM) Api account 2"
         }
       }
     },
