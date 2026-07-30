@@ -1,0 +1,410 @@
+{
+  "name": "Score Job Qualification - Baserow Prompt - Structured Output",
+  "description": "Scores a job description against the master CV so multiple job-entry workflows share one qualification decision mechanism. Inputs are job_description (string), master_cv (object), and job_context (object); output preserves the context and adds qualification_score, should_apply, qualification_scoring_json, and prompt_usage.",
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "job_description"
+            },
+            {
+              "name": "master_cv",
+              "type": "object"
+            },
+            {
+              "name": "job_context",
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1200,
+        224
+      ],
+      "id": "6cd887b4-e6d7-4352-a50b-f0e45cecdac0",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "databaseId": 504349,
+        "tableId": 1098023,
+        "returnAll": true,
+        "additionalOptions": {}
+      },
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1.1,
+      "position": [
+        -976,
+        352
+      ],
+      "id": "b9bdc69a-b890-44b7-b208-bffb186e702e",
+      "name": "Read Qualification Prompt from Baserow",
+      "credentials": {
+        "baserowApi": {
+          "id": "6f5zUFzwe8YPXrNX",
+          "name": "Baserow account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "import json\n\nif not _items:\n    raise ValueError(\"Baserow returned no qualification-scoring prompt records.\")\n\n\ndef fields_of(item):\n    data = item.get(\"json\", {})\n    nested = data.get(\"fields\")\n    return nested if isinstance(nested, dict) else data\n\n\ndef get_value(fields, names):\n    for name in names:\n        if name in fields and fields[name] is not None:\n            return fields[name]\n    return None\n\n\ndef scalar(value):\n    if isinstance(value, dict):\n        for key in (\"value\", \"name\", \"label\"):\n            nested = value.get(key)\n            if nested is not None:\n                return nested\n        return value.get(\"id\")\n\n    if isinstance(value, list) and len(value) == 1:\n        return scalar(value[0])\n\n    return value\n\n\ndef is_enabled(value):\n    value = scalar(value)\n\n    if isinstance(value, bool):\n        return value\n\n    if isinstance(value, (int, float)):\n        return value == 1\n\n    if isinstance(value, str):\n        return value.strip().lower() in (\"true\", \"1\", \"yes\", \"enabled\")\n\n    return False\n\n\ndef normalize_output_structure(value, prompt_key):\n    value = scalar(value)\n\n    if isinstance(value, dict):\n        schema = value\n    elif isinstance(value, str) and value.strip():\n        try:\n            schema = json.loads(value)\n        except json.JSONDecodeError as exc:\n            raise ValueError(\n                f\"Prompt '{prompt_key}' has invalid JSON in Output Structure.\"\n            ) from exc\n    else:\n        raise ValueError(\n            f\"Prompt '{prompt_key}' has no Output Structure JSON Schema.\"\n        )\n\n    if not isinstance(schema, dict):\n        raise ValueError(\n            f\"Prompt '{prompt_key}' Output Structure must be a JSON object.\"\n        )\n\n    if schema.get(\"type\") != \"object\":\n        raise ValueError(\n            f\"Prompt '{prompt_key}' Output Structure must define an object schema.\"\n        )\n\n    return schema\n\n\ndef normalize_temperature(value, prompt_key):\n    value = scalar(value)\n\n    if value is None or (isinstance(value, str) and not value.strip()):\n        raise ValueError(\n            f\"Prompt '{prompt_key}' is missing Temperature.\"\n        )\n\n    if isinstance(value, str):\n        try:\n            value = float(value)\n        except ValueError as exc:\n            raise ValueError(\n                f\"Prompt '{prompt_key}' has invalid Temperature.\"\n            ) from exc\n\n    return value\n\n\nselected = []\nfor item in _items:\n    fields = fields_of(item)\n    prompt_key = scalar(\n        get_value(\n            fields,\n            [\"Prompt Key\", \"prompt_key\", \"Key\", \"key\", \"Name\", \"name\"],\n        )\n    )\n\n    if prompt_key != \"qualification_scoring\":\n        continue\n\n    active = get_value(fields, [\"Active\", \"active\", \"Enabled\", \"enabled\"])\n    if active is not None and not is_enabled(active):\n        continue\n\n    template = scalar(\n        get_value(\n            fields,\n            [\"Prompt Template\", \"Prompt\", \"Template\", \"prompt_template\"],\n        )\n    )\n    output_structure = normalize_output_structure(\n        get_value(\n            fields,\n            [\n                \"Output Structure\",\n                \"output_structure\",\n                \"Output Schema\",\n                \"output_schema\",\n            ],\n        ),\n        prompt_key,\n    )\n    temperature = normalize_temperature(\n        get_value(fields, [\"Temperature\", \"temperature\"]),\n        prompt_key,\n    )\n    version = scalar(\n        get_value(fields, [\"Version\", \"Prompt Version\", \"version\"])\n    )\n\n    if not isinstance(template, str) or not template.strip():\n        raise ValueError(\"qualification_scoring prompt template is missing.\")\n\n    selected.append(\n        {\n            \"qualification_scoring_prompt_key\": prompt_key,\n            \"qualification_scoring_prompt_version\": version,\n            \"qualification_scoring_temperature\": temperature,\n            \"qualification_scoring_prompt_template\": template,\n            \"qualification_scoring_output_structure\": output_structure,\n        }\n    )\n\nif not selected:\n    raise ValueError(\n        \"No active qualification_scoring prompt record was found in Baserow.\"\n    )\n\nreturn [{\"json\": selected[0]}]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -752,
+        352
+      ],
+      "id": "24a14c02-f814-49da-81ac-e372a2b65f49",
+      "name": "Validate Qualification Prompt"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -528,
+        224
+      ],
+      "id": "eefb4c2a-a103-4c75-8dce-91290c275ef5",
+      "name": "Merge Input with Prompt Settings"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "import json\n\nif not _items:\n    raise ValueError(\"Qualification scoring received no merged input.\")\n\ndata = _items[0][\"json\"]\njob_description = data.get(\"job_description\")\nmaster_cv = data.get(\"master_cv\")\njob_context = data.get(\"job_context\")\ntemplate = data.get(\"qualification_scoring_prompt_template\")\n\nif not isinstance(job_description, str) or not job_description.strip():\n    raise ValueError(\"job_description must be a non-empty string.\")\nif not isinstance(master_cv, dict):\n    raise ValueError(\"master_cv must be an object.\")\nif not isinstance(job_context, dict):\n    raise ValueError(\"job_context must be an object.\")\nif not isinstance(template, str) or not template.strip():\n    raise ValueError(\"Qualification-scoring prompt template is missing.\")\n\ncompact_cv = json.dumps(\n    master_cv,\n    ensure_ascii=False,\n    separators=(\",\", \":\"),\n)\n\nprompt = template\nfor placeholder, value in {\n    \"[[job_description]]\": job_description.strip(),\n    \"[[master_cv_json]]\": compact_cv,\n    \"[[master_cv]]\": compact_cv,\n}.items():\n    prompt = prompt.replace(placeholder, value)\n\nreturn [\n    {\n        \"json\": {\n            **data,\n            \"qualification_scoring_prompt\": prompt,\n        }\n    }\n]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -304,
+        224
+      ],
+      "id": "667633c4-599a-4ca2-ab0a-24f23d862b3c",
+      "name": "Build Qualification Scoring Prompt"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash-lite",
+        "options": {
+          "temperature": "={{ $(\"Build Qualification Scoring Prompt\").first().json.qualification_scoring_temperature }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -208,
+        448
+      ],
+      "id": "a71d0d0c-f064-4a28-b6cf-188edb37c6b0",
+      "name": "Qualification Scoring Gemini Primary",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "BG94TcoWRne9VKl3",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash-lite",
+        "options": {
+          "temperature": "={{ $(\"Build Qualification Scoring Prompt\").first().json.qualification_scoring_temperature }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -80,
+        448
+      ],
+      "id": "74ff6c1d-345b-4dfd-b5a2-f65fbcc3d0d3",
+      "name": "Qualification Scoring Gemini Backup",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "BG94TcoWRne9VKl3",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "={{ JSON.stringify($(\"Build Qualification Scoring Prompt\").first().json.qualification_scoring_output_structure) }}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        48,
+        448
+      ],
+      "id": "82aa38d0-75cf-42b3-acd8-8bad441160a4",
+      "name": "Qualification Scoring Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        128,
+        656
+      ],
+      "id": "baaf766b-dfb5-45dd-af62-1c2b419e214a",
+      "name": "Qualification Scoring Auto-Fix Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "BG94TcoWRne9VKl3",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $(\"Build Qualification Scoring Prompt\").first().json.qualification_scoring_prompt }}",
+        "hasOutputParser": true,
+        "needsFallback": true,
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -80,
+        224
+      ],
+      "id": "be77ccbe-0a74-4a93-b424-2d2f24875e9b",
+      "name": "Score Qualification"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "import json\n\n\ndef extract_parsed(root):\n    output = root.get(\"output\")\n\n    if isinstance(output, dict):\n        return output\n\n    if isinstance(output, str):\n        try:\n            parsed = json.loads(output)\n        except json.JSONDecodeError as exc:\n            raise ValueError(\n                \"Qualification-scoring output was not valid JSON after parsing.\"\n            ) from exc\n        if isinstance(parsed, dict):\n            return parsed\n\n    try:\n        value = root[\"response\"][\"generations\"][0][0][\"text\"]\n    except (KeyError, IndexError, TypeError):\n        value = None\n\n    if isinstance(value, dict):\n        return value\n\n    if isinstance(value, str):\n        try:\n            parsed = json.loads(value)\n        except json.JSONDecodeError as exc:\n            raise ValueError(\n                \"Qualification-scoring output was not valid JSON after parsing.\"\n            ) from exc\n        if isinstance(parsed, dict):\n            return parsed\n\n    raise ValueError(\"Could not locate the parsed qualification-scoring output.\")\n\n\nif not _items:\n    raise ValueError(\"The qualification-scoring model returned no items.\")\n\nparsed = extract_parsed(_items[0][\"json\"])\n\nif not isinstance(parsed, dict):\n    raise ValueError(\"The qualification-scoring output must be a JSON object.\")\n\nscore = parsed.get(\"qualification_score\")\nshould_apply = parsed.get(\"should_apply\")\n\nif not isinstance(score, int) or isinstance(score, bool):\n    raise ValueError(\"qualification_score must be an integer.\")\n\nif score < 0 or score > 100:\n    raise ValueError(\"qualification_score must be between 0 and 100.\")\n\nif not isinstance(should_apply, bool):\n    raise ValueError(\"should_apply must be a boolean.\")\n\nnormalized = {\n    \"qualification_score\": score,\n    \"should_apply\": should_apply,\n}\n\nreturn [\n    {\n        \"json\": {\n            \"qualification_scoring_response\": json.dumps(\n                normalized,\n                ensure_ascii=False,\n                separators=(\",\", \":\"),\n            )\n        }\n    }\n]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        272,
+        224
+      ],
+      "id": "f0557dbf-65c1-4756-8136-049c3b797f5f",
+      "name": "Prepare Qualification Scoring Response"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        496,
+        224
+      ],
+      "id": "3f26b88d-7677-46e0-a447-37c30848621f",
+      "name": "Merge Qualification Response with Source"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "import json\n\nif not _items:\n    raise ValueError(\"Qualification scoring received no final merged input.\")\n\ndata = _items[0][\"json\"]\ncontext = data.get(\"job_context\")\nif not isinstance(context, dict):\n    raise ValueError(\"job_context must be an object.\")\n\nparsed = json.loads(data[\"qualification_scoring_response\"])\nscore = parsed.get(\"qualification_score\")\nshould_apply = parsed.get(\"should_apply\")\n\nif not isinstance(score, int) or isinstance(score, bool):\n    raise ValueError(\"qualification_score must be an integer.\")\nif score < 0 or score > 100:\n    raise ValueError(\"qualification_score must be between 0 and 100.\")\nif not isinstance(should_apply, bool):\n    raise ValueError(\"should_apply must be a boolean.\")\n\nexisting_prompt_usage = context.get(\"prompt_usage\")\nif not isinstance(existing_prompt_usage, dict):\n    existing_prompt_usage = {}\n\nprompt_usage = {\n    **existing_prompt_usage,\n    \"qualification_scoring\": {\n        \"prompt_key\": data.get(\"qualification_scoring_prompt_key\"),\n        \"version\": data.get(\"qualification_scoring_prompt_version\"),\n        \"temperature\": data.get(\"qualification_scoring_temperature\"),\n    },\n}\n\nreturn [\n    {\n        \"json\": {\n            **context,\n            \"master_cv\": data.get(\"master_cv\"),\n            \"qualification_scoring_json\": parsed,\n            \"qualification_score\": score,\n            \"should_apply\": should_apply,\n            \"prompt_usage\": prompt_usage,\n        }\n    }\n]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        224
+      ],
+      "id": "18d7c35c-87ad-48f0-81ce-96c52b866425",
+      "name": "Return Qualification Score"
+    },
+    {
+      "parameters": {
+        "content": "### Shared qualification scoring\n\nTyped inputs: `job_description` (string), `master_cv` (object), and `job_context` (object). The workflow reads the active `qualification_scoring` prompt from Baserow, runs Gemini with fallback and auto-fixed structured output, and returns the original context plus the score and apply decision.",
+        "height": 256,
+        "width": 464,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1200,
+        656
+      ],
+      "id": "da4a3523-cdd6-4da4-bfe2-b641745839e8",
+      "name": "Shared Scoring Contract"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Merge Input with Prompt Settings",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Read Qualification Prompt from Baserow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Qualification Prompt from Baserow": {
+      "main": [
+        [
+          {
+            "node": "Validate Qualification Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Qualification Prompt": {
+      "main": [
+        [
+          {
+            "node": "Merge Input with Prompt Settings",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Input with Prompt Settings": {
+      "main": [
+        [
+          {
+            "node": "Build Qualification Scoring Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Qualification Scoring Prompt": {
+      "main": [
+        [
+          {
+            "node": "Score Qualification",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Qualification Response with Source",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Qualification Scoring Gemini Primary": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Score Qualification",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qualification Scoring Gemini Backup": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Score Qualification",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Qualification Scoring Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Score Qualification",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qualification Scoring Auto-Fix Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Qualification Scoring Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Score Qualification": {
+      "main": [
+        [
+          {
+            "node": "Prepare Qualification Scoring Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Qualification Scoring Response": {
+      "main": [
+        [
+          {
+            "node": "Merge Qualification Response with Source",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Qualification Response with Source": {
+      "main": [
+        [
+          {
+            "node": "Return Qualification Score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "c97f416d-1ce3-4919-b313-b518277fc27d",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "id": "cQ7mZ2xN8pL4vR6s",
+  "tags": []
+}

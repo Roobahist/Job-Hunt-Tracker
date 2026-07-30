@@ -181,7 +181,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const extracted = $(\"Extract Master CV\").first().json;\nconst form = $(\"Submit Job\").first().json;\nconst actorItems = $input.all().map((item) => item.json);\n\nconst parseJson = (value) => {\n  if (typeof value !== \"string\") return value;\n  try {\n    return JSON.parse(value);\n  } catch {\n    return value;\n  }\n};\n\nconst unwrapMasterCv = (value) => {\n  let current = parseJson(value);\n\n  for (let depth = 0; depth < 5; depth++) {\n    if (!current || typeof current !== \"object\" || Array.isArray(current)) break;\n    if (Array.isArray(current.projects)) return current;\n\n    const next =\n      current.master_cv ??\n      current.cv_json ??\n      current.document_data ??\n      current.data ??\n      current.json;\n\n    if (next === undefined || next === current) break;\n    current = parseJson(next);\n  }\n\n  return current;\n};\n\nconst firstValue = (source, names) => {\n  for (const name of names) {\n    const value = source?.[name];\n    if (value !== undefined && value !== null && String(value).trim() !== \"\") {\n      return value;\n    }\n  }\n  return \"\";\n};\n\nconst text = (value) => String(value ?? \"\").trim();\nconst masterCv = unwrapMasterCv(extracted);\n\nif (!masterCv || typeof masterCv !== \"object\" || Array.isArray(masterCv)) {\n  throw new Error(\"The master CV file must contain a JSON object.\");\n}\nif (!Array.isArray(masterCv.projects)) {\n  throw new Error(\"The master CV JSON could not be normalized: projects must be an array.\");\n}\n\nconst linkedinJobUrl = text(form.linkedinJobUrl);\nconst linkedinJobId = text(form.linkedinJobId || form.jobId);\nif (!linkedinJobUrl) {\n  throw new Error(\"LinkedIn Job URL is required for LinkedIn entries.\");\n}\nif (actorItems.length === 0) {\n  throw new Error(\"The LinkedIn actor returned no job.\");\n}\n\nreturn actorItems.map((job, index) => {\n  const company =\n    job.company && typeof job.company === \"object\"\n      ? firstValue(job.company, [\"name\", \"companyName\", \"title\"])\n      : job.company;\n\n  const companyName = text(firstValue(job, [\n    \"companyName\", \"company_name\", \"company\", \"companyTitle\", \"organizationName\"\n  ]) || company);\n\n  const jobTitle = text(firstValue(job, [\n    \"jobTitle\", \"job_title\", \"title\", \"position\", \"positionName\"\n  ]));\n\n  const jobDescription = text(firstValue(job, [\n    \"jobDescription\", \"job_description\", \"description\", \"descriptionText\", \"text\"\n  ]));\n\n  const jobUrl = text(firstValue(job, [\n    \"jobUrl\", \"job_url\", \"url\", \"link\", \"linkedinUrl\", \"jobPostingUrl\"\n  ]) || linkedinJobUrl).replace(/^\\/\\//, \"https:\/\/\");\n\n  if (!companyName) throw new Error(\"The LinkedIn actor output is missing companyName.\");\n  if (!jobTitle) throw new Error(\"The LinkedIn actor output is missing jobTitle.\");\n  if (!jobDescription) throw new Error(\"The LinkedIn actor output is missing jobDescription.\");\n  if (!jobUrl) throw new Error(\"The LinkedIn actor output is missing jobUrl.\");\n\n  const locationValue =\n    job.location && typeof job.location === \"object\"\n      ? firstValue(job.location, [\"formattedAddress\", \"name\", \"city\"])\n      : firstValue(job, [\"location\", \"jobLocation\", \"locationName\"]);\n\n  return {\n    json: {\n      companyName,\n      jobTitle,\n      jobDescription,\n      jobUrl,\n      location: text(locationValue),\n      contractType: text(firstValue(job, [\n        \"contractType\", \"contract_type\", \"employmentType\", \"employment_type\", \"jobType\"\n      ])),\n      publishedAt: text(firstValue(job, [\n        \"publishedAt\", \"published_at\", \"postedAt\", \"posted_at\", \"datePosted\", \"publishedDate\"\n      ])),\n      externalJobId: (() => {\n        const raw = text(firstValue(job, [\n          \"jobId\", \"job_id\", \"id\", \"linkedinJobId\", \"externalId\"\n        ]) || linkedinJobId).replace(/\\D/g, \"\");\n        const value = Number(raw);\n        if (!Number.isSafeInteger(value) || value <= 0) {\n          throw new Error(\"The LinkedIn Job ID must be a safe positive integer.\");\n        }\n        return value;\n      })(),\n      jobId: (() => {\n        const raw = text(firstValue(job, [\n          \"jobId\", \"job_id\", \"id\", \"linkedinJobId\", \"externalId\"\n        ]) || linkedinJobId).replace(/\\D/g, \"\");\n        const value = Number(raw);\n        if (!Number.isSafeInteger(value) || value <= 0) {\n          throw new Error(\"The LinkedIn Job ID must be a safe positive integer.\");\n        }\n        return value;\n      })(),\n      source: \"LinkedIn\",\n      master_cv: masterCv,\n    },\n    pairedItem: { item: index },\n  };\n});"
+        "jsCode": "const extracted = $(\"Extract Master CV\").first().json;\nconst form = $(\"Submit Job\").first().json;\nconst actorItems = $input.all().map((item) => item.json);\n\nconst parseJson = (value) => {\n  if (typeof value !== \"string\") return value;\n  try {\n    return JSON.parse(value);\n  } catch {\n    return value;\n  }\n};\n\nconst unwrapMasterCv = (value) => {\n  let current = parseJson(value);\n\n  for (let depth = 0; depth < 5; depth++) {\n    if (!current || typeof current !== \"object\" || Array.isArray(current)) break;\n    if (Array.isArray(current.projects)) return current;\n\n    const next =\n      current.master_cv ??\n      current.cv_json ??\n      current.document_data ??\n      current.data ??\n      current.json;\n\n    if (next === undefined || next === current) break;\n    current = parseJson(next);\n  }\n\n  return current;\n};\n\nconst firstValue = (source, names) => {\n  for (const name of names) {\n    const value = source?.[name];\n    if (value !== undefined && value !== null && String(value).trim() !== \"\") {\n      return value;\n    }\n  }\n  return \"\";\n};\n\nconst text = (value) => String(value ?? \"\").trim();\nconst masterCv = unwrapMasterCv(extracted);\n\nif (!masterCv || typeof masterCv !== \"object\" || Array.isArray(masterCv)) {\n  throw new Error(\"The master CV file must contain a JSON object.\");\n}\nif (!Array.isArray(masterCv.projects)) {\n  throw new Error(\"The master CV JSON could not be normalized: projects must be an array.\");\n}\n\nconst linkedinJobUrl = text(form.linkedinJobUrl);\nconst linkedinJobId = text(form.linkedinJobId || form.jobId);\nif (!linkedinJobUrl) {\n  throw new Error(\"LinkedIn Job URL is required for LinkedIn entries.\");\n}\nif (actorItems.length === 0) {\n  throw new Error(\"The LinkedIn actor returned no job.\");\n}\n\nreturn actorItems.map((job, index) => {\n  const company =\n    job.company && typeof job.company === \"object\"\n      ? firstValue(job.company, [\"name\", \"companyName\", \"title\"])\n      : job.company;\n\n  const companyName = text(firstValue(job, [\n    \"companyName\", \"company_name\", \"company\", \"companyTitle\", \"organizationName\"\n  ]) || company);\n\n  const jobTitle = text(firstValue(job, [\n    \"jobTitle\", \"job_title\", \"title\", \"position\", \"positionName\"\n  ]));\n\n  const jobDescription = text(firstValue(job, [\n    \"jobDescription\", \"job_description\", \"description\", \"descriptionText\", \"text\"\n  ]));\n\n  const jobUrl = text(firstValue(job, [\n    \"jobUrl\", \"job_url\", \"url\", \"link\", \"linkedinUrl\", \"jobPostingUrl\"\n  ]) || linkedinJobUrl).replace(/^\\/\\//, \"https://\");\n\n  if (!companyName) throw new Error(\"The LinkedIn actor output is missing companyName.\");\n  if (!jobTitle) throw new Error(\"The LinkedIn actor output is missing jobTitle.\");\n  if (!jobDescription) throw new Error(\"The LinkedIn actor output is missing jobDescription.\");\n  if (!jobUrl) throw new Error(\"The LinkedIn actor output is missing jobUrl.\");\n\n  const locationValue =\n    job.location && typeof job.location === \"object\"\n      ? firstValue(job.location, [\"formattedAddress\", \"name\", \"city\"])\n      : firstValue(job, [\"location\", \"jobLocation\", \"locationName\"]);\n\n  return {\n    json: {\n      companyName,\n      jobTitle,\n      jobDescription,\n      jobUrl,\n      location: text(locationValue),\n      contractType: text(firstValue(job, [\n        \"contractType\", \"contract_type\", \"employmentType\", \"employment_type\", \"jobType\"\n      ])),\n      publishedAt: text(firstValue(job, [\n        \"publishedAt\", \"published_at\", \"postedAt\", \"posted_at\", \"datePosted\", \"publishedDate\"\n      ])),\n      externalJobId: (() => {\n        const raw = text(firstValue(job, [\n          \"jobId\", \"job_id\", \"id\", \"linkedinJobId\", \"externalId\"\n        ]) || linkedinJobId).replace(/\\D/g, \"\");\n        const value = Number(raw);\n        if (!Number.isSafeInteger(value) || value <= 0) {\n          throw new Error(\"The LinkedIn Job ID must be a safe positive integer.\");\n        }\n        return value;\n      })(),\n      jobId: (() => {\n        const raw = text(firstValue(job, [\n          \"jobId\", \"job_id\", \"id\", \"linkedinJobId\", \"externalId\"\n        ]) || linkedinJobId).replace(/\\D/g, \"\");\n        const value = Number(raw);\n        if (!Number.isSafeInteger(value) || value <= 0) {\n          throw new Error(\"The LinkedIn Job ID must be a safe positive integer.\");\n        }\n        return value;\n      })(),\n      source: \"LinkedIn\",\n      master_cv: masterCv,\n    },\n    pairedItem: { item: index },\n  };\n});"
       },
       "id": "23c5b196-6d27-4df6-b8de-de32919cb755",
       "name": "Normalize LinkedIn Job Input",
@@ -215,7 +215,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -48,
+        848,
         176
       ]
     },
@@ -243,7 +243,7 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        176,
+        1072,
         176
       ]
     },
@@ -257,7 +257,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        400,
+        1296,
         176
       ]
     },
@@ -346,7 +346,7 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        624,
+        1520,
         176
       ]
     },
@@ -359,7 +359,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        848,
+        1744,
         176
       ]
     },
@@ -387,7 +387,7 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        1072,
+        1968,
         176
       ]
     },
@@ -401,7 +401,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1296,
+        2192,
         176
       ]
     },
@@ -490,7 +490,7 @@
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
-        1520,
+        2416,
         176
       ]
     },
@@ -503,7 +503,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2192,
+        3088,
         176
       ]
     },
@@ -600,7 +600,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1744,
+        2640,
         64
       ],
       "credentials": {
@@ -627,7 +627,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1744,
+        2640,
         256
       ],
       "credentials": {
@@ -654,7 +654,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1744,
+        2640,
         448
       ],
       "credentials": {
@@ -681,7 +681,7 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1744,
+        2640,
         640
       ],
       "credentials": {
@@ -713,7 +713,7 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        1968,
+        2864,
         144
       ]
     },
@@ -757,7 +757,7 @@
       "type": "n8n-nodes-base.baserow",
       "typeVersion": 1.1,
       "position": [
-        2416,
+        3312,
         288
       ],
       "credentials": {
@@ -1100,6 +1100,150 @@
           "name": "Google Gemini(PaLM) Api account 2"
         }
       }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "cQ7mZ2xN8pL4vR6s",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/cQ7mZ2xN8pL4vR6s",
+          "cachedResultName": "Score Job Qualification - Baserow Prompt - Structured Output"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "job_description": "={{ $(\"Restore Job Context\").item.json.jobDescription }}",
+            "master_cv": "={{ $(\"Restore Job Context\").item.json.master_cv }}",
+            "job_context": "={{ $(\"Restore Job Context\").item.json }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "job_description",
+              "displayName": "job_description",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "master_cv",
+              "displayName": "master_cv",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "object",
+              "removed": false
+            },
+            {
+              "id": "job_context",
+              "displayName": "job_context",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "object",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "12717c88-c197-4d0f-a430-e52f16bb52ca",
+      "name": "Score Job Qualification",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        -48,
+        176
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const qualification = $json;\nconst rowId = Number(qualification.baserow_row_id);\n\nif (!Number.isInteger(rowId) || rowId <= 0) {\n  throw new Error(\"The saved job context does not contain a valid Baserow row ID.\");\n}\nif (!Number.isInteger(qualification.qualification_score)) {\n  throw new Error(\"qualification_score must be an integer.\");\n}\nif (typeof qualification.should_apply !== \"boolean\") {\n  throw new Error(\"should_apply must be a boolean.\");\n}\n\nreturn [{\n  json: {\n    rowId,\n    Apply: qualification.should_apply,\n    Score: qualification.qualification_score\n  }\n}];"
+      },
+      "id": "0504ef16-b4f7-4ccb-8329-6e7d2a67d4ba",
+      "name": "Build Qualification Row Update",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        176,
+        176
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "databaseId": 504349,
+        "tableId": 1098021,
+        "rowId": "={{ $(\"Build Qualification Row Update\").item.json.rowId }}",
+        "dataToSend": "autoMapInputData",
+        "inputsToIgnore": "rowId"
+      },
+      "id": "ddbbfda5-a2f0-416d-be2c-5f9a9be56796",
+      "name": "Update Job Qualification in Baserow",
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1.1,
+      "position": [
+        400,
+        176
+      ],
+      "credentials": {
+        "baserowApi": {
+          "id": "6f5zUFzwe8YPXrNX",
+          "name": "Baserow account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const qualification = $(\"Score Job Qualification\").item.json;\nconst updatedRow = $input.first().json;\n\nif (!updatedRow?.id) {\n  throw new Error(\"The qualification update did not return the Baserow row.\");\n}\n\nreturn [{ json: qualification }];"
+      },
+      "id": "771327e1-10bc-42a7-a57e-cb6aff188697",
+      "name": "Restore Scored Job Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        624,
+        176
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {},
+      "id": "9f69cf65-772a-47d9-9105-f63551655736",
+      "name": "Skip Failed Qualification Scoring",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        624,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Shared qualification scoring\n\nCalls the reusable scoring subworkflow, writes `Apply` and `Score` to the corresponding Baserow row, then restores the job context for document generation. Import `score-job-qualification.json` with this workflow; scoring or score-update failures return to the job loop.",
+        "height": 256,
+        "width": 496,
+        "color": 5
+      },
+      "id": "acec2ed9-2078-4a55-9b44-c8058a97a8ee",
+      "name": "Shared Qualification Scoring Notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        688
+      ]
     }
   ],
   "pinData": {},
@@ -1418,7 +1562,7 @@
       "main": [
         [
           {
-            "node": "Prepare CV Content Input",
+            "node": "Score Job Qualification",
             "type": "main",
             "index": 0
           }
@@ -1620,6 +1764,89 @@
             "node": "Extract Job Fields with AI",
             "type": "ai_languageModel",
             "index": 1
+          }
+        ]
+      ]
+    },
+    "Score Job Qualification": {
+      "main": [
+        [
+          {
+            "node": "Build Qualification Row Update",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip Failed Qualification Scoring",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Qualification Row Update": {
+      "main": [
+        [
+          {
+            "node": "Update Job Qualification in Baserow",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip Failed Qualification Scoring",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Job Qualification in Baserow": {
+      "main": [
+        [
+          {
+            "node": "Restore Scored Job Context",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip Failed Qualification Scoring",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restore Scored Job Context": {
+      "main": [
+        [
+          {
+            "node": "Prepare CV Content Input",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip Failed Qualification Scoring",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Skip Failed Qualification Scoring": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Jobs",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
