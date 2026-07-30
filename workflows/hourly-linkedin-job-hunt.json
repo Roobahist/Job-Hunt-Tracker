@@ -146,6 +146,19 @@
       "type": "n8n-nodes-base.splitInBatches",
       "typeVersion": 3,
       "position": [
+        -28944,
+        4928
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const seen = new Set();\nconst scrapedJobs = [];\n\nfor (const item of $input.all()) {\n  const job = item.json;\n  const canonicalUrl = String(job.jobUrl ?? \"\")\n    .trim()\n    .replace(/[?#].*$/, \"\")\n    .replace(/\\/$/, \"\")\n    .toLowerCase();\n\n  if (!canonicalUrl || seen.has(canonicalUrl)) {\n    continue;\n  }\n\n  seen.add(canonicalUrl);\n  scrapedJobs.push(job);\n}\n\nif (scrapedJobs.length === 0) {\n  return [];\n}\n\nreturn [{ json: { scraped_jobs: scrapedJobs } }];"
+      },
+      "id": "a468c2bd-6d4d-4381-aafe-f66eaee3bf44",
+      "name": "Collect Scraped Jobs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
         -30512,
         4704
       ]
@@ -175,7 +188,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const job = $(\"Loop Over Jobs\").item.json;\nconst canonical = (value) => String(value ?? \"\").trim().replace(/[?#].*$/, \"\").replace(/\\/$/, \"\").toLowerCase();\nconst target = canonical(job.jobUrl);\n\nif (!target) {\n  return [{ json: {} }];\n}\n\nconst exists = $input.all().some((item) => {\n  const row = item.json.fields && typeof item.json.fields === \"object\"\n    ? item.json.fields\n    : item.json;\n  return canonical(row.Link) === target;\n});\n\nif (exists) {\n  return [{ json: {} }];\n}\n\nreturn [{ json: job }];"
+        "jsCode": "const scrapedJobs = $(\"Collect Scraped Jobs\").first().json.scraped_jobs;\nconst canonical = (value) => String(value ?? \"\")\n  .trim()\n  .replace(/[?#].*$/, \"\")\n  .replace(/\\/$/, \"\")\n  .toLowerCase();\n\nif (!Array.isArray(scrapedJobs)) {\n  throw new Error(\"Collect Scraped Jobs did not return scraped_jobs.\");\n}\n\nconst existingUrls = new Set(\n  $input.all()\n    .map((item) => {\n      const row = item.json.fields && typeof item.json.fields === \"object\"\n        ? item.json.fields\n        : item.json;\n      return canonical(row.Link);\n    })\n    .filter(Boolean)\n);\n\nreturn scrapedJobs\n  .filter((job) => {\n    const url = canonical(job.jobUrl);\n    return url && !existingUrls.has(url);\n  })\n  .map((job) => ({ json: job }));"
       },
       "id": "355d30f4-5571-4c61-9553-412612efab40",
       "name": "Keep Only New Job",
@@ -705,7 +718,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const job = $(\"Keep Only New Job\").item.json;\n\nconst jobId = Number(job.jobId);\nif (!Number.isInteger(jobId)) {\n  throw new Error(\"Job ID must be an integer.\");\n}\n\nconst dateValue = job.publishedAt\n  ? String(job.publishedAt).slice(0, 10)\n  : new Date().toISOString().slice(0, 10);\n\nreturn [{\n  json: {\n    \"Job ID\": jobId,\n    \"Date\": dateValue,\n    \"Company Name\": job.companyName ?? \"\",\n    \"Title\": job.jobTitle ?? \"\",\n    \"Location\": job.location ?? \"\",\n    \"Job Description\": job.jobDescription ?? \"\",\n    \"Contract Type\": job.contractType ?? \"\",\n    \"Link\": job.jobUrl ?? \"\",\n    \"Status\": \"New\"\n  }\n}];"
+        "jsCode": "return $input.all().map((item, index) => {\n  const job = item.json;\n  const jobId = Number(job.jobId);\n\n  if (!Number.isInteger(jobId)) {\n    throw new Error(`Job ID at item ${index + 1} must be an integer.`);\n  }\n\n  const dateValue = job.publishedAt\n    ? String(job.publishedAt).slice(0, 10)\n    : new Date().toISOString().slice(0, 10);\n\n  return {\n    json: {\n      \"Job ID\": jobId,\n      \"Date\": dateValue,\n      \"Company Name\": job.companyName ?? \"\",\n      \"Title\": job.jobTitle ?? \"\",\n      \"Location\": job.location ?? \"\",\n      \"Job Description\": job.jobDescription ?? \"\",\n      \"Contract Type\": job.contractType ?? \"\",\n      \"Link\": job.jobUrl ?? \"\",\n      \"Status\": \"New\"\n    },\n    pairedItem: index\n  };\n});"
       },
       "id": "fc517e1f-5eba-4a13-abf9-50ee580860f9",
       "name": "Build Initial Job Row",
@@ -718,7 +731,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const createdRow = $input.first().json;\nconst job = $(\"Keep Only New Job\").item.json;\n\nif (!createdRow?.id) {\n  throw new Error(\"The initial Baserow row was created without returning a row ID.\");\n}\n\nreturn [{\n  json: {\n    ...job,\n    baserow_row_id: createdRow.id\n  }\n}];"
+        "jsCode": "const createdRows = $input.all();\nconst jobs = $(\"Keep Only New Job\").all();\n\nif (createdRows.length !== jobs.length) {\n  throw new Error(\n    `Created ${createdRows.length} Baserow rows for ${jobs.length} new jobs.`\n  );\n}\n\nreturn createdRows.map((item, index) => {\n  const createdRow = item.json;\n  const job = jobs[index].json;\n\n  if (!createdRow?.id) {\n    throw new Error(\n      `Baserow row ${index + 1} was created without returning a row ID.`\n    );\n  }\n\n  return {\n    json: {\n      ...job,\n      baserow_row_id: createdRow.id\n    },\n    pairedItem: index\n  };\n});"
       },
       "id": "06f6f790-3392-4c55-a8e9-4b49ac95ce6a",
       "name": "Restore Job Context",
@@ -948,6 +961,59 @@
     },
     {
       "parameters": {
+        "jsCode": "const qualification = $json;\nconst rowId = Number(qualification.baserow_row_id);\n\nif (!Number.isInteger(rowId) || rowId <= 0) {\n  throw new Error(\"The saved job context does not contain a valid Baserow row ID.\");\n}\nif (!Number.isInteger(qualification.qualification_score)) {\n  throw new Error(\"qualification_score must be an integer.\");\n}\nif (typeof qualification.should_apply !== \"boolean\") {\n  throw new Error(\"should_apply must be a boolean.\");\n}\n\nreturn [{\n  json: {\n    rowId,\n    Apply: qualification.should_apply,\n    Score: qualification.qualification_score\n  }\n}];"
+      },
+      "id": "9af68cd4-f701-4510-a020-bb0f78506356",
+      "name": "Build Qualification Row Update",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -26560,
+        4416
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "databaseId": 504349,
+        "tableId": 1098021,
+        "rowId": "={{ $json.rowId }}",
+        "dataToSend": "autoMapInputData",
+        "inputsToIgnore": "rowId"
+      },
+      "id": "18e5a139-2177-40dc-8129-0f284a444ab2",
+      "name": "Update Job Qualification in Baserow",
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1.1,
+      "position": [
+        -26336,
+        4416
+      ],
+      "credentials": {
+        "baserowApi": {
+          "id": "6f5zUFzwe8YPXrNX",
+          "name": "Baserow account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const qualification = $(\"Build Qualification Scoring Output\").item.json;\nconst updatedRow = $input.first().json;\n\nif (!updatedRow?.id) {\n  throw new Error(\"The qualification update did not return the Baserow row.\");\n}\n\nreturn [{ json: qualification }];"
+      },
+      "id": "8ac92774-0e8a-4b49-8ab4-4bd168dfd92c",
+      "name": "Restore Scored Job Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -26112,
+        4416
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
         "operation": "update",
         "databaseId": 504349,
         "tableId": 1098021,
@@ -995,6 +1061,21 @@
       "position": [
         -29536,
         5232
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Two-phase job processing\n\n### Phase 1 — persist the scrape\n1. Collect and URL-deduplicate the complete Apify result.\n2. Read existing Baserow jobs once.\n3. Keep only postings whose canonical Link is not already stored.\n4. Create every new metadata row in Baserow.\n5. Restore each created row ID onto its corresponding posting.\n\n### Phase 2 — process saved rows\n`Loop Over Jobs` receives the complete saved set. For each row it:\n1. Scores qualification.\n2. Updates `Apply` and `Score` on that row.\n3. Generates and uploads the CV and cover letter.\n4. Updates the same row with its files.\n\nA later processing failure therefore leaves the scraped job safely stored in Baserow.",
+        "height": 416,
+        "width": 544
+      },
+      "id": "4f7be300-05a0-4837-b9c1-9cb78ff1b91c",
+      "name": "Two-Phase Processing Notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -30512,
+        5376
       ]
     }
   ],
@@ -1070,7 +1151,18 @@
       "main": [
         [
           {
-            "node": "Loop Over Jobs",
+            "node": "Collect Scraped Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect Scraped Jobs": {
+      "main": [
+        [
+          {
+            "node": "Read Existing Jobs",
             "type": "main",
             "index": 0
           }
@@ -1082,7 +1174,7 @@
         [],
         [
           {
-            "node": "Read Existing Jobs",
+            "node": "Prepare Qualification Scoring Input",
             "type": "main",
             "index": 0
           }
@@ -1120,13 +1212,7 @@
             "index": 0
           }
         ],
-        [
-          {
-            "node": "Loop Over Jobs",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        []
       ]
     },
     "Prepare CV Content Input": {
@@ -1398,7 +1484,7 @@
       "main": [
         [
           {
-            "node": "Prepare Qualification Scoring Input",
+            "node": "Loop Over Jobs",
             "type": "main",
             "index": 0
           }
@@ -1551,7 +1637,61 @@
       "main": [
         [
           {
+            "node": "Build Qualification Row Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Qualification Row Update": {
+      "main": [
+        [
+          {
+            "node": "Update Job Qualification in Baserow",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip Failed Document Generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Job Qualification in Baserow": {
+      "main": [
+        [
+          {
+            "node": "Restore Scored Job Context",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip Failed Document Generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restore Scored Job Context": {
+      "main": [
+        [
+          {
             "node": "Prepare CV Content Input",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip Failed Document Generation",
             "type": "main",
             "index": 0
           }
