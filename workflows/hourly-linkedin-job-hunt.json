@@ -516,7 +516,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const cvContent = $(\"Create Tailored CV Content\").item.json;\n\nconst cvPdf = $(\"Upload CV PDF to Baserow\").first().json;\nconst cvTex = $(\"Upload CV TEX to Baserow\").first().json;\nconst coverPdf = $(\"Upload Cover Letter PDF to Baserow\").first().json;\nconst coverTex = $(\"Upload Cover Letter TEX to Baserow\").first().json;\n\nconst requiredUpload = (upload, label) => {\n  if (!upload || typeof upload.name !== \"string\" || !upload.name.trim()) {\n    throw new Error(`${label} did not return a valid Baserow user-file name.`);\n  }\n  return upload;\n};\n\nrequiredUpload(cvPdf, \"CV PDF upload\");\nrequiredUpload(cvTex, \"CV TEX upload\");\nrequiredUpload(coverPdf, \"Cover letter PDF upload\");\nrequiredUpload(coverTex, \"Cover letter TEX upload\");\n\nconst rowId = Number($(\"Create Job Row in Baserow\").item.json.id);\nif (!Number.isInteger(rowId) || rowId <= 0) {\n  throw new Error(\"The initial Baserow row did not return a valid row ID.\");\n}\n\nconst applicationId = String(cvContent.application_id ?? \"application\");\n\nreturn [{\n  json: {\n    rowId,\n    \"Cover Letter\": [\n      {\n        \"name\": coverPdf.name,\n        \"visible_name\": `cover-letter_${applicationId}.pdf`\n      },\n      {\n        \"name\": coverTex.name,\n        \"visible_name\": `cover-letter_${applicationId}.tex`\n      }\n    ],\n    \"CV\": [\n      {\n        \"name\": cvPdf.name,\n        \"visible_name\": `cv_${applicationId}.pdf`\n      },\n      {\n        \"name\": cvTex.name,\n        \"visible_name\": `cv_${applicationId}.tex`\n      }\n    ]\n  }\n}];"
+        "jsCode": "const cvContent = $(\"Create Tailored CV Content\").item.json;\nconst qualification = $(\"Build Qualification Scoring Output\").item.json;\n\nconst cvPdf = $(\"Upload CV PDF to Baserow\").first().json;\nconst cvTex = $(\"Upload CV TEX to Baserow\").first().json;\nconst coverPdf = $(\"Upload Cover Letter PDF to Baserow\").first().json;\nconst coverTex = $(\"Upload Cover Letter TEX to Baserow\").first().json;\n\nconst requiredUpload = (upload, label) => {\n  if (!upload || typeof upload.name !== \"string\" || !upload.name.trim()) {\n    throw new Error(`${label} did not return a valid Baserow user-file name.`);\n  }\n  return upload;\n};\n\nrequiredUpload(cvPdf, \"CV PDF upload\");\nrequiredUpload(cvTex, \"CV TEX upload\");\nrequiredUpload(coverPdf, \"Cover letter PDF upload\");\nrequiredUpload(coverTex, \"Cover letter TEX upload\");\n\nconst rowId = Number($(\"Create Job Row in Baserow\").item.json.id);\nif (!Number.isInteger(rowId) || rowId <= 0) {\n  throw new Error(\"The initial Baserow row did not return a valid row ID.\");\n}\n\nconst applicationId = String(cvContent.application_id ?? \"application\");\nconst qualificationScore = Number(qualification.qualification_score);\nconst shouldApply = Boolean(qualification.should_apply);\n\nif (!Number.isInteger(qualificationScore)) {\n  throw new Error(\"qualification_score must be an integer.\");\n}\n\nreturn [{\n  json: {\n    rowId,\n    Apply: shouldApply,\n    Score: qualificationScore,\n    \"Cover Letter\": [\n      {\n        \"name\": coverPdf.name,\n        \"visible_name\": `cover-letter_${applicationId}.pdf`\n      },\n      {\n        \"name\": coverTex.name,\n        \"visible_name\": `cover-letter_${applicationId}.tex`\n      }\n    ],\n    \"CV\": [\n      {\n        \"name\": cvPdf.name,\n        \"visible_name\": `cv_${applicationId}.pdf`\n      },\n      {\n        \"name\": cvTex.name,\n        \"visible_name\": `cv_${applicationId}.tex`\n      }\n    ]\n  }\n}];"
       },
       "id": "832b480c-af32-4356-bcbc-e38011aedc91",
       "name": "Build File Update",
@@ -728,6 +728,223 @@
         -29168,
         4560
       ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const job = $json;\nconst collected = $(\"Collect Active Start URLs\").first().json;\nconst masterCv = collected.master_cv;\n\nif (!masterCv || typeof masterCv !== \"object\" || Array.isArray(masterCv)) {\n  throw new Error(\"master_cv must be an object.\");\n}\n\nif (!Array.isArray(masterCv.projects)) {\n  throw new Error(\"master_cv.projects must be an array.\");\n}\n\nif (!Array.isArray(masterCv.work_experience)) {\n  throw new Error(\"master_cv.work_experience must be an array.\");\n}\n\nif (!Array.isArray(masterCv.skills)) {\n  throw new Error(\"master_cv.skills must be an array.\");\n}\n\nreturn [{\n  json: {\n    ...job,\n    master_cv: masterCv,\n  },\n}];"
+      },
+      "id": "9f2f99bc-0c4e-47b4-98cf-6d6d7f281d46",
+      "name": "Prepare Qualification Scoring Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -28944,
+        4560
+      ]
+    },
+    {
+      "parameters": {
+        "databaseId": 504349,
+        "tableId": 1098023,
+        "returnAll": true,
+        "additionalOptions": {}
+      },
+      "type": "n8n-nodes-base.baserow",
+      "typeVersion": 1,
+      "position": [
+        -28720,
+        4416
+      ],
+      "id": "4b1a3b8e-3f0b-4b0d-bb45-790b8c2e1e2c",
+      "name": "Read Qualification Prompt from Baserow",
+      "credentials": {
+        "baserowApi": {
+          "id": "6f5zUFzwe8YPXrNX",
+          "name": "Baserow account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "import json\n\nif not _items:\n    raise ValueError(\"Baserow returned no qualification-scoring prompt records.\")\n\n\ndef fields_of(item):\n    data = item.get(\"json\", {})\n    nested = data.get(\"fields\")\n    return nested if isinstance(nested, dict) else data\n\n\ndef get_value(fields, names):\n    for name in names:\n        if name in fields and fields[name] is not None:\n            return fields[name]\n    return None\n\n\ndef scalar(value):\n    if isinstance(value, dict):\n        for key in (\"value\", \"name\", \"label\"):\n            nested = value.get(key)\n            if nested is not None:\n                return nested\n        return value.get(\"id\")\n\n    if isinstance(value, list) and len(value) == 1:\n        return scalar(value[0])\n\n    return value\n\n\ndef is_enabled(value):\n    value = scalar(value)\n\n    if isinstance(value, bool):\n        return value\n\n    if isinstance(value, (int, float)):\n        return value == 1\n\n    if isinstance(value, str):\n        return value.strip().lower() in (\"true\", \"1\", \"yes\", \"enabled\")\n\n    return False\n\n\ndef normalize_output_structure(value, prompt_key):\n    value = scalar(value)\n\n    if isinstance(value, dict):\n        schema = value\n    elif isinstance(value, str) and value.strip():\n        try:\n            schema = json.loads(value)\n        except json.JSONDecodeError as exc:\n            raise ValueError(\n                f\"Prompt '{prompt_key}' has invalid JSON in Output Structure.\"\n            ) from exc\n    else:\n        raise ValueError(\n            f\"Prompt '{prompt_key}' has no Output Structure JSON Schema.\"\n        )\n\n    if not isinstance(schema, dict):\n        raise ValueError(\n            f\"Prompt '{prompt_key}' Output Structure must be a JSON object.\"\n        )\n\n    if schema.get(\"type\") != \"object\":\n        raise ValueError(\n            f\"Prompt '{prompt_key}' Output Structure must define an object schema.\"\n        )\n\n    return schema\n\n\ndef normalize_temperature(value, prompt_key):\n    value = scalar(value)\n\n    if value is None or (isinstance(value, str) and not value.strip()):\n        raise ValueError(\n            f\"Prompt '{prompt_key}' is missing Temperature.\"\n        )\n\n    if isinstance(value, str):\n        try:\n            value = float(value)\n        except ValueError as exc:\n            raise ValueError(\n                f\"Prompt '{prompt_key}' has invalid Temperature.\"\n            ) from exc\n\n    return value\n\nselected = []\nfor item in _items:\n    fields = fields_of(item)\n    prompt_key = scalar(get_value(fields, [\"Prompt Key\", \"prompt_key\", \"Key\", \"key\", \"Name\", \"name\"]))\n\n    if prompt_key != \"qualification_scoring\":\n        continue\n\n    active = get_value(fields, [\"Active\", \"active\", \"Enabled\", \"enabled\"])\n    if active is not None and not is_enabled(active):\n        continue\n\n    template = scalar(get_value(fields, [\"Prompt Template\", \"Prompt\", \"Template\", \"prompt_template\"]))\n    output_structure = normalize_output_structure(\n        get_value(fields, [\"Output Structure\", \"output_structure\", \"Output Schema\", \"output_schema\"]),\n        prompt_key,\n    )\n    temperature = normalize_temperature(\n        get_value(fields, [\"Temperature\", \"temperature\"]),\n        prompt_key,\n    )\n    version = scalar(get_value(fields, [\"Version\", \"Prompt Version\", \"version\"]))\n\n    if not isinstance(template, str) or not template.strip():\n        raise ValueError(\"qualification_scoring prompt template is missing.\")\n\n    selected.append({\n        \"qualification_scoring_prompt_key\": prompt_key,\n        \"qualification_scoring_prompt_version\": version,\n        \"qualification_scoring_temperature\": temperature,\n        \"qualification_scoring_prompt_template\": template,\n        \"qualification_scoring_output_structure\": output_structure,\n    })\n\nif not selected:\n    raise ValueError(\"No active qualification_scoring prompt record was found in Baserow.\")\n\nreturn [{\"json\": selected[0]}]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -28496,
+        4416
+      ],
+      "id": "2d1c4bcf-1e61-48d0-a7c0-fc9b65f13e0a",
+      "name": "Validate Qualification Prompt"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -28272,
+        4480
+      ],
+      "id": "7a0fbf4c-1f2a-4f2b-8a36-5c1f9f0c1d54",
+      "name": "Merge Qualification Input with Prompt Settings"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "import json\n\ndata = _items[0][\"json\"]\njob_description = data.get(\"jobDescription\", data.get(\"job_description\"))\nmaster_cv = data.get(\"master_cv\")\ntemplate = data.get(\"qualification_scoring_prompt_template\")\n\nif not isinstance(job_description, str) or not job_description.strip():\n    raise ValueError(\"job_description must be a non-empty string.\")\nif not isinstance(master_cv, dict):\n    raise ValueError(\"master_cv must be an object.\")\nif not isinstance(template, str) or not template.strip():\n    raise ValueError(\"Qualification-scoring prompt template is missing.\")\n\ncompact_cv = json.dumps(master_cv, ensure_ascii=False, separators=(\",\", \":\"))\n\nprompt = template\nfor placeholder, value in {\n    \"[[job_description]]\": job_description.strip(),\n    \"[[master_cv_json]]\": compact_cv,\n    \"[[master_cv]]\": compact_cv,\n}.items():\n    prompt = prompt.replace(placeholder, value)\n\nreturn [{\n    \"json\": {\n        **data,\n        \"qualification_scoring_prompt\": prompt,\n    }\n}]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -28048,
+        4416
+      ],
+      "id": "bf43d607-9196-4e31-9a9a-1b7da3a6f0cc",
+      "name": "Build Qualification Scoring Prompt"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash-lite",
+        "options": {
+          "temperature": "={{ $(\"Build Qualification Scoring Prompt\").first().json.qualification_scoring_temperature }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -27824,
+        4304
+      ],
+      "id": "d1d7d4df-5f1d-4e43-a5c2-8a0c9e3c8e65",
+      "name": "Qualification Scoring Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "BG94TcoWRne9VKl3",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash-lite",
+        "options": {
+          "temperature": "={{ $(\"Build Qualification Scoring Prompt\").first().json.qualification_scoring_temperature }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -27824,
+        4496
+      ],
+      "id": "3f0d6622-df0a-4ac9-9d2c-f6f3ccf26e5a",
+      "name": "Qualification Scoring Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "BG94TcoWRne9VKl3",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "={{ JSON.stringify($json.qualification_scoring_output_structure) }}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -27600,
+        4304
+      ],
+      "id": "8e6f6a6d-7ce1-4d0a-a5d5-0ab7d1c5f7e0",
+      "name": "Qualification Scoring Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.1-flash-lite",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        -27600,
+        4496
+      ],
+      "id": "0f4972d2-9a15-4f4e-b8d9-f5c4a44d53e7",
+      "name": "Qualification Scoring Auto-Fix Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "BG94TcoWRne9VKl3",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.qualification_scoring_prompt }}",
+        "hasOutputParser": true,
+        "needsFallback": true,
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -27456,
+        4416
+      ],
+      "id": "4f63f59d-3f6c-44e0-a7f5-2c2c9cbe4e24",
+      "name": "Score Qualification"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "import json\n\ndef extract_parsed(root):\n    output = root.get(\"output\")\n\n    if isinstance(output, dict):\n        return output\n\n    if isinstance(output, str):\n        try:\n            parsed = json.loads(output)\n        except json.JSONDecodeError as exc:\n            raise ValueError(\"Qualification-scoring output was not valid JSON after parsing.\") from exc\n        if isinstance(parsed, dict):\n            return parsed\n\n    try:\n        value = root[\"response\"][\"generations\"][0][0][\"text\"]\n    except (KeyError, IndexError, TypeError):\n        value = None\n\n    if isinstance(value, dict):\n        return value\n\n    if isinstance(value, str):\n        try:\n            parsed = json.loads(value)\n        except json.JSONDecodeError as exc:\n            raise ValueError(\"Qualification-scoring output was not valid JSON after parsing.\") from exc\n        if isinstance(parsed, dict):\n            return parsed\n\n    raise ValueError(\"Could not locate the parsed qualification-scoring output.\")\n\nif not _items:\n    raise ValueError(\"The qualification-scoring model returned no items.\")\n\nparsed = extract_parsed(_items[0][\"json\"])\n\nif not isinstance(parsed, dict):\n    raise ValueError(\"The qualification-scoring output must be a JSON object.\")\n\nscore = parsed.get(\"qualification_score\")\nshould_apply = parsed.get(\"should_apply\")\n\nif not isinstance(score, int) or isinstance(score, bool):\n    raise ValueError(\"qualification_score must be an integer.\")\n\nif score < 0 or score > 100:\n    raise ValueError(\"qualification_score must be between 0 and 100.\")\n\nif not isinstance(should_apply, bool):\n    raise ValueError(\"should_apply must be a boolean.\")\n\nnormalized = {\n    \"qualification_score\": score,\n    \"should_apply\": should_apply,\n}\n\nreturn [{\n    \"json\": {\n        \"qualification_scoring_response\": json.dumps(\n            normalized,\n            ensure_ascii=False,\n            separators=(\",\", \":\"),\n        )\n    }\n}]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -27232,
+        4304
+      ],
+      "id": "af0f8183-bce9-48ad-8c56-8eb0b85e6c12",
+      "name": "Prepare Qualification Scoring Response"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -27008,
+        4416
+      ],
+      "id": "c8a7749f-3f1a-4f8c-91c5-7b0bcfa4f9c8",
+      "name": "Merge Qualification Scoring Response with Source"
+    },
+    {
+      "parameters": {
+        "language": "pythonNative",
+        "pythonCode": "import json\n\ndata = _items[0][\"json\"]\nparsed = json.loads(data[\"qualification_scoring_response\"])\n\nscore = parsed.get(\"qualification_score\")\nshould_apply = parsed.get(\"should_apply\")\n\nif not isinstance(score, int) or isinstance(score, bool):\n    raise ValueError(\"qualification_score must be an integer.\")\nif score < 0 or score > 100:\n    raise ValueError(\"qualification_score must be between 0 and 100.\")\nif not isinstance(should_apply, bool):\n    raise ValueError(\"should_apply must be a boolean.\")\n\nprompt_usage = {\n    \"qualification_scoring\": {\n        \"prompt_key\": data.get(\"qualification_scoring_prompt_key\"),\n        \"version\": data.get(\"qualification_scoring_prompt_version\"),\n        \"temperature\": data.get(\"qualification_scoring_temperature\"),\n    }\n}\n\nreturn [{\n    \"json\": {\n        **data,\n        \"qualification_scoring_json\": parsed,\n        \"qualification_score\": score,\n        \"should_apply\": should_apply,\n        \"prompt_usage\": prompt_usage,\n    }\n}]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -26784,
+        4416
+      ],
+      "id": "6bde5e97-4fb2-42df-9d1f-c319f3a6301a",
+      "name": "Build Qualification Scoring Output"
     },
     {
       "parameters": {
@@ -1178,6 +1395,159 @@
       ]
     },
     "Restore Job Context": {
+      "main": [
+        [
+          {
+            "node": "Prepare Qualification Scoring Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Qualification Scoring Input": {
+      "main": [
+        [
+          {
+            "node": "Read Qualification Prompt from Baserow",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Qualification Input with Prompt Settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Qualification Prompt from Baserow": {
+      "main": [
+        [
+          {
+            "node": "Validate Qualification Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Qualification Prompt": {
+      "main": [
+        [
+          {
+            "node": "Merge Qualification Input with Prompt Settings",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Qualification Input with Prompt Settings": {
+      "main": [
+        [
+          {
+            "node": "Build Qualification Scoring Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Qualification Scoring Prompt": {
+      "main": [
+        [
+          {
+            "node": "Merge Qualification Scoring Response with Source",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Score Qualification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qualification Scoring Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Score Qualification",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qualification Scoring Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Score Qualification",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Qualification Scoring Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Score Qualification",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qualification Scoring Auto-Fix Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Qualification Scoring Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Score Qualification": {
+      "main": [
+        [
+          {
+            "node": "Prepare Qualification Scoring Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Qualification Scoring Response": {
+      "main": [
+        [
+          {
+            "node": "Merge Qualification Scoring Response with Source",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Qualification Scoring Response with Source": {
+      "main": [
+        [
+          {
+            "node": "Build Qualification Scoring Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Qualification Scoring Output": {
       "main": [
         [
           {
