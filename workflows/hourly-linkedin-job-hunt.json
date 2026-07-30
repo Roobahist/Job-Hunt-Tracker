@@ -758,6 +758,50 @@
     },
     {
       "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "fffea99c-10cf-4742-ad5d-3c2ff2990b57",
+              "leftValue": "={{ $(\"Restore Scored Job Context\").item.json.qualification_score }}",
+              "rightValue": 33,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "58e0755a-d760-450b-a6d7-ae17199859a0",
+      "name": "Score Is At Least 33?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -25888,
+        4416
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "65ad0915-7e33-4bdc-ad32-e89133bf8af8",
+      "name": "Skip Low-Score Job",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -25664,
+        4640
+      ]
+    },
+    {
+      "parameters": {
         "operation": "update",
         "databaseId": 504349,
         "tableId": 1098021,
@@ -927,7 +971,7 @@
     },
     {
       "parameters": {
-        "content": "### Shared qualification scoring\n\nCalls the reusable scoring subworkflow, writes `Apply` and `Score` to the corresponding Baserow row, then restores the job context for document generation. Import `score-job-qualification.json` with this workflow so the referenced workflow ID resolves.",
+        "content": "### Shared qualification scoring\n\nCalls the reusable scoring subworkflow, writes `Apply` and `Score` to the corresponding Baserow row, then restores the job context. Scores of 33 or higher continue to document generation; lower scores skip directly to the next job. Import `score-job-qualification.json` with this workflow so the referenced workflow ID resolves.",
         "height": 256,
         "width": 496,
         "color": 5
@@ -1394,7 +1438,7 @@
       "main": [
         [
           {
-            "node": "Prepare CV Content Input",
+            "node": "Score Is At Least 33?",
             "type": "main",
             "index": 0
           }
@@ -1402,6 +1446,35 @@
         [
           {
             "node": "Skip Failed Document Generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Score Is At Least 33?": {
+      "main": [
+        [
+          {
+            "node": "Prepare CV Content Input",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip Low-Score Job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Skip Low-Score Job": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Jobs",
             "type": "main",
             "index": 0
           }
