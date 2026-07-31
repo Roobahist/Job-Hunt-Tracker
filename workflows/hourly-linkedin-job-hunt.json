@@ -529,7 +529,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const cvContent = $(\"Create Tailored CV Content\").item.json;\nconst qualification = $(\"Score Job Qualification\").item.json;\n\nconst cvPdf = $(\"Upload CV PDF to Baserow\").first().json;\nconst cvTex = $(\"Upload CV TEX to Baserow\").first().json;\nconst coverPdf = $(\"Upload Cover Letter PDF to Baserow\").first().json;\nconst coverTex = $(\"Upload Cover Letter TEX to Baserow\").first().json;\n\nconst requiredUpload = (upload, label) => {\n  if (!upload || typeof upload.name !== \"string\" || !upload.name.trim()) {\n    throw new Error(`${label} did not return a valid Baserow user-file name.`);\n  }\n  return upload;\n};\n\nrequiredUpload(cvPdf, \"CV PDF upload\");\nrequiredUpload(cvTex, \"CV TEX upload\");\nrequiredUpload(coverPdf, \"Cover letter PDF upload\");\nrequiredUpload(coverTex, \"Cover letter TEX upload\");\n\nconst rowId = Number($(\"Create Job Row in Baserow\").item.json.id);\nif (!Number.isInteger(rowId) || rowId <= 0) {\n  throw new Error(\"The initial Baserow row did not return a valid row ID.\");\n}\n\nconst applicationId = String(cvContent.application_id ?? \"application\");\nconst qualificationScore = Number(qualification.qualification_score);\nconst shouldApply = Boolean(qualification.should_apply);\n\nif (!Number.isInteger(qualificationScore)) {\n  throw new Error(\"qualification_score must be an integer.\");\n}\n\nreturn [{\n  json: {\n    rowId,\n    Apply: shouldApply,\n    Score: qualificationScore,\n    \"Cover Letter\": [\n      {\n        \"name\": coverPdf.name,\n        \"visible_name\": `cover-letter_${applicationId}.pdf`\n      },\n      {\n        \"name\": coverTex.name,\n        \"visible_name\": `cover-letter_${applicationId}.tex`\n      }\n    ],\n    \"CV\": [\n      {\n        \"name\": cvPdf.name,\n        \"visible_name\": `cv_${applicationId}.pdf`\n      },\n      {\n        \"name\": cvTex.name,\n        \"visible_name\": `cv_${applicationId}.tex`\n      }\n    ]\n  }\n}];"
+        "jsCode": "const cvContent = $(\"Create Tailored CV Content\").item.json;\nconst qualification = $(\"Score Job Qualification\").item.json;\n\nconst cvPdf = $(\"Upload CV PDF to Baserow\").first().json;\nconst cvTex = $(\"Upload CV TEX to Baserow\").first().json;\nconst coverPdf = $(\"Upload Cover Letter PDF to Baserow\").first().json;\nconst coverTex = $(\"Upload Cover Letter TEX to Baserow\").first().json;\n\nconst requiredUpload = (upload, label) => {\n  if (!upload || typeof upload.name !== \"string\" || !upload.name.trim()) {\n    throw new Error(`${label} did not return a valid Baserow user-file name.`);\n  }\n  return upload;\n};\n\nrequiredUpload(cvPdf, \"CV PDF upload\");\nrequiredUpload(cvTex, \"CV TEX upload\");\nrequiredUpload(coverPdf, \"Cover letter PDF upload\");\nrequiredUpload(coverTex, \"Cover letter TEX upload\");\n\nconst rowId = Number($(\"Create Job Row in Baserow\").item.json.id);\nif (!Number.isInteger(rowId) || rowId <= 0) {\n  throw new Error(\"The initial Baserow row did not return a valid row ID.\");\n}\n\nconst applicationId = String(cvContent.application_id ?? \"application\");\nconst qualificationScore = Number(qualification.qualification_score);\nconst shouldApply = Boolean(qualification.should_apply);\n\nif (!Number.isInteger(qualificationScore)) {\n  throw new Error(\"qualification_score must be an integer.\");\n}\n\nreturn [{\n  json: {\n    rowId,\n    Apply: shouldApply,\n    Score: qualificationScore,\n    \"Cover Letter\": [\n      {\n        \"name\": coverPdf.name,\n        \"visible_name\": `cover-letter_${applicationId}.pdf`\n      },\n      {\n        \"name\": coverTex.name,\n        \"visible_name\": `cover-letter_${applicationId}.tex`\n      }\n    ],\n    \"CV\": [\n      {\n        \"name\": cvPdf.name,\n        \"visible_name\": `cv_${applicationId}.pdf`\n      },\n      {\n        \"name\": cvTex.name,\n        \"visible_name\": `cv_${applicationId}.tex`\n      }\n    ]\n  },\n  pairedItem: {\n    item: 0\n  }\n}];"
       },
       "id": "832b480c-af32-4356-bcbc-e38011aedc91",
       "name": "Build File Update",
@@ -909,9 +909,9 @@
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "cQ7mZ2xN8pL4vR6s",
+          "value": "AXQv4kiEndT4qgFf",
           "mode": "list",
-          "cachedResultUrl": "/workflow/cQ7mZ2xN8pL4vR6s",
+          "cachedResultUrl": "/workflow/AXQv4kiEndT4qgFf",
           "cachedResultName": "Score Job Qualification - Baserow Prompt - Structured Output"
         },
         "workflowInputs": {
@@ -983,6 +983,497 @@
       "position": [
         -28944,
         5504
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "69a52cfb-f476-4be2-a3e4-cc39de3eecc2",
+              "leftValue": "={{ $(\"Score Job Qualification\").item.json.should_apply }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "5b91fef6-1472-4df4-a272-8f971c9829b5",
+      "name": "Should Apply?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -26256,
+        3728
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $(\"Generate CV Files\").item.json.pdf_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "cv_pdf"
+            }
+          }
+        }
+      },
+      "id": "fe371efb-d592-40fb-8aaf-ddcb9ef75624",
+      "name": "Download CV PDF for Telegram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -26032,
+        3616
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "={{ $(\"Generate CV Files\").item.json.tex_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "cv_tex"
+            }
+          }
+        }
+      },
+      "id": "8a6af87a-f21e-4790-a7d0-d2ad0c15e39c",
+      "name": "Download CV TEX for Telegram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -25808,
+        3616
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "={{ $(\"Generate Cover Letter Files\").item.json.pdf_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "cover_letter_pdf"
+            }
+          }
+        }
+      },
+      "id": "248f4950-0bd5-4ff0-9146-6d8905aebc13",
+      "name": "Download Cover Letter PDF for Telegram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -25584,
+        3616
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "={{ $(\"Generate Cover Letter Files\").item.json.tex_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "cover_letter_tex"
+            }
+          }
+        }
+      },
+      "id": "fa3315b7-99af-40eb-ae0c-401550a16b96",
+      "name": "Download Cover Letter TEX for Telegram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -25360,
+        3616
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first();\nconst isTelegramTest = input.json.__telegram_test === true;\nconst inputBinary = input.binary ?? {};\n\nconst sourceFiles = {\n  cv_pdf: inputBinary.cv_pdf ?? $(\"Download CV PDF for Telegram\").first().binary?.cv_pdf,\n  cv_tex: inputBinary.cv_tex ?? $(\"Download CV TEX for Telegram\").first().binary?.cv_tex,\n  cover_letter_pdf: inputBinary.cover_letter_pdf ?? $(\"Download Cover Letter PDF for Telegram\").first().binary?.cover_letter_pdf,\n  cover_letter_tex: inputBinary.cover_letter_tex ?? $(\"Download Cover Letter TEX for Telegram\").first().binary?.cover_letter_tex\n};\n\nconst archiveFiles = {\n  zip_cv_pdf: [sourceFiles.cv_pdf, \"MojtabaKanani_CV.pdf\", \"pdf\", \"application/pdf\"],\n  zip_cv_tex: [sourceFiles.cv_tex, \"MojtabaKanani_CV.tex\", \"tex\", \"text/x-tex\"],\n  zip_cl_pdf: [sourceFiles.cover_letter_pdf, \"MojtabaKanani_CL.pdf\", \"pdf\", \"application/pdf\"],\n  zip_cl_tex: [sourceFiles.cover_letter_tex, \"MojtabaKanani_CL.tex\", \"tex\", \"text/x-tex\"]\n};\n\nconst basename = (value) => {\n  const withoutQuery = String(value ?? \"\").split(/[?#]/)[0];\n  const leaf = withoutQuery.split(/[\\\\/]/).pop() ?? \"\";\n  try {\n    return decodeURIComponent(leaf);\n  } catch {\n    return leaf;\n  }\n};\n\nconst removeDocumentPrefix = (value) =>\n  basename(value)\n    .replace(/\\.[^.]+$/, \"\")\n    .replace(/^(?:cv|cover[-_ ]?letter)[-_ ]+/i, \"\")\n    .trim();\n\nconst fallbackApplicationId = String(\n  input.json.application_id ??\n  (isTelegramTest\n    ? \"telegram_test\"\n    : $(\"Create Tailored CV Content\").first().json.application_id) ??\n  \"application\"\n);\nconst archiveBaseName =\n  removeDocumentPrefix(sourceFiles.cv_pdf?.fileName) ||\n  removeDocumentPrefix(sourceFiles.cv_tex?.fileName) ||\n  removeDocumentPrefix(sourceFiles.cover_letter_pdf?.fileName) ||\n  removeDocumentPrefix(sourceFiles.cover_letter_tex?.fileName) ||\n  fallbackApplicationId;\nconst archiveFileName = `${archiveBaseName}.zip`;\n\nconst binary = {};\nfor (const [propertyName, [source, fileName, fileExtension, mimeType]] of Object.entries(archiveFiles)) {\n  if (!source) {\n    throw new Error(`Missing source file for ZIP entry: ${fileName}`);\n  }\n\n  binary[propertyName] = {\n    ...source,\n    fileName,\n    fileExtension,\n    mimeType\n  };\n}\n\nreturn [{\n  json: {\n    ...input.json,\n    __telegram_test: isTelegramTest,\n    archiveFileName\n  },\n  binary,\n  pairedItem: {\n    item: 0\n  }\n}];"
+      },
+      "id": "810e283a-e66a-4bc8-b2bb-c55fb85d52c5",
+      "name": "Prepare Telegram ZIP Contents",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -25136,
+        3616
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "compress",
+        "binaryPropertyName": "zip_cv_pdf,zip_cv_tex,zip_cl_pdf,zip_cl_tex",
+        "outputFormat": "zip",
+        "fileName": "={{ $json.archiveFileName }}",
+        "binaryPropertyOutput": "application_zip"
+      },
+      "id": "1b14a547-c292-4766-a941-dff46e47e0bb",
+      "name": "Build Telegram Application ZIP",
+      "type": "n8n-nodes-base.compression",
+      "typeVersion": 1.1,
+      "position": [
+        -24912,
+        3616
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first();\nconst isTelegramTest = $(\"TEST — Sample Should-Apply Job\").isExecuted;\nconst testItem = isTelegramTest\n  ? $(\"TEST — Sample Should-Apply Job\").first()\n  : null;\nconst applicationId = String(\n  isTelegramTest\n    ? testItem.json.application_id\n    : $(\"Create Tailored CV Content\").first().json.application_id ?? \"application\"\n);\nconst job = isTelegramTest\n  ? testItem.json\n  : $(\"Score Job Qualification\").first().json;\nconst sourceBinary = testItem?.binary ?? {};\nconst inputBinary = input.binary ?? {};\nconst applicationZip =\n  inputBinary.application_zip ??\n  $(\"Build Telegram Application ZIP\").first().binary?.application_zip;\nconst archiveFileName = applicationZip?.fileName ?? `${applicationId}.zip`;\n\nconst files = [\n  {\n    binaryFile: applicationZip,\n    propertyName: \"application_zip\",\n    fileName: archiveFileName,\n    fileExtension: \"zip\",\n    mimeType: \"application/zip\"\n  },\n  {\n    binaryFile: sourceBinary.cv_pdf ?? $(\"Download CV PDF for Telegram\").first().binary?.cv_pdf,\n    propertyName: \"cv_pdf\",\n    fileName: `cv_${applicationId}.pdf`,\n    fileExtension: \"pdf\",\n    mimeType: \"application/pdf\"\n  },\n  {\n    binaryFile: sourceBinary.cv_tex ?? $(\"Download CV TEX for Telegram\").first().binary?.cv_tex,\n    propertyName: \"cv_tex\",\n    fileName: `cv_${applicationId}.tex`,\n    fileExtension: \"tex\",\n    mimeType: \"text/x-tex\"\n  },\n  {\n    binaryFile: sourceBinary.cover_letter_pdf ?? $(\"Download Cover Letter PDF for Telegram\").first().binary?.cover_letter_pdf,\n    propertyName: \"cover_letter_pdf\",\n    fileName: `cover-letter_${applicationId}.pdf`,\n    fileExtension: \"pdf\",\n    mimeType: \"application/pdf\"\n  },\n  {\n    binaryFile: sourceBinary.cover_letter_tex ?? $(\"Download Cover Letter TEX for Telegram\").first().binary?.cover_letter_tex,\n    propertyName: \"cover_letter_tex\",\n    fileName: `cover-letter_${applicationId}.tex`,\n    fileExtension: \"tex\",\n    mimeType: \"text/x-tex\"\n  }\n];\n\nreturn files.map((file, uploadIndex) => {\n  if (!file.binaryFile) {\n    throw new Error(`Missing Telegram attachment: ${file.propertyName}`);\n  }\n\n  Object.assign(file.binaryFile, {\n    fileName: file.fileName,\n    fileExtension: file.fileExtension,\n    mimeType: file.mimeType\n  });\n\n  return {\n    json: {\n      uploadIndex,\n      fileName: file.fileName,\n      job\n    },\n    binary: {\n      data: file.binaryFile\n    },\n    pairedItem: {\n      item: 0\n    }\n  };\n});"
+      },
+      "id": "51f3e866-e4a9-4f75-8884-b30182d3e2e3",
+      "name": "Prepare Telegram Document Uploads",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -24688,
+        3616
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendDocument",
+        "chatId": "119184698",
+        "binaryData": true,
+        "binaryPropertyName": "data",
+        "additionalFields": {
+          "disable_notification": true
+        }
+      },
+      "id": "f280d887-0035-49c2-99de-ce7befb33b24",
+      "name": "Upload Telegram Documents Temporarily",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -24464,
+        3616
+      ],
+      "credentials": {
+        "telegramApi": {
+          "name": "Telegram account"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const uploads = $input.all();\n\nif (uploads.length !== 5) {\n  throw new Error(`Expected 5 temporary Telegram uploads, received ${uploads.length}`);\n}\n\nreturn uploads.map((item, uploadIndex) => {\n  const message = item.json.result ?? item.json;\n  const messageId = message.message_id;\n  const fileId = message.document?.file_id;\n\n  if (!messageId || !fileId) {\n    throw new Error(`Telegram upload ${uploadIndex + 1} did not return a document file_id and message_id`);\n  }\n\n  return {\n    json: {\n      uploadIndex,\n      messageId,\n      fileId\n    },\n    pairedItem: {\n      item: uploadIndex\n    }\n  };\n});"
+      },
+      "id": "444bb2ee-91cc-44b6-9973-4c5cb12c2816",
+      "name": "Capture Telegram Document IDs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -24240,
+        3616
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "deleteMessage",
+        "chatId": "119184698",
+        "messageId": "={{ $json.messageId }}"
+      },
+      "id": "05fd0424-31c3-431f-98ef-9bda5031dc64",
+      "name": "Delete Temporary Telegram Documents",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -24016,
+        3616
+      ],
+      "credentials": {
+        "telegramApi": {
+          "name": "Telegram account"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const cleanupResults = $input.all();\nconst uploads = $(\"Capture Telegram Document IDs\").all();\nconst preparedUploads = $(\"Prepare Telegram Document Uploads\").all();\n\nif (cleanupResults.length !== 5 || uploads.length !== 5 || preparedUploads.length !== 5) {\n  throw new Error(\"Unable to prepare the five-document Telegram album\");\n}\n\nconst fileIds = uploads\n  .sort((a, b) => a.json.uploadIndex - b.json.uploadIndex)\n  .map((item) => item.json.fileId);\n\nreturn [{\n  json: {\n    fileIds,\n    job: preparedUploads[0].json.job\n  }\n}];"
+      },
+      "id": "b08c7983-bdf3-46ef-8c93-4b14f08d11f4",
+      "name": "Prepare Telegram Document Album",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -23792,
+        3616
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMediaGroup",
+        "chatId": "119184698",
+        "media": {
+          "media": [
+            {
+              "type": "document",
+              "media": "={{ $json.fileIds[0] }}",
+              "additionalFields": {
+                "caption": "={{ (() => {\n  const job = $json.job;\n  const escapeHtml = (value, fallback = \"—\") =>\n    String(value ?? fallback)\n      .replace(/&/g, \"&amp;\")\n      .replace(/</g, \"&lt;\")\n      .replace(/>/g, \"&gt;\")\n      .replace(/\"/g, \"&quot;\")\n      .replace(/'/g, \"&#39;\");\n\n  const formatPublishedDate = (value) => {\n    const raw = String(value ?? \"\").trim();\n    const isoDate = raw.match(/^(\\d{4})-(\\d{2})-(\\d{2})/);\n    const date = isoDate\n      ? new Date(Date.UTC(Number(isoDate[1]), Number(isoDate[2]) - 1, Number(isoDate[3])))\n      : new Date(raw);\n\n    if (Number.isNaN(date.getTime())) {\n      return raw;\n    }\n\n    return new Intl.DateTimeFormat(\"en-US\", {\n      year: \"numeric\",\n      month: \"long\",\n      day: \"numeric\",\n      timeZone: \"UTC\"\n    }).format(date);\n  };\n\n  const jobUrl =\n    job.jobUrl ??\n    job.job_url ??\n    job.source_job?.jobUrl ??\n    job.job_context?.jobUrl ??\n    (job.jobId ? `https://www.linkedin.com/jobs/view/${encodeURIComponent(job.jobId)}/` : \"\");\n\n  const lines = [\n    `<b>${escapeHtml(job.jobTitle)}</b>`,\n    `🏢 <i>${escapeHtml(job.companyName)}</i>`,\n    \"\",\n    `📍 <b>Location:</b> ${escapeHtml(job.location)}`,\n    `💼 <b>Contract:</b> ${escapeHtml(job.contractType)}`,\n    `🎯 <b>Match score:</b> ${escapeHtml(job.qualification_score)}/100`,\n    `🆔 <b>Job ID:</b> <code>${escapeHtml(job.jobId)}</code>`\n  ];\n\n  if (job.publishedAt) {\n    lines.push(`🗓 <b>Published:</b> ${escapeHtml(formatPublishedDate(job.publishedAt))}`);\n  }\n\n  if (jobUrl) {\n    lines.push(\"\", `🔗 <a href=\"${escapeHtml(jobUrl)}\">View LinkedIn posting</a>`);\n  }\n\n  return lines.join(\"\\n\");\n})() }}",
+                "parse_mode": "HTML"
+              }
+            },
+            {
+              "type": "document",
+              "media": "={{ $json.fileIds[1] }}"
+            },
+            {
+              "type": "document",
+              "media": "={{ $json.fileIds[2] }}"
+            },
+            {
+              "type": "document",
+              "media": "={{ $json.fileIds[3] }}"
+            },
+            {
+              "type": "document",
+              "media": "={{ $json.fileIds[4] }}"
+            }
+          ]
+        },
+        "additionalFields": {}
+      },
+      "id": "d5eeb394-130d-456b-a072-8c0349fd275d",
+      "name": "Send Telegram Document Album",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -23568,
+        3616
+      ],
+      "credentials": {
+        "telegramApi": {
+          "name": "Telegram account"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {},
+      "id": "6d12c48d-0d1c-47af-a252-44e65c363887",
+      "name": "TEST — Enable Sample Telegram Path",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -26032,
+        3168
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const createPdf = (title) => {\n  const safeTitle = String(title).replace(/([\\\\()])/g, \"\\\\$1\");\n  const stream = `BT /F1 18 Tf 72 720 Td (${safeTitle}) Tj ET`;\n  const objects = [\n    \"<< /Type /Catalog /Pages 2 0 R >>\",\n    \"<< /Type /Pages /Kids [3 0 R] /Count 1 >>\",\n    \"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>\",\n    \"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\",\n    `<< /Length ${Buffer.byteLength(stream, \"utf8\")} >>\\nstream\\n${stream}\\nendstream`\n  ];\n\n  let pdf = \"%PDF-1.4\\n\";\n  const offsets = [0];\n  for (let index = 0; index < objects.length; index++) {\n    offsets.push(Buffer.byteLength(pdf, \"utf8\"));\n    pdf += `${index + 1} 0 obj\\n${objects[index]}\\nendobj\\n`;\n  }\n\n  const xrefOffset = Buffer.byteLength(pdf, \"utf8\");\n  pdf += `xref\\n0 ${objects.length + 1}\\n`;\n  pdf += \"0000000000 65535 f \\n\";\n  for (const offset of offsets.slice(1)) {\n    pdf += `${String(offset).padStart(10, \"0\")} 00000 n \\n`;\n  }\n  pdf += `trailer\\n<< /Size ${objects.length + 1} /Root 1 0 R >>\\nstartxref\\n${xrefOffset}\\n%%EOF\\n`;\n  return Buffer.from(pdf, \"utf8\").toString(\"base64\");\n};\n\nconst toBase64 = (value) => Buffer.from(value, \"utf8\").toString(\"base64\");\nconst applicationId = \"telegram_test_should_apply\";\n\nreturn [{\n  json: {\n    __telegram_test: true,\n    application_id: applicationId,\n    should_apply: true,\n    qualification_score: 100,\n    jobId: \"TELEGRAM-TEST-001\",\n    jobTitle: \"Senior Software Engineer — Telegram Test\",\n    companyName: \"Example Company\",\n    location: \"Remote — Canada\",\n    contractType: \"Full-time\",\n    publishedAt: new Date().toISOString(),\n    jobUrl: \"https://www.linkedin.com/jobs/\"\n  },\n  binary: {\n    cv_pdf: {\n      data: createPdf(\"Sample Tailored CV — Telegram Test\"),\n      mimeType: \"application/pdf\",\n      fileName: `cv_${applicationId}.pdf`,\n      fileExtension: \"pdf\"\n    },\n    cv_tex: {\n      data: toBase64(\"\\\\documentclass{article}\\n\\\\begin{document}\\nSample tailored CV for the Telegram album test.\\n\\\\end{document}\\n\"),\n      mimeType: \"text/x-tex\",\n      fileName: `cv_${applicationId}.tex`,\n      fileExtension: \"tex\"\n    },\n    cover_letter_pdf: {\n      data: createPdf(\"Sample Cover Letter — Telegram Test\"),\n      mimeType: \"application/pdf\",\n      fileName: `cover-letter_${applicationId}.pdf`,\n      fileExtension: \"pdf\"\n    },\n    cover_letter_tex: {\n      data: toBase64(\"\\\\documentclass{letter}\\n\\\\begin{document}\\nSample cover letter for the Telegram album test.\\n\\\\end{document}\\n\"),\n      mimeType: \"text/x-tex\",\n      fileName: `cover-letter_${applicationId}.tex`,\n      fileExtension: \"tex\"\n    }\n  }\n}];"
+      },
+      "id": "84a880c4-acf8-4d3d-b9ac-5ee914af7741",
+      "name": "TEST — Sample Should-Apply Job",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -25808,
+        3168
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d7283d5b-cdc9-41ed-93a7-c0967a73b50c",
+              "leftValue": "={{ $json.should_apply }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "779af85e-0bda-48f2-90d4-21ea3b957d93",
+      "name": "TEST — Should Apply?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -25584,
+        3168
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "5e59a37e-3192-4e87-bdc5-e840317de30f",
+      "name": "TEST — Sample Not Eligible",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -25360,
+        3264
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "b90c077d-b571-48b5-838b-373bd1101394",
+              "leftValue": "={{ $(\"TEST — Sample Should-Apply Job\").isExecuted }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "139ab32c-3eb2-420e-853c-49f5b6a5d84f",
+      "name": "Telegram Test Run?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -23344,
+        3616
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "d728e6f8-e369-4176-9c8f-cb99d7eef65f",
+      "name": "TEST — Telegram Album Complete",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -23120,
+        3504
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "2bc361a4-c2a7-4c44-85da-680a9378a6c8",
+              "leftValue": "={{ $(\"TEST — Sample Should-Apply Job\").isExecuted }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "7d76c9b6-e69a-4e8b-86ca-a53e6e97f247",
+      "name": "Failure During Telegram Test?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -26032,
+        4544
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "c7d68484-944f-44d2-a3a7-74c3ee2c6327",
+      "name": "TEST — Telegram Album Failed",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -25808,
+        4448
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Disabled Telegram album test\n\nEnable **TEST — Enable Sample Telegram Path**, then click **Execute workflow**.\n\nThis sends one five-document test album to Telegram user `119184698`: the ZIP first, followed by the four individual PDF/TeX files. It uses `should_apply: true` and synthetic files. It does not scrape LinkedIn, call AI workflows, or write to Baserow.\n\nDisable the trigger again after testing.",
+        "height": 352,
+        "width": 752,
+        "color": 5
+      },
+      "id": "bc008476-cc04-48a5-adf2-bcfe5238e729",
+      "name": "Telegram Test Instructions",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -26144,
+        2944
       ]
     }
   ],
@@ -1485,7 +1976,7 @@
       "main": [
         [
           {
-            "node": "Loop Over Jobs",
+            "node": "Should Apply?",
             "type": "main",
             "index": 0
           }
@@ -1499,11 +1990,231 @@
         ]
       ]
     },
+    "Should Apply?": {
+      "main": [
+        [
+          {
+            "node": "Download CV PDF for Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download CV PDF for Telegram": {
+      "main": [
+        [
+          {
+            "node": "Download CV TEX for Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip Failed Document Generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download CV TEX for Telegram": {
+      "main": [
+        [
+          {
+            "node": "Download Cover Letter PDF for Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip Failed Document Generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Cover Letter PDF for Telegram": {
+      "main": [
+        [
+          {
+            "node": "Download Cover Letter TEX for Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip Failed Document Generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Cover Letter TEX for Telegram": {
+      "main": [
+        [
+          {
+            "node": "Prepare Telegram ZIP Contents",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip Failed Document Generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Telegram ZIP Contents": {
+      "main": [
+        [
+          {
+            "node": "Build Telegram Application ZIP",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip Failed Document Generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Telegram Application ZIP": {
+      "main": [
+        [
+          {
+            "node": "Prepare Telegram Document Uploads",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip Failed Document Generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Telegram Document Uploads": {
+      "main": [
+        [
+          {
+            "node": "Upload Telegram Documents Temporarily",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip Failed Document Generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Telegram Documents Temporarily": {
+      "main": [
+        [
+          {
+            "node": "Capture Telegram Document IDs",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip Failed Document Generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Capture Telegram Document IDs": {
+      "main": [
+        [
+          {
+            "node": "Delete Temporary Telegram Documents",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip Failed Document Generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Temporary Telegram Documents": {
+      "main": [
+        [
+          {
+            "node": "Prepare Telegram Document Album",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Telegram Document Album": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Document Album",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip Failed Document Generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Telegram Document Album": {
+      "main": [
+        [
+          {
+            "node": "Telegram Test Run?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "Skip Failed Document Generation": {
       "main": [
         [
           {
-            "node": "Loop Over Jobs",
+            "node": "Failure During Telegram Test?",
             "type": "main",
             "index": 0
           }
@@ -1522,6 +2233,82 @@
         [
           {
             "node": "Skip Failed Document Generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TEST — Enable Sample Telegram Path": {
+      "main": [
+        [
+          {
+            "node": "TEST — Sample Should-Apply Job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TEST — Sample Should-Apply Job": {
+      "main": [
+        [
+          {
+            "node": "TEST — Should Apply?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TEST — Should Apply?": {
+      "main": [
+        [
+          {
+            "node": "Prepare Telegram ZIP Contents",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "TEST — Sample Not Eligible",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Test Run?": {
+      "main": [
+        [
+          {
+            "node": "TEST — Telegram Album Complete",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Failure During Telegram Test?": {
+      "main": [
+        [
+          {
+            "node": "TEST — Telegram Album Failed",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Jobs",
             "type": "main",
             "index": 0
           }
