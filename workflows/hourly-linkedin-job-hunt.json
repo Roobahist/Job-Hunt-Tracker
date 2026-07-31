@@ -120,7 +120,7 @@
           "value": "2rJKkhh7vjpX7pvjg",
           "mode": "id"
         },
-        "customBody": "={\n  \"startUrls\": {{ JSON.stringify($json.startUrls) }},\n  \"saveOnlyUniqueItems\": true,\n  \"companyExclude\": [\"Quik Hire Staffing\", \"Get Offers\", \"Keystone Recruitment\", \"Mercor\", \"Crossing Hurdles\", \"Lensa\", \"Hire Feed\", \"Jobs AI\", \"Jobright.ai\", \"Alignerr\", \"jobgether\", \"Hired\"],\n  \"jobTitleExclude\": [\"senior\", \"manager\", \"director\", \"lead\", \"sr\", \"sr.\", \"head\", \"staff\", \"principal\"],\n  \"maxItems\": 150\n}"
+        "customBody": "={\n  \"startUrls\": {{ JSON.stringify($json.startUrls) }},\n  \"saveOnlyUniqueItems\": true,\n  \"companyExclude\": [\"Quik Hire Staffing\", \"Get Offers\", \"Keystone Recruitment\", \"Mercor\", \"Crossing Hurdles\", \"Lensa\", \"Hire Feed\", \"Jobs AI\", \"Jobright.ai\", \"Alignerr\", \"jobgether\", \"Hired\"],\n  \"jobTitleExclude\": [\"senior\", \"manager\", \"director\", \"lead\", \"sr\", \"sr.\", \"head\", \"staff\", \"principal\", \"french\", \"german\", \"japanese\", \"spanish\", \"kyrgyz\"],\n  \"maxItems\": 150\n}"
       },
       "id": "44f66638-c5d7-45e2-9c6b-52fc77f725df",
       "name": "Scrape LinkedIn Jobs with Apify",
