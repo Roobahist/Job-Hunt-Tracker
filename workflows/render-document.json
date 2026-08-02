@@ -263,21 +263,6 @@
       "id": "9b0028e3-c458-4aff-a4f1-027fa8fe66d9",
       "name": "Build User Configuration",
       "executeOnce": true
-    },
-    {
-      "parameters": {
-        "content": "## Required setup\n\n1. The FastAPI service must be named `document-worker` in Docker Compose.\n2. The worker endpoint is `http://document-worker:8000/generate`.\n3. Set `document_type` to either `cv` or `cover-letter`.\n4. The CV content workflow must return a `cv_json` object.\n5. The cover-letter content workflow must return a `cover_letter_json` object.\n6. Replace `REPLACE_WITH_COVER_LETTER_WORKFLOW_ID` in the **Run Cover Letter Content Creation** node with the actual workflow ID.\n7. Both content workflows receive the normalized input, including `test_mode`.\n8. In the manual test data, change `document_type` between `cv` and `cover-letter` to test either branch.\n9. Select your Cloudinary credential in both upload nodes.\n\nThis workflow generates and uploads documents only. It does not read from or write to Airtable.",
-        "height": 460,
-        "width": 560
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        2832,
-        4000
-      ],
-      "id": "0e78d9cd-7db0-4703-b431-61a20ae459e6",
-      "name": "Setup Notes"
     }
   ],
   "pinData": {

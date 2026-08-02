@@ -284,22 +284,6 @@
       "id": "c16a4850-11d7-4939-a5ab-dddb17785d90",
       "name": "Build User Configuration",
       "executeOnce": true
-    },
-    {
-      "parameters": {
-        "content": "### Shared qualification scoring\n\nTyped inputs: `job_description` (string), `master_cv` (object), and `job_context` (object). The workflow reads the active `qualification_scoring` prompt from Baserow, runs Gemini with fallback and auto-fixed structured output, and returns the original context plus the score and apply decision.",
-        "height": 256,
-        "width": 464,
-        "color": 5
-      },
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -1200,
-        656
-      ],
-      "id": "da4a3523-cdd6-4da4-bfe2-b641745839e8",
-      "name": "Shared Scoring Contract"
     }
   ],
   "pinData": {

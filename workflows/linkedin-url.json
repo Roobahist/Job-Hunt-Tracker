@@ -23,8 +23,7 @@
           "id": "6f5zUFzwe8YPXrNX",
           "name": "Baserow account"
         }
-      },
-      "notes": "Reads all rows from Job Hunt Tracker > Search Criteria. The Build LinkedIn URL node skips rows whose Active field is false."
+      }
     },
     {
       "parameters": {
@@ -39,8 +38,7 @@
       "position": [
         3296,
         368
-      ],
-      "notes": "Builds the LinkedIn URL for an active Search Criteria row. Inactive rows are filtered by the preceding IF node."
+      ]
     },
     {
       "parameters": {
@@ -70,8 +68,7 @@
           "id": "6f5zUFzwe8YPXrNX",
           "name": "Baserow account"
         }
-      },
-      "notes": "Updates the Generated URL field on the matching Baserow row in Search Criteria."
+      }
     },
     {
       "parameters": {
