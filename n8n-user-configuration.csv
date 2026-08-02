@@ -1,0 +1,33 @@
+configKey,category,valueType,value,enabled,description
+tenant_key,identity,text,mojtaba_kanani,true,Stable key identifying this user's configuration
+tenant_enabled,identity,boolean,true,true,Whether this tenant configuration is active
+applicant_filename,identity,text,MojtabaKanani,true,Applicant prefix used for generated application filenames
+baserow_database_id,baserow,number,504349,true,Baserow database containing the user's job-hunt tables
+baserow_table_ids,baserow,json,"{""jobs"":1098021,""searchCriteria"":1098022,""prompts"":1098023}",true,Baserow table IDs grouped by resource type
+jobs_field_ids,baserow,json,"{""jobId"":9743518,""date"":9743516,""companyName"":9743519,""title"":9743520,""location"":9743521,""jobDescription"":9743522,""contractType"":9743523,""link"":9743525,""status"":9744814}",true,Known field IDs from the Baserow Jobs table
+search_criteria_field_ids,baserow,json,"{""generatedUrl"":9743529}",true,Known field IDs from the Baserow Search Criteria table
+contract_type_option_ids,baserow,json,"{""fullTime"":6954765,""contract"":6954766,""partTime"":6954767,""temporary"":6954768,""internship"":6954769,""volunteer"":6954770}",true,Single-select option IDs for Contract Type
+status_option_ids,baserow,json,"{""new"":6955262,""dropped"":6978563,""toApply"":6983774,""applied"":6955263,""rejected"":6955264,""interview"":6955265,""offered"":6955266}",true,Single-select option IDs for application Status
+default_job_status,baserow,text,New,true,Default status assigned to newly created jobs
+baserow_upload_url,baserow,text,https://api.baserow.io/api/user-files/upload-via-url/,true,Endpoint used to import generated files into Baserow
+fillout_form_id,fillout,text,pYWsgnSTjfus,true,Fillout form used by the unified job-entry workflow
+fillout_field_ids,fillout,json,"{""entryType"":""entryType"",""linkedinJobId"":""6Ze685Zcm27s3sV6xAdg6w"",""companyName"":""tccyk1pB8iRUf1NGCDbcP5"",""jobTitle"":""mV2wYQbu1b1Jhf1gTDAbK8"",""jobDescription"":""98TcaL2qnS8Y31TQxgZaZD"",""jobUrl"":""1gZ3kT2Db3G3y2QhYfjT8X"",""location"":""oc63gzWN4vxEJwx8nzZrAK"",""contractType"":""g2VK5MiabTgDTUXGYhnV4q"",""publishedAt"":""sYghUzUtSwi8T4yaReYefR"",""externalJobId"":""2XDTXJHaY2BJEndo3EgEAV"",""pageContent"":""uAXUdaYv4cjhWqtZiFYWc7""}",true,Fillout question IDs grouped by form field
+workflow_ids,n8n,json,"{""createCoverLetter"":""GutFx2P0jerXjCCh"",""createCv"":""qWB5UMZoKmMpFV4I"",""hourlyJobHunt"":""MxVJsDcM1ViEMkK3"",""linkedinUrl"":""ih8KVW6xFuMKHhCS"",""renderDocument"":""lRDjCWKyxz9iILOQ"",""scoreQualification"":""AXQv4kiEndT4qgFf"",""unifiedJobEntry"":""Z6eQO7DbDI5JJKaI""}",true,n8n workflow IDs grouped by workflow
+apify_actor_ids,apify,json,"{""linkedinSearch"":""2rJKkhh7vjpX7pvjg"",""linkedinSingleJob"":""8C80j2N6lo6gqQgms""}",true,Apify actor IDs grouped by scraping purpose
+apify_proxy_country,apify,text,ca,true,Proxy country used for single-job LinkedIn scraping
+apify_max_concurrency,apify,number,1,true,Maximum concurrent requests for single-job scraping
+linkedin_max_items,linkedin,number,150,true,Maximum jobs requested from the scheduled LinkedIn scraper
+linkedin_schedule_interval_hours,linkedin,number,1,true,Interval in hours for the scheduled LinkedIn job search
+linkedin_base_search_url,linkedin,text,https://www.linkedin.com/jobs/search/,true,Base URL used to build LinkedIn search URLs
+linkedin_job_url_template,linkedin,text,https://www.linkedin.com/jobs/view/{jobId},true,Template used to build a LinkedIn job URL from a numeric job ID
+company_exclusions,linkedin,json,"[""Quik Hire Staffing"",""Get Offers"",""Keystone Recruitment"",""Mercor"",""Crossing Hurdles"",""Lensa"",""Hire Feed"",""Jobs AI"",""Jobright.ai"",""Alignerr"",""jobgether"",""Hired""]",true,Company names excluded by the scheduled scraper
+title_exclusions,linkedin,json,"[""senior"",""manager"",""director"",""lead"",""sr"",""sr."",""head"",""staff"",""principal"",""french"",""german"",""japanese"",""spanish"",""kyrgyz""]",true,Job-title terms excluded by the scheduled scraper
+project_selection_count,cv,number,3,true,Number of projects selected for a tailored CV
+work_experience_selection_count,cv,number,3,true,Number of work-experience entries selected for a tailored CV
+qualification_threshold,qualification,number,33,true,Minimum qualification score required by the hourly workflow
+telegram_chat_id,telegram,text,119184698,true,Telegram destination chat or user ID
+master_cv_path,documents,text,/home/node/.n8n-files/document-pipeline/master_cv.json,true,Container path to the master CV JSON file
+document_worker_url,documents,text,http://document-worker:8000/generate,true,Internal document-generation worker endpoint
+cloudinary_folder_prefix,cloudinary,text,job-applications,true,Base folder used for Cloudinary application artifacts
+cloudinary_tags,cloudinary,json,"[""job-application"",""generated-document""]",true,Common Cloudinary tags applied to generated documents
+gemini_model,ai,text,models/gemini-3.5-flash-lite,true,Gemini model used by generation and scoring nodes
