@@ -2,7 +2,8 @@
   "name": "Render Document and Upload to Cloudinary",
   "nodes": [
     {
-      "parameters": {},
+      "parameters": {
+      },
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
@@ -66,7 +67,7 @@
     {
       "parameters": {
         "language": "pythonNative",
-        "pythonCode": "import re\n\n\ndef required_text(data, key):\n    value = data.get(key)\n    if not isinstance(value, str) or not value.strip():\n        raise ValueError(f\"'{key}' must be a non-empty string.\")\n    return value.strip()\n\n\ndef slugify(value):\n    normalized = value.lower().strip()\n    normalized = re.sub(r\"[^a-z0-9]+\", \"-\", normalized)\n    normalized = re.sub(r\"-+\", \"-\", normalized).strip(\"-\")\n    return normalized or \"unknown\"\n\n\nif not _items:\n    raise ValueError(\"The workflow received no input.\")\n\ndata = dict(_items[0].get(\"json\", {}))\n\ndocument_type = str(data.get(\"document_type\", \"\")).strip().lower()\nif document_type not in {\"cv\", \"cover-letter\"}:\n    raise ValueError(\"'document_type' must be either 'cv' or 'cover-letter'.\")\n\ndocument_data = data.get(\"document_data\")\nif not isinstance(document_data, dict):\n    raise ValueError(\"'document_data' must be an object.\")\n\njob_id = data.get(\"job_id\")\nif isinstance(job_id, bool) or not isinstance(job_id, int):\n    raise ValueError(\"'job_id' must be an integer.\")\n\ncompany_slug = slugify(required_text(data, \"company_name\"))\nrole_slug = slugify(required_text(data, \"job_title\"))\n\napplication_id = data.get(\"application_id\")\nif not isinstance(application_id, str) or not application_id.strip():\n    application_id = f\"{company_slug}-{role_slug}-{job_id}\"\napplication_id = slugify(application_id)\n\nartifact_prefix = \"cv\" if document_type == \"cv\" else \"cover-letter\"\nartifact_base_name = f\"{artifact_prefix}_{application_id}\"\ncloudinary_folder = f\"job-applications/{job_id}\"\n\nreturn [\n    {\n        \"json\": {\n            **data,\n            \"document_type\": document_type,\n            \"document_data\": document_data,\n            \"job_id\": job_id,\n            \"application_id\": application_id,\n            \"artifact_prefix\": artifact_prefix,\n            \"artifact_base_name\": artifact_base_name,\n            \"cloudinary_folder\": cloudinary_folder,\n            \"pdf_public_id\": f\"{artifact_base_name}.pdf\",\n            \"tex_public_id\": f\"{artifact_base_name}.tex\",\n        },\n        \"pairedItem\": {\"item\": 0},\n    }\n]"
+        "pythonCode": "import re\n\n\ndef required_text(data, key):\n    value = data.get(key)\n    if not isinstance(value, str) or not value.strip():\n        raise ValueError(f\"'{key}' must be a non-empty string.\")\n    return value.strip()\n\n\ndef slugify(value):\n    normalized = value.lower().strip()\n    normalized = re.sub(r\"[^a-z0-9]+\", \"-\", normalized)\n    normalized = re.sub(r\"-+\", \"-\", normalized).strip(\"-\")\n    return normalized or \"unknown\"\n\n\nif not _items:\n    raise ValueError(\"The workflow received no input.\")\n\ndata = dict(_items[0].get(\"json\", {}))\n\ndocument_type = str(data.get(\"document_type\", \"\")).strip().lower()\nif document_type not in {\"cv\", \"cover-letter\"}:\n    raise ValueError(\"'document_type' must be either 'cv' or 'cover-letter'.\")\n\ndocument_data = data.get(\"document_data\")\nif not isinstance(document_data, dict):\n    raise ValueError(\"'document_data' must be an object.\")\n\njob_id = data.get(\"job_id\")\nif isinstance(job_id, bool) or not isinstance(job_id, int):\n    raise ValueError(\"'job_id' must be an integer.\")\n\ncompany_slug = slugify(required_text(data, \"company_name\"))\nrole_slug = slugify(required_text(data, \"job_title\"))\n\napplication_id = data.get(\"application_id\")\nif not isinstance(application_id, str) or not application_id.strip():\n    application_id = f\"{company_slug}-{role_slug}-{job_id}\"\napplication_id = slugify(application_id)\n\nartifact_prefix = \"cv\" if document_type == \"cv\" else \"cover-letter\"\nartifact_base_name = f\"{artifact_prefix}_{application_id}\"\ncloudinary_folder = f\"{data['config']['cloudinary_folder_prefix']}/{job_id}\"\n\nreturn [\n    {\n        \"json\": {\n            **data,\n            \"document_type\": document_type,\n            \"document_data\": document_data,\n            \"job_id\": job_id,\n            \"application_id\": application_id,\n            \"artifact_prefix\": artifact_prefix,\n            \"artifact_base_name\": artifact_base_name,\n            \"cloudinary_folder\": cloudinary_folder,\n            \"pdf_public_id\": f\"{artifact_base_name}.pdf\",\n            \"tex_public_id\": f\"{artifact_base_name}.tex\",\n        },\n        \"pairedItem\": {\"item\": 0},\n    }\n]"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -80,12 +81,13 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://document-worker:8000/generate",
+        "url": "={{ $('Build User Configuration').first().json.config.document_worker_url }}",
         "sendBody": true,
         "contentType": "raw",
         "rawContentType": "application/json",
         "body": "={{ JSON.stringify({ document_type: $json.document_type, data: $json.document_data }) }}",
-        "options": {}
+        "options": {
+        }
       },
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -125,7 +127,7 @@
         "additionalFieldsFile": {
           "folder": "={{ $('Normalize Input').first().json.cloudinary_folder }}",
           "public_id": "={{ $('Normalize Input').first().json.tex_public_id }}",
-          "tags": "job-application,generated-document,tex,{{ $('Normalize Input').first().json.document_type }}"
+          "tags": "={{ [...$('Build User Configuration').first().json.config.cloudinary_tags, 'tex', $('Normalize Input').first().json.document_type].join(',') }}"
         }
       },
       "type": "n8n-nodes-cloudinary.cloudinary",
@@ -172,7 +174,7 @@
         "additionalFieldsFile": {
           "folder": "={{ $('Normalize Input').first().json.cloudinary_folder }}",
           "public_id": "={{ $('Normalize Input').first().json.pdf_public_id }}",
-          "tags": "job-application,generated-document,pdf,{{ $('Normalize Input').first().json.document_type }}"
+          "tags": "={{ [...$('Build User Configuration').first().json.config.cloudinary_tags, 'pdf', $('Normalize Input').first().json.document_type].join(',') }}"
         }
       },
       "type": "n8n-nodes-cloudinary.cloudinary",
@@ -205,6 +207,65 @@
     },
     {
       "parameters": {
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        3504,
+        4768
+      ],
+      "id": "f3eecca0-aeeb-42a1-bb1f-ecb848c21a80",
+      "name": "Merge Document Uploads"
+    },
+    {
+      "parameters": {
+      },
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -1800,
+        -600
+      ],
+      "id": "966079b6-d26b-4b95-a4c6-05e0bc0fe9ae",
+      "name": "Configuration Input"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "n8n user configuration",
+          "mode": "name"
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -1600,
+        -600
+      ],
+      "id": "71da2dc3-6ff3-4cb1-a129-6dd3b8ad26a0",
+      "name": "Get User Configuration",
+      "executeOnce": true,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all().map((item) => item.json);\nconst config = {};\nconst seen = new Set();\n\nfor (const row of rows) {\n  const key = String(row.configKey ?? '').trim();\n  if (!key) throw new Error('Configuration row is missing configKey.');\n  if (seen.has(key)) throw new Error(`Duplicate configuration key: ${key}`);\n  seen.add(key);\n  if (row.enabled === false || String(row.enabled).toLowerCase() === 'false') continue;\n\n  const type = String(row.valueType ?? 'text').trim().toLowerCase();\n  const raw = row.value;\n  if (type === 'number') {\n    const value = Number(raw);\n    if (!Number.isFinite(value)) throw new Error(`Configuration ${key} must be a number.`);\n    config[key] = value;\n  } else if (type === 'boolean') {\n    if (typeof raw === 'boolean') config[key] = raw;\n    else if (String(raw).toLowerCase() === 'true') config[key] = true;\n    else if (String(raw).toLowerCase() === 'false') config[key] = false;\n    else throw new Error(`Configuration ${key} must be true or false.`);\n  } else if (type === 'json') {\n    try { config[key] = typeof raw === 'string' ? JSON.parse(raw) : raw; }\n    catch (error) { throw new Error(`Configuration ${key} contains invalid JSON: ${error.message}`); }\n  } else if (type === 'text') {\n    config[key] = String(raw ?? '');\n  } else {\n    throw new Error(`Unsupported valueType \"${type}\" for configuration ${key}.`);\n  }\n}\n\nconst required = [\"tenant_key\",\"tenant_enabled\",\"document_worker_url\",\"cloudinary_folder_prefix\",\"cloudinary_tags\"];\nconst missing = required.filter((key) => config[key] === undefined || config[key] === null || config[key] === '');\nif (missing.length) throw new Error(`Missing enabled configuration values: ${missing.join(', ')}`);\n\nlet source;\ntry { source = $('Configuration Input').first(); } catch (error) {}\nif (!source) throw new Error('Could not resolve the workflow input before configuration loading.');\n\nreturn [{\n  json: {\n    ...source.json,\n    config,\n    project_selection_count: config.project_selection_count,\n    work_experience_selection_count: config.work_experience_selection_count,\n  },\n  binary: source.binary,\n  pairedItem: { item: 0 },\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1400,
+        -600
+      ],
+      "id": "9b0028e3-c458-4aff-a4f1-027fa8fe66d9",
+      "name": "Build User Configuration",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
         "content": "## Required setup\n\n1. The FastAPI service must be named `document-worker` in Docker Compose.\n2. The worker endpoint is `http://document-worker:8000/generate`.\n3. Set `document_type` to either `cv` or `cover-letter`.\n4. The CV content workflow must return a `cv_json` object.\n5. The cover-letter content workflow must return a `cover_letter_json` object.\n6. Replace `REPLACE_WITH_COVER_LETTER_WORKFLOW_ID` in the **Run Cover Letter Content Creation** node with the actual workflow ID.\n7. Both content workflows receive the normalized input, including `test_mode`.\n8. In the manual test data, change `document_type` between `cv` and `cover-letter` to test either branch.\n9. Select your Cloudinary credential in both upload nodes.\n\nThis workflow generates and uploads documents only. It does not read from or write to Airtable.",
         "height": 460,
         "width": 560
@@ -217,20 +278,10 @@
       ],
       "id": "0e78d9cd-7db0-4703-b431-61a20ae459e6",
       "name": "Setup Notes"
-    },
-    {
-      "parameters": {},
-      "type": "n8n-nodes-base.merge",
-      "typeVersion": 3.2,
-      "position": [
-        3504,
-        4768
-      ],
-      "id": "f3eecca0-aeeb-42a1-bb1f-ecb848c21a80",
-      "name": "Merge Document Uploads"
     }
   ],
-  "pinData": {},
+  "pinData": {
+  },
   "connections": {
     "Manual Trigger": {
       "main": [
@@ -247,7 +298,7 @@
       "main": [
         [
           {
-            "node": "Normalize Input",
+            "node": "Configuration Input",
             "type": "main",
             "index": 0
           }
@@ -258,7 +309,7 @@
       "main": [
         [
           {
-            "node": "Normalize Input",
+            "node": "Configuration Input",
             "type": "main",
             "index": 0
           }
@@ -346,6 +397,39 @@
           }
         ]
       ]
+    },
+    "Configuration Input": {
+      "main": [
+        [
+          {
+            "node": "Get User Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get User Configuration": {
+      "main": [
+        [
+          {
+            "node": "Build User Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build User Configuration": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -358,7 +442,11 @@
   "meta": {
     "instanceId": "2d85b40e2e1a69706b539dc280f2a48f8b70729872141299d251c48887ea4c94"
   },
-  "nodeGroups": [],
+  "nodeGroups": [
+
+  ],
   "id": "lRDjCWKyxz9iILOQ",
-  "tags": []
+  "tags": [
+
+  ]
 }

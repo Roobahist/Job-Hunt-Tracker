@@ -3,8 +3,9 @@
   "nodes": [
     {
       "parameters": {
-        "modelName": "models/gemini-3.5-flash-lite",
-        "options": {}
+        "modelName": "={{ $('Build User Configuration').first().json.config.gemini_model }}",
+        "options": {
+        }
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1.1,
@@ -23,8 +24,9 @@
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.5-flash-lite",
-        "options": {}
+        "modelName": "={{ $('Build User Configuration').first().json.config.gemini_model }}",
+        "options": {
+        }
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1.1,
@@ -58,8 +60,9 @@
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.5-flash-lite",
-        "options": {}
+        "modelName": "={{ $('Build User Configuration').first().json.config.gemini_model }}",
+        "options": {
+        }
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1.1,
@@ -94,7 +97,8 @@
       "parameters": {
         "mode": "combine",
         "combineBy": "combineByPosition",
-        "options": {}
+        "options": {
+        }
       },
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
@@ -125,7 +129,8 @@
         "text": "={{ $json.cover_letter_prompt }}",
         "hasOutputParser": true,
         "needsFallback": true,
-        "batching": {}
+        "batching": {
+        }
       },
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.7,
@@ -154,7 +159,8 @@
       "parameters": {
         "mode": "combine",
         "combineBy": "combineByPosition",
-        "options": {}
+        "options": {
+        }
       },
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
@@ -181,10 +187,11 @@
     },
     {
       "parameters": {
-        "databaseId": 504349,
-        "tableId": 1098023,
+        "databaseId": "={{ $('Build User Configuration').first().json.config.baserow_database_id }}",
+        "tableId": "={{ $('Build User Configuration').first().json.config.baserow_table_ids.prompts }}",
         "returnAll": true,
-        "additionalOptions": {}
+        "additionalOptions": {
+        }
       },
       "type": "n8n-nodes-base.baserow",
       "typeVersion": 1,
@@ -238,7 +245,8 @@
           ],
           "combinator": "and"
         },
-        "options": {}
+        "options": {
+        }
       },
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -277,7 +285,8 @@
       "name": "Sample Job and Master CV"
     },
     {
-      "parameters": {},
+      "parameters": {
+      },
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
       "position": [
@@ -287,9 +296,57 @@
       "id": "9570f055-f03b-417e-ba74-df08c400f019",
       "name": "Manual Trigger",
       "disabled": true
+    },
+    {
+      "parameters": {
+      },
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -1800,
+        -600
+      ],
+      "id": "bfaf4e27-5327-4616-a750-f7818fd04b30",
+      "name": "Configuration Input"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "n8n user configuration",
+          "mode": "name"
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -1600,
+        -600
+      ],
+      "id": "588dd783-ec25-4bdd-a435-b35b790c9c36",
+      "name": "Get User Configuration",
+      "executeOnce": true,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all().map((item) => item.json);\nconst config = {};\nconst seen = new Set();\n\nfor (const row of rows) {\n  const key = String(row.configKey ?? '').trim();\n  if (!key) throw new Error('Configuration row is missing configKey.');\n  if (seen.has(key)) throw new Error(`Duplicate configuration key: ${key}`);\n  seen.add(key);\n  if (row.enabled === false || String(row.enabled).toLowerCase() === 'false') continue;\n\n  const type = String(row.valueType ?? 'text').trim().toLowerCase();\n  const raw = row.value;\n  if (type === 'number') {\n    const value = Number(raw);\n    if (!Number.isFinite(value)) throw new Error(`Configuration ${key} must be a number.`);\n    config[key] = value;\n  } else if (type === 'boolean') {\n    if (typeof raw === 'boolean') config[key] = raw;\n    else if (String(raw).toLowerCase() === 'true') config[key] = true;\n    else if (String(raw).toLowerCase() === 'false') config[key] = false;\n    else throw new Error(`Configuration ${key} must be true or false.`);\n  } else if (type === 'json') {\n    try { config[key] = typeof raw === 'string' ? JSON.parse(raw) : raw; }\n    catch (error) { throw new Error(`Configuration ${key} contains invalid JSON: ${error.message}`); }\n  } else if (type === 'text') {\n    config[key] = String(raw ?? '');\n  } else {\n    throw new Error(`Unsupported valueType \"${type}\" for configuration ${key}.`);\n  }\n}\n\nconst required = [\"tenant_key\",\"tenant_enabled\",\"baserow_database_id\",\"baserow_table_ids\",\"gemini_model\"];\nconst missing = required.filter((key) => config[key] === undefined || config[key] === null || config[key] === '');\nif (missing.length) throw new Error(`Missing enabled configuration values: ${missing.join(', ')}`);\n\nlet source;\ntry { source = $('Configuration Input').first(); } catch (error) {}\nif (!source) throw new Error('Could not resolve the workflow input before configuration loading.');\n\nreturn [{\n  json: {\n    ...source.json,\n    config,\n    project_selection_count: config.project_selection_count,\n    work_experience_selection_count: config.work_experience_selection_count,\n  },\n  binary: source.binary,\n  pairedItem: { item: 0 },\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1400,
+        -600
+      ],
+      "id": "7911c69d-eeee-4f8b-ad9e-72698518066f",
+      "name": "Build User Configuration",
+      "executeOnce": true
     }
   ],
-  "pinData": {},
+  "pinData": {
+  },
   "connections": {
     "Cover Letter Auto-Fix Model": {
       "ai_languageModel": [
@@ -444,7 +501,7 @@
       "main": [
         [
           {
-            "node": "Test Mode?",
+            "node": "Configuration Input",
             "type": "main",
             "index": 0
           }
@@ -455,7 +512,7 @@
       "main": [
         [
           {
-            "node": "Test Mode?",
+            "node": "Configuration Input",
             "type": "main",
             "index": 0
           }
@@ -467,6 +524,39 @@
         [
           {
             "node": "Sample Job and Master CV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Configuration Input": {
+      "main": [
+        [
+          {
+            "node": "Get User Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get User Configuration": {
+      "main": [
+        [
+          {
+            "node": "Build User Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build User Configuration": {
+      "main": [
+        [
+          {
+            "node": "Test Mode?",
             "type": "main",
             "index": 0
           }
@@ -485,7 +575,11 @@
     "templateCredsSetupCompleted": true,
     "instanceId": "2d85b40e2e1a69706b539dc280f2a48f8b70729872141299d251c48887ea4c94"
   },
-  "nodeGroups": [],
+  "nodeGroups": [
+
+  ],
   "id": "GutFx2P0jerXjCCh",
-  "tags": []
+  "tags": [
+
+  ]
 }

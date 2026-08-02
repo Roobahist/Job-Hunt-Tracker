@@ -31,10 +31,11 @@
     },
     {
       "parameters": {
-        "databaseId": 504349,
-        "tableId": 1098023,
+        "databaseId": "={{ $('Build User Configuration').first().json.config.baserow_database_id }}",
+        "tableId": "={{ $('Build User Configuration').first().json.config.baserow_table_ids.prompts }}",
         "returnAll": true,
-        "additionalOptions": {}
+        "additionalOptions": {
+        }
       },
       "type": "n8n-nodes-base.baserow",
       "typeVersion": 1.1,
@@ -69,7 +70,8 @@
       "parameters": {
         "mode": "combine",
         "combineBy": "combineByPosition",
-        "options": {}
+        "options": {
+        }
       },
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
@@ -96,7 +98,7 @@
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.5-flash-lite",
+        "modelName": "={{ $('Build User Configuration').first().json.config.gemini_model }}",
         "options": {
           "temperature": "={{ $(\"Build Qualification Scoring Prompt\").first().json.qualification_scoring_temperature }}"
         }
@@ -118,7 +120,7 @@
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.5-flash-lite",
+        "modelName": "={{ $('Build User Configuration').first().json.config.gemini_model }}",
         "options": {
           "temperature": "={{ $(\"Build Qualification Scoring Prompt\").first().json.qualification_scoring_temperature }}"
         }
@@ -155,8 +157,9 @@
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.5-flash-lite",
-        "options": {}
+        "modelName": "={{ $('Build User Configuration').first().json.config.gemini_model }}",
+        "options": {
+        }
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
       "typeVersion": 1.1,
@@ -179,7 +182,8 @@
         "text": "={{ $(\"Build Qualification Scoring Prompt\").first().json.qualification_scoring_prompt }}",
         "hasOutputParser": true,
         "needsFallback": true,
-        "batching": {}
+        "batching": {
+        }
       },
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.7,
@@ -208,7 +212,8 @@
       "parameters": {
         "mode": "combine",
         "combineBy": "combineByPosition",
-        "options": {}
+        "options": {
+        }
       },
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
@@ -235,6 +240,53 @@
     },
     {
       "parameters": {
+      },
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -1800,
+        -600
+      ],
+      "id": "76aa7b15-05dc-4c32-ad45-615c39b2c6b8",
+      "name": "Configuration Input"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "n8n user configuration",
+          "mode": "name"
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -1600,
+        -600
+      ],
+      "id": "619f9e43-88d5-4226-afc2-ab39863bfea4",
+      "name": "Get User Configuration",
+      "executeOnce": true,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all().map((item) => item.json);\nconst config = {};\nconst seen = new Set();\n\nfor (const row of rows) {\n  const key = String(row.configKey ?? '').trim();\n  if (!key) throw new Error('Configuration row is missing configKey.');\n  if (seen.has(key)) throw new Error(`Duplicate configuration key: ${key}`);\n  seen.add(key);\n  if (row.enabled === false || String(row.enabled).toLowerCase() === 'false') continue;\n\n  const type = String(row.valueType ?? 'text').trim().toLowerCase();\n  const raw = row.value;\n  if (type === 'number') {\n    const value = Number(raw);\n    if (!Number.isFinite(value)) throw new Error(`Configuration ${key} must be a number.`);\n    config[key] = value;\n  } else if (type === 'boolean') {\n    if (typeof raw === 'boolean') config[key] = raw;\n    else if (String(raw).toLowerCase() === 'true') config[key] = true;\n    else if (String(raw).toLowerCase() === 'false') config[key] = false;\n    else throw new Error(`Configuration ${key} must be true or false.`);\n  } else if (type === 'json') {\n    try { config[key] = typeof raw === 'string' ? JSON.parse(raw) : raw; }\n    catch (error) { throw new Error(`Configuration ${key} contains invalid JSON: ${error.message}`); }\n  } else if (type === 'text') {\n    config[key] = String(raw ?? '');\n  } else {\n    throw new Error(`Unsupported valueType \"${type}\" for configuration ${key}.`);\n  }\n}\n\nconst required = [\"tenant_key\",\"tenant_enabled\",\"baserow_database_id\",\"baserow_table_ids\",\"gemini_model\"];\nconst missing = required.filter((key) => config[key] === undefined || config[key] === null || config[key] === '');\nif (missing.length) throw new Error(`Missing enabled configuration values: ${missing.join(', ')}`);\n\nlet source;\ntry { source = $('Configuration Input').first(); } catch (error) {}\nif (!source) throw new Error('Could not resolve the workflow input before configuration loading.');\n\nreturn [{\n  json: {\n    ...source.json,\n    config,\n    project_selection_count: config.project_selection_count,\n    work_experience_selection_count: config.work_experience_selection_count,\n  },\n  binary: source.binary,\n  pairedItem: { item: 0 },\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1400,
+        -600
+      ],
+      "id": "c16a4850-11d7-4939-a5ab-dddb17785d90",
+      "name": "Build User Configuration",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
         "content": "### Shared qualification scoring\n\nTyped inputs: `job_description` (string), `master_cv` (object), and `job_context` (object). The workflow reads the active `qualification_scoring` prompt from Baserow, runs Gemini with fallback and auto-fixed structured output, and returns the original context plus the score and apply decision.",
         "height": 256,
         "width": 464,
@@ -250,18 +302,14 @@
       "name": "Shared Scoring Contract"
     }
   ],
-  "pinData": {},
+  "pinData": {
+  },
   "connections": {
     "When Executed by Another Workflow": {
       "main": [
         [
           {
-            "node": "Merge Input with Prompt Settings",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Read Qualification Prompt from Baserow",
+            "node": "Configuration Input",
             "type": "main",
             "index": 0
           }
@@ -393,6 +441,44 @@
           }
         ]
       ]
+    },
+    "Configuration Input": {
+      "main": [
+        [
+          {
+            "node": "Get User Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get User Configuration": {
+      "main": [
+        [
+          {
+            "node": "Build User Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build User Configuration": {
+      "main": [
+        [
+          {
+            "node": "Merge Input with Prompt Settings",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Read Qualification Prompt from Baserow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
@@ -404,7 +490,11 @@
   "meta": {
     "templateCredsSetupCompleted": true
   },
-  "nodeGroups": [],
+  "nodeGroups": [
+
+  ],
   "id": "AXQv4kiEndT4qgFf",
-  "tags": []
+  "tags": [
+
+  ]
 }
