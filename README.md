@@ -7,13 +7,10 @@ This branch is intentionally **public-safe**. Personal applicant data, Telegram 
 ## Architecture
 
 <a href="https://roobahist.github.io/Job-Hunt-Tracker/architecture/job-hunt-tracker.html">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/architecture/job-hunt-tracker.visual-check.1440x900.dark.png">
-    <img alt="Job Hunt Tracker runtime architecture" src="docs/architecture/job-hunt-tracker.visual-check.1440x900.light.png">
-  </picture>
+  <img alt="Job Hunt Tracker runtime architecture" src="docs/architecture/job-hunt-tracker.visual-check.1440x900.dark.png">
 </a>
 
-The README uses a static light/dark preview because GitHub does not run embedded HTML or JavaScript. Select the diagram to open the [interactive runtime architecture](https://roobahist.github.io/Job-Hunt-Tracker/architecture/job-hunt-tracker.html), including its guided views.
+The README uses a static preview because GitHub does not run embedded HTML or JavaScript. Select the diagram to open the [interactive runtime architecture](https://roobahist.github.io/Job-Hunt-Tracker/architecture/job-hunt-tracker.html), including its guided views.
 
 ### Focused architecture views
 
@@ -21,41 +18,15 @@ Each preview opens its interactive diagram.
 
 | Scheduled job discovery | Manual job entry |
 | --- | --- |
-| [![Scheduled job discovery architecture](docs/architecture/scheduled-job-discovery.visual-check.1440x900.light.png)](https://roobahist.github.io/Job-Hunt-Tracker/architecture/scheduled-job-discovery.html) | [![Manual job entry architecture](docs/architecture/manual-job-entry.visual-check.1440x900.light.png)](https://roobahist.github.io/Job-Hunt-Tracker/architecture/manual-job-entry.html) |
+| [![Scheduled job discovery architecture](docs/architecture/scheduled-job-discovery.visual-check.1440x900.dark.png)](https://roobahist.github.io/Job-Hunt-Tracker/architecture/scheduled-job-discovery.html) | [![Manual job entry architecture](docs/architecture/manual-job-entry.visual-check.1440x900.dark.png)](https://roobahist.github.io/Job-Hunt-Tracker/architecture/manual-job-entry.html) |
 
 | Qualification and application | Document generation |
 | --- | --- |
-| [![Qualification and application architecture](docs/architecture/qualification-and-application.visual-check.1440x900.light.png)](https://roobahist.github.io/Job-Hunt-Tracker/architecture/qualification-and-application.html) | [![Document generation architecture](docs/architecture/document-generation.visual-check.1440x900.light.png)](https://roobahist.github.io/Job-Hunt-Tracker/architecture/document-generation.html) |
+| [![Qualification and application architecture](docs/architecture/qualification-and-application.visual-check.1440x900.dark.png)](https://roobahist.github.io/Job-Hunt-Tracker/architecture/qualification-and-application.html) | [![Document generation architecture](docs/architecture/document-generation.visual-check.1440x900.dark.png)](https://roobahist.github.io/Job-Hunt-Tracker/architecture/document-generation.html) |
 
 | Configuration and data |
 | --- |
-| [![Configuration and data architecture](docs/architecture/configuration-and-data.visual-check.1440x900.light.png)](https://roobahist.github.io/Job-Hunt-Tracker/architecture/configuration-and-data.html) |
-
-## What the workflow does
-
-```text
-Scheduled LinkedIn criteria ─> linkedin-url ─> hourly-linkedin-job-hunt ─┐
-                                                                        │
-Fillout: LinkedIn / External / AI / URL ─> unified-job-entry ───────────┤
-                                                                        v
-                                                        score-job-qualification
-                                                                        │
-                                                                        v
-                                                          create-cv-content
-                                                   create-cover-letter-content
-                                                                        │
-                                                                        v
-                                                             render-document
-                                                                        │
-                                              ┌─────────────────────────┴─────────────┐
-                                              v                                       v
-                                         Cloudinary                              Baserow
-                                              │
-                                              v
-                                           Telegram
-```
-
-The workflow currently uses Apify for LinkedIn discovery and single-job retrieval, Gemini for structured LLM generation, Baserow for durable tracking/configuration, Cloudinary for generated document storage, Fillout for manual intake, and Telegram for application delivery/status messages.
+| [![Configuration and data architecture](docs/architecture/configuration-and-data.visual-check.1440x900.dark.png)](https://roobahist.github.io/Job-Hunt-Tracker/architecture/configuration-and-data.html) |
 
 ## Repository layout
 
