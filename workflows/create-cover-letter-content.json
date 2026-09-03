@@ -1,9 +1,9 @@
 {
-  "name": "Cover Letter Content Creation - Structured Output",
+  "name": "create-cover-letter-content",
   "nodes": [
     {
       "parameters": {
-        "modelName": "models/gemini-3.5-flash-lite",
+        "modelName": "={{ $('Build User Configuration').first().json.config.gemini_model }}",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
@@ -16,14 +16,14 @@
       "name": "Google Gemini Chat Model1",
       "credentials": {
         "googlePalmApi": {
-          "id": "BG94TcoWRne9VKl3",
-          "name": "Google Gemini(PaLM) Api account 2"
+          "id": "REPLACE_WITH_GEMINI_BACKUP_CREDENTIAL_ID",
+          "name": "Gemini Backup"
         }
       }
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.5-flash-lite",
+        "modelName": "={{ $('Build User Configuration').first().json.config.gemini_model }}",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
@@ -36,8 +36,8 @@
       "name": "Cover Letter Auto-Fix Model",
       "credentials": {
         "googlePalmApi": {
-          "id": "BG94TcoWRne9VKl3",
-          "name": "Google Gemini(PaLM) Api account 2"
+          "id": "REPLACE_WITH_GEMINI_BACKUP_CREDENTIAL_ID",
+          "name": "Gemini Backup"
         }
       }
     },
@@ -58,7 +58,7 @@
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.5-flash-lite",
+        "modelName": "={{ $('Build User Configuration').first().json.config.gemini_model }}",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
@@ -71,8 +71,8 @@
       "name": "Google Gemini Chat Model",
       "credentials": {
         "googlePalmApi": {
-          "id": "aPx4VUVA3p6ZhC3v",
-          "name": "Google Gemini(PaLM) Api account"
+          "id": "REPLACE_WITH_GEMINI_PRIMARY_CREDENTIAL_ID",
+          "name": "Gemini Primary"
         }
       }
     },
@@ -181,8 +181,8 @@
     },
     {
       "parameters": {
-        "databaseId": 504349,
-        "tableId": 1098023,
+        "databaseId": "={{ $('Build User Configuration').first().json.config.baserow_database_id }}",
+        "tableId": "={{ $('Build User Configuration').first().json.config.baserow_table_ids.prompts }}",
         "returnAll": true,
         "additionalOptions": {}
       },
@@ -196,8 +196,8 @@
       "name": "Read Cover Letter Prompt from Baserow",
       "credentials": {
         "baserowApi": {
-          "id": "6f5zUFzwe8YPXrNX",
-          "name": "Baserow account"
+          "id": "REPLACE_WITH_BASEROW_CREDENTIAL_ID",
+          "name": "Baserow"
         }
       }
     },
@@ -265,7 +265,7 @@
     {
       "parameters": {
         "language": "pythonNative",
-        "pythonCode": "return [\n    {\n        \"json\": {\n            \"test_mode\": False,\n            \"company_name\": \"Example Company\",\n            \"job_title\": \"Machine Learning Engineer\",\n            \"job_description\": \"Machine Learning Engineer responsible for Python-based machine learning systems, data pipelines, APIs, deep learning, computer vision, statistical modeling, Docker, and workflow automation.\",\n            \"master_cv\": {\"summary\": [\"Computer Science graduate and MSc in Statistics with experience in machine learning, statistical modeling, biomedical data analysis, automation, teaching, and software development.\"], \"skills\": [{\"label\": \"Programming\", \"value\": \"Python, R, SQL, JavaScript\"}, {\"label\": \"Machine Learning\", \"value\": \"PyTorch, TensorFlow, Keras, scikit-learn\"}, {\"label\": \"Data and Statistics\", \"value\": \"Pandas, NumPy, statistical modeling, regression\"}, {\"label\": \"Tools\", \"value\": \"Docker, Git, n8n, REST APIs\"}], \"projects\": [{\"title\": \"Multimodal Fatigue Detection\", \"secondary\": \"Python, PyTorch, OpenCV\", \"organization\": \"University of Calgary\", \"date\": \"2024 to 2026\", \"content\": [\"Developed a modular fatigue-detection pipeline using facial video and EEG-derived signals.\", \"Built temporal models from pretrained visual embeddings and handcrafted facial indicators.\"]}, {\"title\": \"Job Application Automation Platform\", \"secondary\": \"Python, n8n, LLMs, APIs\", \"organization\": \"Independent Project\", \"date\": \"2026\", \"content\": [\"Built modular n8n workflows for job collection and evaluation.\", \"Integrated LLMs and APIs with structured CV data.\"]}], \"work_experience\": [{\"title\": \"Teaching Assistant\", \"secondary\": \"Statistics and Data Science\", \"organization\": \"University of Calgary\", \"date\": \"2023 to 2026\", \"content\": [\"Led tutorials and office hours for statistics and data science courses.\", \"Explained quantitative concepts and graded technical assignments.\"]}], \"awards\": []}\n        }\n    }\n]"
+        "pythonCode": "return [\n    {\n        \"json\": {\n            \"test_mode\": False,\n            \"job_description\": \"Data Engineer responsible for Python data pipelines, SQL transformation, APIs, testing, Docker, and workflow automation.\",\n            \"master_cv\": {\n                \"summary\": [\n                    \"Software and data professional with experience building reliable automation, analytics, and backend systems.\"\n                ],\n                \"skills\": [\n                    {\"label\": \"Programming\", \"value\": \"Python, SQL, JavaScript\"},\n                    {\"label\": \"Data\", \"value\": \"pandas, relational databases, ETL\"},\n                    {\"label\": \"Tools\", \"value\": \"Docker, Git, REST APIs, workflow automation\"}\n                ],\n                \"projects\": [\n                    {\n                        \"title\": \"Automated Reporting Pipeline\",\n                        \"secondary\": \"Python, SQL, APIs\",\n                        \"organization\": \"Independent Project\",\n                        \"date\": \"2026\",\n                        \"content\": [\n                            \"Built a scheduled data pipeline that validates source data and publishes structured reports.\",\n                            \"Added retries, logging, and automated quality checks.\"\n                        ]\n                    },\n                    {\n                        \"title\": \"Document Processing Service\",\n                        \"secondary\": \"Python, FastAPI, Docker\",\n                        \"organization\": \"Independent Project\",\n                        \"date\": \"2025\",\n                        \"content\": [\n                            \"Created an API for transforming structured data into generated documents.\",\n                            \"Containerized the service and added reproducible local deployment.\"\n                        ]\n                    }\n                ],\n                \"work_experience\": [\n                    {\n                        \"title\": \"Data Analyst\",\n                        \"secondary\": \"Analytics and Automation\",\n                        \"organization\": \"Example Company\",\n                        \"date\": \"2024 to 2026\",\n                        \"content\": [\n                            \"Automated recurring data preparation and reporting workflows.\",\n                            \"Worked with stakeholders to define and validate reporting requirements.\"\n                        ]\n                    },\n                    {\n                        \"title\": \"Software Developer\",\n                        \"secondary\": \"Backend Systems\",\n                        \"organization\": \"Example Studio\",\n                        \"date\": \"2022 to 2024\",\n                        \"content\": [\n                            \"Developed API integrations and internal automation tools.\",\n                            \"Improved reliability through testing and structured error handling.\"\n                        ]\n                    }\n                ],\n                \"awards\": []\n            }\n        }\n    }\n]"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -287,6 +287,51 @@
       "id": "9570f055-f03b-417e-ba74-df08c400f019",
       "name": "Manual Trigger",
       "disabled": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -1800,
+        -600
+      ],
+      "id": "bfaf4e27-5327-4616-a750-f7818fd04b30",
+      "name": "Configuration Input"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "n8n user configuration",
+          "mode": "name"
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -1600,
+        -600
+      ],
+      "id": "588dd783-ec25-4bdd-a435-b35b790c9c36",
+      "name": "Get User Configuration",
+      "executeOnce": true,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all().map((item) => item.json);\nconst config = {};\nconst seen = new Set();\n\nfor (const row of rows) {\n  const key = String(row.configKey ?? '').trim();\n  if (!key) throw new Error('Configuration row is missing configKey.');\n  if (seen.has(key)) throw new Error(`Duplicate configuration key: ${key}`);\n  seen.add(key);\n  if (row.enabled === false || String(row.enabled).toLowerCase() === 'false') continue;\n\n  const type = String(row.valueType ?? 'text').trim().toLowerCase();\n  const raw = row.value;\n  if (type === 'number') {\n    const value = Number(raw);\n    if (!Number.isFinite(value)) throw new Error(`Configuration ${key} must be a number.`);\n    config[key] = value;\n  } else if (type === 'boolean') {\n    if (typeof raw === 'boolean') config[key] = raw;\n    else if (String(raw).toLowerCase() === 'true') config[key] = true;\n    else if (String(raw).toLowerCase() === 'false') config[key] = false;\n    else throw new Error(`Configuration ${key} must be true or false.`);\n  } else if (type === 'json') {\n    try { config[key] = typeof raw === 'string' ? JSON.parse(raw) : raw; }\n    catch (error) { throw new Error(`Configuration ${key} contains invalid JSON: ${error.message}`); }\n  } else if (type === 'text') {\n    config[key] = String(raw ?? '');\n  } else {\n    throw new Error(`Unsupported valueType \"${type}\" for configuration ${key}.`);\n  }\n}\n\nconst required = [\"tenant_key\",\"tenant_enabled\",\"baserow_database_id\",\"baserow_table_ids\",\"gemini_model\"];\nconst missing = required.filter((key) => config[key] === undefined || config[key] === null || config[key] === '');\nif (missing.length) throw new Error(`Missing enabled configuration values: ${missing.join(', ')}`);\n\nlet source;\ntry { source = $('Configuration Input').first(); } catch (error) {}\nif (!source) throw new Error('Could not resolve the workflow input before configuration loading.');\n\nreturn [{\n  json: {\n    ...source.json,\n    config,\n    project_selection_count: config.project_selection_count,\n    work_experience_selection_count: config.work_experience_selection_count,\n  },\n  binary: source.binary,\n  pairedItem: { item: 0 },\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1400,
+        -600
+      ],
+      "id": "7911c69d-eeee-4f8b-ad9e-72698518066f",
+      "name": "Build User Configuration"
     }
   ],
   "pinData": {},
@@ -444,7 +489,7 @@
       "main": [
         [
           {
-            "node": "Test Mode?",
+            "node": "Configuration Input",
             "type": "main",
             "index": 0
           }
@@ -455,7 +500,7 @@
       "main": [
         [
           {
-            "node": "Test Mode?",
+            "node": "Configuration Input",
             "type": "main",
             "index": 0
           }
@@ -472,6 +517,39 @@
           }
         ]
       ]
+    },
+    "Configuration Input": {
+      "main": [
+        [
+          {
+            "node": "Get User Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get User Configuration": {
+      "main": [
+        [
+          {
+            "node": "Build User Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build User Configuration": {
+      "main": [
+        [
+          {
+            "node": "Test Mode?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -480,12 +558,6 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "767092ac-af97-47ed-8617-7bf205a5aed7",
-  "meta": {
-    "templateCredsSetupCompleted": true,
-    "instanceId": "2d85b40e2e1a69706b539dc280f2a48f8b70729872141299d251c48887ea4c94"
-  },
   "nodeGroups": [],
-  "id": "GutFx2P0jerXjCCh",
   "tags": []
 }

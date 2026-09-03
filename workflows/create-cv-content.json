@@ -1,5 +1,5 @@
 {
-  "name": "CV Content Creation - Parent Context - Structured Output",
+  "name": "create-cv-content",
   "nodes": [
     {
       "parameters": {},
@@ -16,7 +16,7 @@
     {
       "parameters": {
         "language": "pythonNative",
-        "pythonCode": "return [\n    {\n        \"json\": {\n            \"test_mode\": False,\n            \"job_description\": \"Machine Learning Engineer responsible for Python-based machine learning systems, data pipelines, APIs, deep learning, computer vision, statistical modeling, Docker, and workflow automation.\",\n            \"project_selection_count\": 3,\n            \"work_experience_selection_count\": 2,\n            \"master_cv\": {\n                \"summary\": [\n                    \"Computer Science graduate and MSc in Statistics with experience in machine learning, statistical modeling, biomedical data analysis, automation, teaching, and software development.\"\n                ],\n                \"skills\": [\n                    {\"label\": \"Programming\", \"value\": \"Python, R, SQL, JavaScript\"},\n                    {\"label\": \"Machine Learning\", \"value\": \"PyTorch, TensorFlow, Keras, scikit-learn\"},\n                    {\"label\": \"Data and Statistics\", \"value\": \"Pandas, NumPy, statistical modeling, regression, survival analysis\"},\n                    {\"label\": \"Tools\", \"value\": \"Docker, Git, n8n, REST APIs, Airtable\"}\n                ],\n                \"projects\": [\n                    {\n                        \"title\": \"Multimodal Fatigue Detection\",\n                        \"secondary\": \"Python, PyTorch, OpenCV\",\n                        \"organization\": \"University of Calgary\",\n                        \"date\": \"2024 to 2026\",\n                        \"content\": [\n                            \"Developed a modular fatigue-detection pipeline using facial video and EEG-derived signals.\",\n                            \"Built temporal models from pretrained visual embeddings and handcrafted facial indicators.\"\n                        ]\n                    },\n                    {\n                        \"title\": \"Job Application Automation Platform\",\n                        \"secondary\": \"Python, n8n, LLMs, APIs, Airtable\",\n                        \"organization\": \"Independent Project\",\n                        \"date\": \"2026\",\n                        \"content\": [\n                            \"Built modular n8n workflows for job collection and evaluation.\",\n                            \"Integrated LLMs and APIs with structured CV data.\"\n                        ]\n                    },\n                    {\n                        \"title\": \"Drug Response Prediction\",\n                        \"secondary\": \"Python, Keras, biomedical data\",\n                        \"organization\": \"University of Calgary\",\n                        \"date\": \"2025\",\n                        \"content\": [\n                            \"Combined gene-expression profiles with molecular fingerprints.\",\n                            \"Trained Keras neural networks for drug-response prediction.\"\n                        ]\n                    }\n                ],\n                \"work_experience\": [\n                    {\n                        \"title\": \"Teaching Assistant\",\n                        \"secondary\": \"Statistics and Data Science\",\n                        \"organization\": \"University of Calgary\",\n                        \"date\": \"2023 to 2026\",\n                        \"content\": [\n                            \"Led tutorials and office hours for statistics and data science courses.\",\n                            \"Explained quantitative concepts and graded technical assignments.\"\n                        ]\n                    },\n                    {\n                        \"title\": \"Graduate Researcher\",\n                        \"secondary\": \"Machine Learning and Statistics\",\n                        \"organization\": \"University of Calgary\",\n                        \"date\": \"2024 to 2026\",\n                        \"content\": [\n                            \"Developed reproducible Python workflows for biomedical modeling.\",\n                            \"Evaluated statistical and neural-network methods.\"\n                        ]\n                    }\n                ],\n                \"awards\": []\n            }\n        }\n    }\n]"
+        "pythonCode": "return [\n    {\n        \"json\": {\n            \"test_mode\": False,\n            \"job_description\": \"Data Engineer responsible for Python data pipelines, SQL transformation, APIs, testing, Docker, and workflow automation.\",\n            \"master_cv\": {\n                \"summary\": [\n                    \"Software and data professional with experience building reliable automation, analytics, and backend systems.\"\n                ],\n                \"skills\": [\n                    {\"label\": \"Programming\", \"value\": \"Python, SQL, JavaScript\"},\n                    {\"label\": \"Data\", \"value\": \"pandas, relational databases, ETL\"},\n                    {\"label\": \"Tools\", \"value\": \"Docker, Git, REST APIs, workflow automation\"}\n                ],\n                \"projects\": [\n                    {\n                        \"title\": \"Automated Reporting Pipeline\",\n                        \"secondary\": \"Python, SQL, APIs\",\n                        \"organization\": \"Independent Project\",\n                        \"date\": \"2026\",\n                        \"content\": [\n                            \"Built a scheduled data pipeline that validates source data and publishes structured reports.\",\n                            \"Added retries, logging, and automated quality checks.\"\n                        ]\n                    },\n                    {\n                        \"title\": \"Document Processing Service\",\n                        \"secondary\": \"Python, FastAPI, Docker\",\n                        \"organization\": \"Independent Project\",\n                        \"date\": \"2025\",\n                        \"content\": [\n                            \"Created an API for transforming structured data into generated documents.\",\n                            \"Containerized the service and added reproducible local deployment.\"\n                        ]\n                    }\n                ],\n                \"work_experience\": [\n                    {\n                        \"title\": \"Data Analyst\",\n                        \"secondary\": \"Analytics and Automation\",\n                        \"organization\": \"Example Company\",\n                        \"date\": \"2024 to 2026\",\n                        \"content\": [\n                            \"Automated recurring data preparation and reporting workflows.\",\n                            \"Worked with stakeholders to define and validate reporting requirements.\"\n                        ]\n                    },\n                    {\n                        \"title\": \"Software Developer\",\n                        \"secondary\": \"Backend Systems\",\n                        \"organization\": \"Example Studio\",\n                        \"date\": \"2022 to 2024\",\n                        \"content\": [\n                            \"Developed API integrations and internal automation tools.\",\n                            \"Improved reliability through testing and structured error handling.\"\n                        ]\n                    }\n                ],\n                \"awards\": []\n            }\n        }\n    }\n]"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -42,8 +42,8 @@
     },
     {
       "parameters": {
-        "databaseId": 504349,
-        "tableId": 1098023,
+        "databaseId": "={{ $('Build User Configuration').first().json.config.baserow_database_id }}",
+        "tableId": "={{ $('Build User Configuration').first().json.config.baserow_table_ids.prompts }}",
         "returnAll": true,
         "additionalOptions": {}
       },
@@ -57,8 +57,8 @@
       "name": "Read Six Prompt Settings from Baserow",
       "credentials": {
         "baserowApi": {
-          "id": "6f5zUFzwe8YPXrNX",
-          "name": "Baserow account"
+          "id": "REPLACE_WITH_BASEROW_CREDENTIAL_ID",
+          "name": "Baserow"
         }
       }
     },
@@ -94,7 +94,7 @@
     {
       "parameters": {
         "language": "pythonNative",
-        "pythonCode": "import json\n\ndata = _items[0][\"json\"]\njob_description = data.get(\"job_description\")\nmaster_cv = data.get(\"master_cv\")\ncount = data.get(\"project_selection_count\", data.get(\"selection_count\", 4))\ntemplate = data.get(\"project_selection_prompt_template\")\n\nif not isinstance(job_description, str) or not job_description.strip():\n    raise ValueError(\"job_description must be a non-empty string.\")\nif not isinstance(master_cv, dict):\n    raise ValueError(\"master_cv must be an object.\")\nif not isinstance(template, str):\n    raise ValueError(\"Project selection prompt is missing.\")\n\nprojects = master_cv.get(\"projects\")\nif not isinstance(projects, list):\n    raise ValueError(\"master_cv.projects must be an array.\")\n\nproject_inputs = []\nfor index, project in enumerate(projects):\n    if not isinstance(project, dict):\n        raise ValueError(\"Each project must be an object.\")\n\n    content = project.get(\"content\")\n    if not isinstance(content, list) or any(\n        not isinstance(bullet, str) for bullet in content\n    ):\n        raise ValueError(\n            f\"Project at index {index} must have a content array of strings.\"\n        )\n\n    project_inputs.append({\n        \"index\": index,\n        **{\n            key: value\n            for key, value in project.items()\n            if key != \"description\"\n        },\n    })\n\ncompact = json.dumps(\n    project_inputs,\n    ensure_ascii=False,\n    separators=(\",\", \":\"),\n)\n\nprompt = template\nprompt = prompt.replace(\"[[selection_count]]\", str(count))\nprompt = prompt.replace(\"[[job_description]]\", job_description)\nprompt = prompt.replace(\"[[project_summaries_json]]\", compact)\nprompt = prompt.replace(\"[[projects_json]]\", compact)\nprompt = prompt.replace(\"[[project_inputs_json]]\", compact)\n\nreturn [{\"json\": {**data, \"project_selection_prompt\": prompt}}]"
+        "pythonCode": "import json\n\ndata = _items[0][\"json\"]\njob_description = data.get(\"job_description\")\nmaster_cv = data.get(\"master_cv\")\ncount = data.get(\"project_selection_count\")\ntemplate = data.get(\"project_selection_prompt_template\")\n\nif not isinstance(job_description, str) or not job_description.strip():\n    raise ValueError(\"job_description must be a non-empty string.\")\nif not isinstance(master_cv, dict):\n    raise ValueError(\"master_cv must be an object.\")\nif not isinstance(template, str):\n    raise ValueError(\"Project selection prompt is missing.\")\n\nprojects = master_cv.get(\"projects\")\nif not isinstance(projects, list):\n    raise ValueError(\"master_cv.projects must be an array.\")\n\nproject_inputs = []\nfor index, project in enumerate(projects):\n    if not isinstance(project, dict):\n        raise ValueError(\"Each project must be an object.\")\n\n    content = project.get(\"content\")\n    if not isinstance(content, list) or any(\n        not isinstance(bullet, str) for bullet in content\n    ):\n        raise ValueError(\n            f\"Project at index {index} must have a content array of strings.\"\n        )\n\n    project_inputs.append({\n        \"index\": index,\n        **{\n            key: value\n            for key, value in project.items()\n            if key != \"description\"\n        },\n    })\n\ncompact = json.dumps(\n    project_inputs,\n    ensure_ascii=False,\n    separators=(\",\", \":\"),\n)\n\nprompt = template\nprompt = prompt.replace(\"[[selection_count]]\", str(count))\nprompt = prompt.replace(\"[[job_description]]\", job_description)\nprompt = prompt.replace(\"[[project_summaries_json]]\", compact)\nprompt = prompt.replace(\"[[projects_json]]\", compact)\nprompt = prompt.replace(\"[[project_inputs_json]]\", compact)\n\nreturn [{\"json\": {**data, \"project_selection_prompt\": prompt}}]"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -242,7 +242,7 @@
     {
       "parameters": {
         "language": "pythonNative",
-        "pythonCode": "import json\n\ndata = _items[0][\"json\"]\ntemplate = data.get(\"work_experience_selection_prompt_template\")\ncount = data.get(\"work_experience_selection_count\", 3)\nmaster_cv = data.get(\"master_cv\")\n\nif not isinstance(template, str):\n    raise ValueError(\"Work-experience selection prompt is missing.\")\nif not isinstance(master_cv, dict):\n    raise ValueError(\"master_cv must be an object.\")\n\nexperiences = master_cv.get(\"work_experience\", [])\nif not isinstance(experiences, list):\n    raise ValueError(\"master_cv.work_experience must be an array.\")\n\nexperience_inputs = []\nfor index, experience in enumerate(experiences):\n    if not isinstance(experience, dict):\n        raise ValueError(\"Each work experience must be an object.\")\n\n    content = experience.get(\"content\")\n    if not isinstance(content, list) or any(\n        not isinstance(bullet, str) for bullet in content\n    ):\n        raise ValueError(\n            f\"Work experience at index {index} must have a content array of strings.\"\n        )\n\n    experience_inputs.append({\n        \"index\": index,\n        **{\n            key: value\n            for key, value in experience.items()\n            if key != \"description\"\n        },\n    })\n\ncompact = json.dumps(\n    experience_inputs,\n    ensure_ascii=False,\n    separators=(\",\", \":\"),\n)\n\nprompt = template\nprompt = prompt.replace(\"[[selection_count]]\", str(count))\nprompt = prompt.replace(\"[[job_description]]\", data[\"job_description\"])\nprompt = prompt.replace(\"[[work_experience_summaries_json]]\", compact)\nprompt = prompt.replace(\"[[experience_summaries_json]]\", compact)\nprompt = prompt.replace(\"[[work_experiences_json]]\", compact)\nprompt = prompt.replace(\"[[experience_inputs_json]]\", compact)\n\nreturn [{\"json\": {**data, \"work_experience_selection_prompt\": prompt}}]"
+        "pythonCode": "import json\n\ndata = _items[0][\"json\"]\ntemplate = data.get(\"work_experience_selection_prompt_template\")\ncount = data.get(\"work_experience_selection_count\")\nmaster_cv = data.get(\"master_cv\")\n\nif not isinstance(template, str):\n    raise ValueError(\"Work-experience selection prompt is missing.\")\nif not isinstance(master_cv, dict):\n    raise ValueError(\"master_cv must be an object.\")\n\nexperiences = master_cv.get(\"work_experience\", [])\nif not isinstance(experiences, list):\n    raise ValueError(\"master_cv.work_experience must be an array.\")\n\nexperience_inputs = []\nfor index, experience in enumerate(experiences):\n    if not isinstance(experience, dict):\n        raise ValueError(\"Each work experience must be an object.\")\n\n    content = experience.get(\"content\")\n    if not isinstance(content, list) or any(\n        not isinstance(bullet, str) for bullet in content\n    ):\n        raise ValueError(\n            f\"Work experience at index {index} must have a content array of strings.\"\n        )\n\n    experience_inputs.append({\n        \"index\": index,\n        **{\n            key: value\n            for key, value in experience.items()\n            if key != \"description\"\n        },\n    })\n\ncompact = json.dumps(\n    experience_inputs,\n    ensure_ascii=False,\n    separators=(\",\", \":\"),\n)\n\nprompt = template\nprompt = prompt.replace(\"[[selection_count]]\", str(count))\nprompt = prompt.replace(\"[[job_description]]\", data[\"job_description\"])\nprompt = prompt.replace(\"[[work_experience_summaries_json]]\", compact)\nprompt = prompt.replace(\"[[experience_summaries_json]]\", compact)\nprompt = prompt.replace(\"[[work_experiences_json]]\", compact)\nprompt = prompt.replace(\"[[experience_inputs_json]]\", compact)\n\nreturn [{\"json\": {**data, \"work_experience_selection_prompt\": prompt}}]"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -588,7 +588,7 @@
     {
       "parameters": {
         "language": "pythonNative",
-        "pythonCode": "data = _items[0][\"json\"]\n\nmaster_cv = data.get(\"master_cv\")\nif not isinstance(master_cv, dict):\n    raise ValueError(\"master_cv must be an object.\")\n\nprojects = master_cv.get(\"projects\", [])\nwork_experience = master_cv.get(\"work_experience\", [])\n\nif not isinstance(projects, list):\n    raise ValueError(\"master_cv.projects must be an array.\")\nif not isinstance(work_experience, list):\n    raise ValueError(\"master_cv.work_experience must be an array.\")\n\nproject_count = data.get(\"project_selection_count\", 3)\nwork_count = data.get(\"work_experience_selection_count\", 2)\n\nselected_project_indices = list(range(min(project_count, len(projects))))\nselected_work_experience_indices = list(\n    range(min(work_count, len(work_experience)))\n)\n\n\ndef selected_entries(entries, indices):\n    output = []\n    for index in indices:\n        entry = dict(entries[index])\n        entry.pop(\"description\", None)\n        output.append(entry)\n    return output\n\n\nskills = master_cv.get(\"skills\", [])\ntest_skills = skills[:3] if isinstance(skills, list) else []\n\nfinal_cv = {\n    **master_cv,\n    \"summary\": master_cv.get(\"summary\", []),\n    \"skills\": test_skills,\n    \"projects\": selected_entries(projects, selected_project_indices),\n    \"work_experience\": selected_entries(\n        work_experience,\n        selected_work_experience_indices,\n    ),\n}\n\nreturn [\n    {\n        \"json\": {\n            \"cv_json\": final_cv,\n            \"prompt_usage\": {},\n            \"selected_project_indices\": selected_project_indices,\n            \"selected_work_experience_indices\": (\n                selected_work_experience_indices\n            ),\n            \"test_mode\": True,\n        }\n    }\n]"
+        "pythonCode": "data = _items[0][\"json\"]\n\nmaster_cv = data.get(\"master_cv\")\nif not isinstance(master_cv, dict):\n    raise ValueError(\"master_cv must be an object.\")\n\nprojects = master_cv.get(\"projects\", [])\nwork_experience = master_cv.get(\"work_experience\", [])\n\nif not isinstance(projects, list):\n    raise ValueError(\"master_cv.projects must be an array.\")\nif not isinstance(work_experience, list):\n    raise ValueError(\"master_cv.work_experience must be an array.\")\n\nproject_count = data.get(\"project_selection_count\")\nwork_count = data.get(\"work_experience_selection_count\")\n\nselected_project_indices = list(range(min(project_count, len(projects))))\nselected_work_experience_indices = list(\n    range(min(work_count, len(work_experience)))\n)\n\n\ndef selected_entries(entries, indices):\n    output = []\n    for index in indices:\n        entry = dict(entries[index])\n        entry.pop(\"description\", None)\n        output.append(entry)\n    return output\n\n\nskills = master_cv.get(\"skills\", [])\ntest_skills = skills[:3] if isinstance(skills, list) else []\n\nfinal_cv = {\n    **master_cv,\n    \"summary\": master_cv.get(\"summary\", []),\n    \"skills\": test_skills,\n    \"projects\": selected_entries(projects, selected_project_indices),\n    \"work_experience\": selected_entries(\n        work_experience,\n        selected_work_experience_indices,\n    ),\n}\n\nreturn [\n    {\n        \"json\": {\n            \"cv_json\": final_cv,\n            \"prompt_usage\": {},\n            \"selected_project_indices\": selected_project_indices,\n            \"selected_work_experience_indices\": (\n                selected_work_experience_indices\n            ),\n            \"test_mode\": True,\n        }\n    }\n]"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -601,7 +601,7 @@
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.5-flash-lite",
+        "modelName": "={{ $('Build User Configuration').first().json.config.gemini_model }}",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
@@ -614,14 +614,14 @@
       "name": "Google Gemini Chat Model",
       "credentials": {
         "googlePalmApi": {
-          "id": "aPx4VUVA3p6ZhC3v",
-          "name": "Google Gemini(PaLM) Api account"
+          "id": "REPLACE_WITH_GEMINI_PRIMARY_CREDENTIAL_ID",
+          "name": "Gemini Primary"
         }
       }
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.5-flash-lite",
+        "modelName": "={{ $('Build User Configuration').first().json.config.gemini_model }}",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
@@ -634,14 +634,14 @@
       "name": "Google Gemini Chat Model1",
       "credentials": {
         "googlePalmApi": {
-          "id": "aPx4VUVA3p6ZhC3v",
-          "name": "Google Gemini(PaLM) Api account"
+          "id": "REPLACE_WITH_GEMINI_PRIMARY_CREDENTIAL_ID",
+          "name": "Gemini Primary"
         }
       }
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.5-flash-lite",
+        "modelName": "={{ $('Build User Configuration').first().json.config.gemini_model }}",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
@@ -654,14 +654,14 @@
       "name": "Google Gemini Chat Model2",
       "credentials": {
         "googlePalmApi": {
-          "id": "aPx4VUVA3p6ZhC3v",
-          "name": "Google Gemini(PaLM) Api account"
+          "id": "REPLACE_WITH_GEMINI_PRIMARY_CREDENTIAL_ID",
+          "name": "Gemini Primary"
         }
       }
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.5-flash-lite",
+        "modelName": "={{ $('Build User Configuration').first().json.config.gemini_model }}",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
@@ -674,14 +674,14 @@
       "name": "Google Gemini Chat Model3",
       "credentials": {
         "googlePalmApi": {
-          "id": "aPx4VUVA3p6ZhC3v",
-          "name": "Google Gemini(PaLM) Api account"
+          "id": "REPLACE_WITH_GEMINI_PRIMARY_CREDENTIAL_ID",
+          "name": "Gemini Primary"
         }
       }
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.5-flash-lite",
+        "modelName": "={{ $('Build User Configuration').first().json.config.gemini_model }}",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
@@ -694,14 +694,14 @@
       "name": "Google Gemini Chat Model4",
       "credentials": {
         "googlePalmApi": {
-          "id": "aPx4VUVA3p6ZhC3v",
-          "name": "Google Gemini(PaLM) Api account"
+          "id": "REPLACE_WITH_GEMINI_PRIMARY_CREDENTIAL_ID",
+          "name": "Gemini Primary"
         }
       }
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.5-flash-lite",
+        "modelName": "={{ $('Build User Configuration').first().json.config.gemini_model }}",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
@@ -714,8 +714,8 @@
       "name": "Google Gemini Chat Model5",
       "credentials": {
         "googlePalmApi": {
-          "id": "aPx4VUVA3p6ZhC3v",
-          "name": "Google Gemini(PaLM) Api account"
+          "id": "REPLACE_WITH_GEMINI_PRIMARY_CREDENTIAL_ID",
+          "name": "Gemini Primary"
         }
       }
     },
@@ -736,7 +736,7 @@
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.5-flash-lite",
+        "modelName": "={{ $('Build User Configuration').first().json.config.gemini_model }}",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
@@ -749,8 +749,8 @@
       "name": "Select Projects Auto-Fix Model",
       "credentials": {
         "googlePalmApi": {
-          "id": "BG94TcoWRne9VKl3",
-          "name": "Google Gemini(PaLM) Api account 2"
+          "id": "REPLACE_WITH_GEMINI_BACKUP_CREDENTIAL_ID",
+          "name": "Gemini Backup"
         }
       }
     },
@@ -771,7 +771,7 @@
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.5-flash-lite",
+        "modelName": "={{ $('Build User Configuration').first().json.config.gemini_model }}",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
@@ -784,8 +784,8 @@
       "name": "Rewrite Project Content Auto-Fix Model",
       "credentials": {
         "googlePalmApi": {
-          "id": "BG94TcoWRne9VKl3",
-          "name": "Google Gemini(PaLM) Api account 2"
+          "id": "REPLACE_WITH_GEMINI_BACKUP_CREDENTIAL_ID",
+          "name": "Gemini Backup"
         }
       }
     },
@@ -806,7 +806,7 @@
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.5-flash-lite",
+        "modelName": "={{ $('Build User Configuration').first().json.config.gemini_model }}",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
@@ -819,8 +819,8 @@
       "name": "Select Work Experiences Auto-Fix Model",
       "credentials": {
         "googlePalmApi": {
-          "id": "BG94TcoWRne9VKl3",
-          "name": "Google Gemini(PaLM) Api account 2"
+          "id": "REPLACE_WITH_GEMINI_BACKUP_CREDENTIAL_ID",
+          "name": "Gemini Backup"
         }
       }
     },
@@ -841,7 +841,7 @@
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.5-flash-lite",
+        "modelName": "={{ $('Build User Configuration').first().json.config.gemini_model }}",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
@@ -854,8 +854,8 @@
       "name": "Rewrite Work Content Auto-Fix Model",
       "credentials": {
         "googlePalmApi": {
-          "id": "BG94TcoWRne9VKl3",
-          "name": "Google Gemini(PaLM) Api account 2"
+          "id": "REPLACE_WITH_GEMINI_BACKUP_CREDENTIAL_ID",
+          "name": "Gemini Backup"
         }
       }
     },
@@ -876,7 +876,7 @@
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.5-flash-lite",
+        "modelName": "={{ $('Build User Configuration').first().json.config.gemini_model }}",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
@@ -889,8 +889,8 @@
       "name": "Tailor Skills Auto-Fix Model",
       "credentials": {
         "googlePalmApi": {
-          "id": "BG94TcoWRne9VKl3",
-          "name": "Google Gemini(PaLM) Api account 2"
+          "id": "REPLACE_WITH_GEMINI_BACKUP_CREDENTIAL_ID",
+          "name": "Gemini Backup"
         }
       }
     },
@@ -911,7 +911,7 @@
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.5-flash-lite",
+        "modelName": "={{ $('Build User Configuration').first().json.config.gemini_model }}",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
@@ -924,14 +924,14 @@
       "name": "Rewrite Summary Auto-Fix Model",
       "credentials": {
         "googlePalmApi": {
-          "id": "BG94TcoWRne9VKl3",
-          "name": "Google Gemini(PaLM) Api account 2"
+          "id": "REPLACE_WITH_GEMINI_BACKUP_CREDENTIAL_ID",
+          "name": "Gemini Backup"
         }
       }
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.5-flash-lite",
+        "modelName": "={{ $('Build User Configuration').first().json.config.gemini_model }}",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
@@ -944,14 +944,14 @@
       "name": "Google Gemini Chat Model6",
       "credentials": {
         "googlePalmApi": {
-          "id": "BG94TcoWRne9VKl3",
-          "name": "Google Gemini(PaLM) Api account 2"
+          "id": "REPLACE_WITH_GEMINI_BACKUP_CREDENTIAL_ID",
+          "name": "Gemini Backup"
         }
       }
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.5-flash-lite",
+        "modelName": "={{ $('Build User Configuration').first().json.config.gemini_model }}",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
@@ -964,14 +964,14 @@
       "name": "Google Gemini Chat Model7",
       "credentials": {
         "googlePalmApi": {
-          "id": "BG94TcoWRne9VKl3",
-          "name": "Google Gemini(PaLM) Api account 2"
+          "id": "REPLACE_WITH_GEMINI_BACKUP_CREDENTIAL_ID",
+          "name": "Gemini Backup"
         }
       }
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.5-flash-lite",
+        "modelName": "={{ $('Build User Configuration').first().json.config.gemini_model }}",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
@@ -984,14 +984,14 @@
       "name": "Google Gemini Chat Model8",
       "credentials": {
         "googlePalmApi": {
-          "id": "BG94TcoWRne9VKl3",
-          "name": "Google Gemini(PaLM) Api account 2"
+          "id": "REPLACE_WITH_GEMINI_BACKUP_CREDENTIAL_ID",
+          "name": "Gemini Backup"
         }
       }
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.5-flash-lite",
+        "modelName": "={{ $('Build User Configuration').first().json.config.gemini_model }}",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
@@ -1004,14 +1004,14 @@
       "name": "Google Gemini Chat Model9",
       "credentials": {
         "googlePalmApi": {
-          "id": "BG94TcoWRne9VKl3",
-          "name": "Google Gemini(PaLM) Api account 2"
+          "id": "REPLACE_WITH_GEMINI_BACKUP_CREDENTIAL_ID",
+          "name": "Gemini Backup"
         }
       }
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.5-flash-lite",
+        "modelName": "={{ $('Build User Configuration').first().json.config.gemini_model }}",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
@@ -1024,14 +1024,14 @@
       "name": "Google Gemini Chat Model10",
       "credentials": {
         "googlePalmApi": {
-          "id": "BG94TcoWRne9VKl3",
-          "name": "Google Gemini(PaLM) Api account 2"
+          "id": "REPLACE_WITH_GEMINI_BACKUP_CREDENTIAL_ID",
+          "name": "Gemini Backup"
         }
       }
     },
     {
       "parameters": {
-        "modelName": "models/gemini-3.5-flash-lite",
+        "modelName": "={{ $('Build User Configuration').first().json.config.gemini_model }}",
         "options": {}
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
@@ -1044,10 +1044,55 @@
       "name": "Google Gemini Chat Model11",
       "credentials": {
         "googlePalmApi": {
-          "id": "BG94TcoWRne9VKl3",
-          "name": "Google Gemini(PaLM) Api account 2"
+          "id": "REPLACE_WITH_GEMINI_BACKUP_CREDENTIAL_ID",
+          "name": "Gemini Backup"
         }
       }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -1800,
+        -600
+      ],
+      "id": "4c166f87-19c0-4e06-a466-7381a60facf3",
+      "name": "Configuration Input"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "n8n user configuration",
+          "mode": "name"
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -1600,
+        -600
+      ],
+      "id": "500b2776-9619-46b1-ae41-67142fa4da5b",
+      "name": "Get User Configuration",
+      "executeOnce": true,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all().map((item) => item.json);\nconst config = {};\nconst seen = new Set();\n\nfor (const row of rows) {\n  const key = String(row.configKey ?? '').trim();\n  if (!key) throw new Error('Configuration row is missing configKey.');\n  if (seen.has(key)) throw new Error(`Duplicate configuration key: ${key}`);\n  seen.add(key);\n  if (row.enabled === false || String(row.enabled).toLowerCase() === 'false') continue;\n\n  const type = String(row.valueType ?? 'text').trim().toLowerCase();\n  const raw = row.value;\n  if (type === 'number') {\n    const value = Number(raw);\n    if (!Number.isFinite(value)) throw new Error(`Configuration ${key} must be a number.`);\n    config[key] = value;\n  } else if (type === 'boolean') {\n    if (typeof raw === 'boolean') config[key] = raw;\n    else if (String(raw).toLowerCase() === 'true') config[key] = true;\n    else if (String(raw).toLowerCase() === 'false') config[key] = false;\n    else throw new Error(`Configuration ${key} must be true or false.`);\n  } else if (type === 'json') {\n    try { config[key] = typeof raw === 'string' ? JSON.parse(raw) : raw; }\n    catch (error) { throw new Error(`Configuration ${key} contains invalid JSON: ${error.message}`); }\n  } else if (type === 'text') {\n    config[key] = String(raw ?? '');\n  } else {\n    throw new Error(`Unsupported valueType \"${type}\" for configuration ${key}.`);\n  }\n}\n\nconst required = [\"tenant_key\",\"tenant_enabled\",\"baserow_database_id\",\"baserow_table_ids\",\"project_selection_count\",\"work_experience_selection_count\",\"gemini_model\"];\nconst missing = required.filter((key) => config[key] === undefined || config[key] === null || config[key] === '');\nif (missing.length) throw new Error(`Missing enabled configuration values: ${missing.join(', ')}`);\n\nlet source;\ntry { source = $('Configuration Input').first(); } catch (error) {}\nif (!source) throw new Error('Could not resolve the workflow input before configuration loading.');\n\nreturn [{\n  json: {\n    ...source.json,\n    config,\n    project_selection_count: config.project_selection_count,\n    work_experience_selection_count: config.work_experience_selection_count,\n  },\n  binary: source.binary,\n  pairedItem: { item: 0 },\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1400,
+        -600
+      ],
+      "id": "cc5d3213-b76b-43cc-ae8f-345d0c16e878",
+      "name": "Build User Configuration"
     }
   ],
   "pinData": {},
@@ -1067,7 +1112,7 @@
       "main": [
         [
           {
-            "node": "Test Mode?",
+            "node": "Configuration Input",
             "type": "main",
             "index": 0
           }
@@ -1078,7 +1123,7 @@
       "main": [
         [
           {
-            "node": "Test Mode?",
+            "node": "Configuration Input",
             "type": "main",
             "index": 0
           }
@@ -1774,6 +1819,39 @@
           }
         ]
       ]
+    },
+    "Configuration Input": {
+      "main": [
+        [
+          {
+            "node": "Get User Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get User Configuration": {
+      "main": [
+        [
+          {
+            "node": "Build User Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build User Configuration": {
+      "main": [
+        [
+          {
+            "node": "Test Mode?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -1782,12 +1860,6 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "edb7df3d-f20c-4a3a-9ff3-52a9c0b1a24b",
-  "meta": {
-    "templateCredsSetupCompleted": true,
-    "instanceId": "2d85b40e2e1a69706b539dc280f2a48f8b70729872141299d251c48887ea4c94"
-  },
   "nodeGroups": [],
-  "id": "qWB5UMZoKmMpFV4I",
   "tags": []
 }
