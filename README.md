@@ -15,13 +15,21 @@ This branch is intentionally **public-safe**. Personal applicant data, Telegram 
 
 The README uses a static light/dark preview because GitHub does not run embedded HTML or JavaScript. Select the diagram to open the [interactive runtime architecture](https://roobahist.github.io/Job-Hunt-Tracker/architecture/job-hunt-tracker.html), including its guided views.
 
-Focused interactive views:
+### Focused architecture views
 
-- [Scheduled job discovery](https://roobahist.github.io/Job-Hunt-Tracker/architecture/scheduled-job-discovery.html)
-- [Manual job entry](https://roobahist.github.io/Job-Hunt-Tracker/architecture/manual-job-entry.html)
-- [Qualification and application](https://roobahist.github.io/Job-Hunt-Tracker/architecture/qualification-and-application.html)
-- [Document generation](https://roobahist.github.io/Job-Hunt-Tracker/architecture/document-generation.html)
-- [Configuration and data](https://roobahist.github.io/Job-Hunt-Tracker/architecture/configuration-and-data.html)
+Each preview opens its interactive diagram.
+
+| Scheduled job discovery | Manual job entry |
+| --- | --- |
+| [![Scheduled job discovery architecture](docs/architecture/scheduled-job-discovery.visual-check.1440x900.light.png)](https://roobahist.github.io/Job-Hunt-Tracker/architecture/scheduled-job-discovery.html) | [![Manual job entry architecture](docs/architecture/manual-job-entry.visual-check.1440x900.light.png)](https://roobahist.github.io/Job-Hunt-Tracker/architecture/manual-job-entry.html) |
+
+| Qualification and application | Document generation |
+| --- | --- |
+| [![Qualification and application architecture](docs/architecture/qualification-and-application.visual-check.1440x900.light.png)](https://roobahist.github.io/Job-Hunt-Tracker/architecture/qualification-and-application.html) | [![Document generation architecture](docs/architecture/document-generation.visual-check.1440x900.light.png)](https://roobahist.github.io/Job-Hunt-Tracker/architecture/document-generation.html) |
+
+| Configuration and data |
+| --- |
+| [![Configuration and data architecture](docs/architecture/configuration-and-data.visual-check.1440x900.light.png)](https://roobahist.github.io/Job-Hunt-Tracker/architecture/configuration-and-data.html) |
 
 ## What the workflow does
 
