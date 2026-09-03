@@ -1,5 +1,5 @@
 {
-  "name": "Hourly LinkedIn Job Hunt Pipeline - Baserow Apify OpenRouter",
+  "name": "hourly-linkedin-job-hunt",
   "nodes": [
     {
       "parameters": {
@@ -24,10 +24,8 @@
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "ih8KVW6xFuMKHhCS",
-          "mode": "list",
-          "cachedResultUrl": "/workflow/ih8KVW6xFuMKHhCS",
-          "cachedResultName": "LinkedIn URL - Active Baserow Criteria"
+          "value": "={{ $('Build User Configuration').first().json.config.workflow_ids['linkedin-url'] }}",
+          "mode": "id"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -40,7 +38,7 @@
         "options": {}
       },
       "id": "7be61ff6-0796-4f2c-99d5-9919130391f4",
-      "name": "Generate Active LinkedIn URLs",
+      "name": "linkedin-url",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
@@ -50,7 +48,7 @@
     },
     {
       "parameters": {
-        "fileSelector": "/home/node/.n8n-files/document-pipeline/master_cv.json",
+        "fileSelector": "={{ $('Build User Configuration').first().json.config.master_cv_path }}",
         "options": {}
       },
       "id": "1a045b06-848f-4fe1-8b6d-9e3340c369a3",
@@ -78,8 +76,8 @@
     },
     {
       "parameters": {
-        "databaseId": 504349,
-        "tableId": 1098022,
+        "databaseId": "={{ $('Build User Configuration').first().json.config.baserow_database_id }}",
+        "tableId": "={{ $('Build User Configuration').first().json.config.baserow_table_ids.searchCriteria }}",
         "returnAll": true,
         "additionalOptions": {}
       },
@@ -93,8 +91,8 @@
       ],
       "credentials": {
         "baserowApi": {
-          "id": "6f5zUFzwe8YPXrNX",
-          "name": "Baserow account"
+          "id": "REPLACE_WITH_BASEROW_CREDENTIAL_ID",
+          "name": "Baserow"
         }
       }
     },
@@ -117,10 +115,10 @@
         "actorSource": "store",
         "actorId": {
           "__rl": true,
-          "value": "2rJKkhh7vjpX7pvjg",
+          "value": "={{ $('Build User Configuration').first().json.config.apify_actor_ids.linkedinSearch }}",
           "mode": "id"
         },
-        "customBody": "={\n  \"startUrls\": {{ JSON.stringify($json.startUrls) }},\n  \"saveOnlyUniqueItems\": true,\n  \"companyExclude\": [\"Quik Hire Staffing\", \"Get Offers\", \"Keystone Recruitment\", \"Mercor\", \"Crossing Hurdles\", \"Lensa\", \"Hire Feed\", \"Jobs AI\", \"Jobright.ai\", \"Alignerr\", \"jobgether\", \"Hired\"],\n  \"jobTitleExclude\": [\"senior\", \"manager\", \"director\", \"lead\", \"sr\", \"sr.\", \"head\", \"staff\", \"principal\", \"french\", \"german\", \"japanese\", \"spanish\", \"kyrgyz\"],\n  \"maxItems\": 150\n}"
+        "customBody": "={{ JSON.stringify({ startUrls: $('Collect Active Start URLs').first().json.startUrls, saveOnlyUniqueItems: true, companyExclude: $('Build User Configuration').first().json.config.company_exclusions, jobTitleExclude: $('Build User Configuration').first().json.config.title_exclusions, maxItems: $('Build User Configuration').first().json.config.linkedin_max_items }) }}"
       },
       "id": "44f66638-c5d7-45e2-9c6b-52fc77f725df",
       "name": "Scrape LinkedIn Jobs with Apify",
@@ -132,8 +130,8 @@
       ],
       "credentials": {
         "apifyApi": {
-          "id": "q46xluuTPbr4NqDY",
-          "name": "Apify account"
+          "id": "REPLACE_WITH_APIFY_CREDENTIAL_ID",
+          "name": "Apify"
         }
       }
     },
@@ -165,8 +163,8 @@
     },
     {
       "parameters": {
-        "databaseId": 504349,
-        "tableId": 1098021,
+        "databaseId": "={{ $('Build User Configuration').first().json.config.baserow_database_id }}",
+        "tableId": "={{ $('Build User Configuration').first().json.config.baserow_table_ids.jobs }}",
         "returnAll": true,
         "additionalOptions": {}
       },
@@ -181,8 +179,8 @@
       "alwaysOutputData": true,
       "credentials": {
         "baserowApi": {
-          "id": "6f5zUFzwe8YPXrNX",
-          "name": "Baserow account"
+          "id": "REPLACE_WITH_BASEROW_CREDENTIAL_ID",
+          "name": "Baserow"
         }
       }
     },
@@ -234,7 +232,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const job = $json;\nconst collected = $(\"Collect Active Start URLs\").first().json;\nconst masterCv = collected.master_cv;\n\nif (!masterCv || typeof masterCv !== \"object\" || Array.isArray(masterCv)) {\n  throw new Error(\"master_cv must be an object.\");\n}\n\nif (!Array.isArray(masterCv.projects)) {\n  throw new Error(\"master_cv.projects must be an array.\");\n}\n\nif (!Array.isArray(masterCv.work_experience)) {\n  throw new Error(\"master_cv.work_experience must be an array.\");\n}\n\nif (!Array.isArray(masterCv.skills)) {\n  throw new Error(\"master_cv.skills must be an array.\");\n}\n\nconst slugify = (value) =>\n  String(value ?? \"\")\n    .toLowerCase()\n    .trim()\n    .replace(/[^a-z0-9]+/g, \"-\")\n    .replace(/-+/g, \"-\")\n    .replace(/^-|-$/g, \"\") || \"unknown\";\n\nconst jobId = Number(job.jobId);\nif (!Number.isInteger(jobId)) {\n  throw new Error(\"job_id must be an integer.\");\n}\n\nconst applicationId =\n  `${slugify(job.companyName)}-${slugify(job.jobTitle)}-${slugify(jobId)}`;\n\nreturn [\n  {\n    json: {\n      test_mode: false,\n      job_id: jobId,\n      company_name: job.companyName,\n      job_title: job.jobTitle,\n      job_description: job.jobDescription,\n      job_url: job.jobUrl,\n      published_at: job.publishedAt,\n      location: job.location,\n      contract_type: job.contractType,\n      application_id: applicationId,\n      baserow_row_id: job.baserow_row_id,\n      project_selection_count: 4,\n      work_experience_selection_count: 3,\n      master_cv: masterCv,\n      source_job: job,\n    },\n  },\n];"
+        "jsCode": "const job = $json;\nconst collected = $(\"Collect Active Start URLs\").first().json;\nconst masterCv = collected.master_cv;\n\nif (!masterCv || typeof masterCv !== \"object\" || Array.isArray(masterCv)) {\n  throw new Error(\"master_cv must be an object.\");\n}\n\nif (!Array.isArray(masterCv.projects)) {\n  throw new Error(\"master_cv.projects must be an array.\");\n}\n\nif (!Array.isArray(masterCv.work_experience)) {\n  throw new Error(\"master_cv.work_experience must be an array.\");\n}\n\nif (!Array.isArray(masterCv.skills)) {\n  throw new Error(\"master_cv.skills must be an array.\");\n}\n\nconst slugify = (value) =>\n  String(value ?? \"\")\n    .toLowerCase()\n    .trim()\n    .replace(/[^a-z0-9]+/g, \"-\")\n    .replace(/-+/g, \"-\")\n    .replace(/^-|-$/g, \"\") || \"unknown\";\n\nconst jobId = Number(job.jobId);\nif (!Number.isInteger(jobId)) {\n  throw new Error(\"job_id must be an integer.\");\n}\n\nconst applicationId =\n  `${slugify(job.companyName)}-${slugify(job.jobTitle)}-${slugify(jobId)}`;\n\nreturn [\n  {\n    json: {\n      test_mode: false,\n      job_id: jobId,\n      company_name: job.companyName,\n      job_title: job.jobTitle,\n      job_description: job.jobDescription,\n      job_url: job.jobUrl,\n      published_at: job.publishedAt,\n      location: job.location,\n      contract_type: job.contractType,\n      application_id: applicationId,\n      baserow_row_id: job.baserow_row_id,\n      project_selection_count: $('Build User Configuration').first().json.config.project_selection_count,\n      work_experience_selection_count: $('Build User Configuration').first().json.config.work_experience_selection_count,\n      master_cv: masterCv,\n      source_job: job,\n    },\n  },\n];"
       },
       "id": "84a65a58-a5ab-408a-b148-4dce059d3d1b",
       "name": "Prepare CV Content Input",
@@ -249,10 +247,8 @@
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "qWB5UMZoKmMpFV4I",
-          "mode": "list",
-          "cachedResultUrl": "/workflow/qWB5UMZoKmMpFV4I",
-          "cachedResultName": "CV Content Creation - Parent Context - Structured Output"
+          "value": "={{ $('Build User Configuration').first().json.config.workflow_ids['create-cv-content'] }}",
+          "mode": "id"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -265,7 +261,7 @@
         "options": {}
       },
       "id": "766ae367-2305-4902-895f-bba3dc954dd0",
-      "name": "Create Tailored CV Content",
+      "name": "create-cv-content",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
@@ -293,10 +289,8 @@
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "lRDjCWKyxz9iILOQ",
-          "mode": "list",
-          "cachedResultUrl": "/workflow/lRDjCWKyxz9iILOQ",
-          "cachedResultName": "Render Document and Upload to Cloudinary"
+          "value": "={{ $('Build User Configuration').first().json.config.workflow_ids['render-document'] }}",
+          "mode": "id"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -370,7 +364,7 @@
         "options": {}
       },
       "id": "e4729347-9907-4fa1-9cad-fe9708e5e05e",
-      "name": "Generate CV Files",
+      "name": "render-document: cv",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
@@ -381,7 +375,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const cvResult = $(\"Create Tailored CV Content\").item.json;\nconst job = cvResult.source_job;\n\nreturn [{\n  json: {\n    test_mode: false,\n    job_id: cvResult.job_id,\n    company_name: cvResult.company_name,\n    job_title: cvResult.job_title,\n    job_description: cvResult.job_description,\n    job_url: cvResult.job_url,\n    published_at: cvResult.published_at,\n    location: cvResult.location,\n    contract_type: cvResult.contract_type,\n    application_id: cvResult.application_id,\n    master_cv: cvResult.cv_json,\n    source_job: job,\n  },\n}];"
+        "jsCode": "const cvResult = $(\"create-cv-content\").item.json;\nconst job = cvResult.source_job;\n\nreturn [{\n  json: {\n    test_mode: false,\n    job_id: cvResult.job_id,\n    company_name: cvResult.company_name,\n    job_title: cvResult.job_title,\n    job_description: cvResult.job_description,\n    job_url: cvResult.job_url,\n    published_at: cvResult.published_at,\n    location: cvResult.location,\n    contract_type: cvResult.contract_type,\n    application_id: cvResult.application_id,\n    master_cv: cvResult.cv_json,\n    source_job: job,\n  },\n}];"
       },
       "id": "a9e216c7-6add-4bbd-9808-b7eedc652c8b",
       "name": "Prepare Cover Letter Input",
@@ -397,10 +391,8 @@
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "GutFx2P0jerXjCCh",
-          "mode": "list",
-          "cachedResultUrl": "/workflow/GutFx2P0jerXjCCh",
-          "cachedResultName": "Cover Letter Content Creation - Structured Output"
+          "value": "={{ $('Build User Configuration').first().json.config.workflow_ids['create-cover-letter-content'] }}",
+          "mode": "id"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -413,7 +405,7 @@
         "options": {}
       },
       "id": "96faadc7-5d3c-47bb-a39e-59b9f365275c",
-      "name": "Create Cover Letter Content",
+      "name": "create-cover-letter-content",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
@@ -441,10 +433,8 @@
       "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "lRDjCWKyxz9iILOQ",
-          "mode": "list",
-          "cachedResultUrl": "/workflow/lRDjCWKyxz9iILOQ",
-          "cachedResultName": "Render Document and Upload to Cloudinary"
+          "value": "={{ $('Build User Configuration').first().json.config.workflow_ids['render-document'] }}",
+          "mode": "id"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -518,7 +508,7 @@
         "options": {}
       },
       "id": "a05144d5-6675-4df5-8aa0-e85651cfef89",
-      "name": "Generate Cover Letter Files",
+      "name": "render-document: cover-letter",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
@@ -529,7 +519,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const cvContent = $(\"Create Tailored CV Content\").item.json;\nconst qualification = $(\"Score Job Qualification\").item.json;\n\nconst cvPdf = $(\"Upload CV PDF to Baserow\").first().json;\nconst cvTex = $(\"Upload CV TEX to Baserow\").first().json;\nconst coverPdf = $(\"Upload Cover Letter PDF to Baserow\").first().json;\nconst coverTex = $(\"Upload Cover Letter TEX to Baserow\").first().json;\n\nconst requiredUpload = (upload, label) => {\n  if (!upload || typeof upload.name !== \"string\" || !upload.name.trim()) {\n    throw new Error(`${label} did not return a valid Baserow user-file name.`);\n  }\n  return upload;\n};\n\nrequiredUpload(cvPdf, \"CV PDF upload\");\nrequiredUpload(cvTex, \"CV TEX upload\");\nrequiredUpload(coverPdf, \"Cover letter PDF upload\");\nrequiredUpload(coverTex, \"Cover letter TEX upload\");\n\nconst rowId = Number($(\"Create Job Row in Baserow\").item.json.id);\nif (!Number.isInteger(rowId) || rowId <= 0) {\n  throw new Error(\"The initial Baserow row did not return a valid row ID.\");\n}\n\nconst applicationId = String(cvContent.application_id ?? \"application\");\nconst qualificationScore = Number(qualification.qualification_score);\nconst shouldApply = Boolean(qualification.should_apply);\n\nif (!Number.isInteger(qualificationScore)) {\n  throw new Error(\"qualification_score must be an integer.\");\n}\n\nreturn [{\n  json: {\n    rowId,\n    Apply: shouldApply,\n    Score: qualificationScore,\n    \"Cover Letter\": [\n      {\n        \"name\": coverPdf.name,\n        \"visible_name\": `cover-letter_${applicationId}.pdf`\n      },\n      {\n        \"name\": coverTex.name,\n        \"visible_name\": `cover-letter_${applicationId}.tex`\n      }\n    ],\n    \"CV\": [\n      {\n        \"name\": cvPdf.name,\n        \"visible_name\": `cv_${applicationId}.pdf`\n      },\n      {\n        \"name\": cvTex.name,\n        \"visible_name\": `cv_${applicationId}.tex`\n      }\n    ]\n  },\n  pairedItem: {\n    item: 0\n  }\n}];"
+        "jsCode": "const cvContent = $(\"create-cv-content\").item.json;\nconst qualification = $(\"score-job-qualification\").item.json;\n\nconst cvPdf = $(\"Upload CV PDF to Baserow\").first().json;\nconst cvTex = $(\"Upload CV TEX to Baserow\").first().json;\nconst coverPdf = $(\"Upload Cover Letter PDF to Baserow\").first().json;\nconst coverTex = $(\"Upload Cover Letter TEX to Baserow\").first().json;\n\nconst requiredUpload = (upload, label) => {\n  if (!upload || typeof upload.name !== \"string\" || !upload.name.trim()) {\n    throw new Error(`${label} did not return a valid Baserow user-file name.`);\n  }\n  return upload;\n};\n\nrequiredUpload(cvPdf, \"CV PDF upload\");\nrequiredUpload(cvTex, \"CV TEX upload\");\nrequiredUpload(coverPdf, \"Cover letter PDF upload\");\nrequiredUpload(coverTex, \"Cover letter TEX upload\");\n\nconst rowId = Number($(\"Create Job Row in Baserow\").item.json.id);\nif (!Number.isInteger(rowId) || rowId <= 0) {\n  throw new Error(\"The initial Baserow row did not return a valid row ID.\");\n}\n\nconst applicationId = String(cvContent.application_id ?? \"application\");\nconst qualificationScore = Number(qualification.qualification_score);\nconst shouldApply = Boolean(qualification.should_apply);\n\nif (!Number.isInteger(qualificationScore)) {\n  throw new Error(\"qualification_score must be an integer.\");\n}\n\nreturn [{\n  json: {\n    rowId,\n    Apply: shouldApply,\n    Score: qualificationScore,\n    \"Cover Letter\": [\n      {\n        \"name\": coverPdf.name,\n        \"visible_name\": `cover-letter_${applicationId}.pdf`\n      },\n      {\n        \"name\": coverTex.name,\n        \"visible_name\": `cover-letter_${applicationId}.tex`\n      }\n    ],\n    \"CV\": [\n      {\n        \"name\": cvPdf.name,\n        \"visible_name\": `cv_${applicationId}.pdf`\n      },\n      {\n        \"name\": cvTex.name,\n        \"visible_name\": `cv_${applicationId}.tex`\n      }\n    ]\n  },\n  pairedItem: {\n    item: 0\n  }\n}];"
       },
       "id": "832b480c-af32-4356-bcbc-e38011aedc91",
       "name": "Build File Update",
@@ -544,8 +534,8 @@
     {
       "parameters": {
         "operation": "create",
-        "databaseId": 504349,
-        "tableId": 1098021,
+        "databaseId": "={{ $('Build User Configuration').first().json.config.baserow_database_id }}",
+        "tableId": "={{ $('Build User Configuration').first().json.config.baserow_table_ids.jobs }}",
         "dataToSend": "autoMapInputData"
       },
       "id": "81cce388-87f1-49e8-8bbe-0a8d146a756a",
@@ -558,36 +548,21 @@
       ],
       "credentials": {
         "baserowApi": {
-          "id": "6f5zUFzwe8YPXrNX",
-          "name": "Baserow account"
+          "id": "REPLACE_WITH_BASEROW_CREDENTIAL_ID",
+          "name": "Baserow"
         }
       }
     },
     {
       "parameters": {
-        "content": "## Required setup\n\n1. Put the master CV at `/home/node/.n8n-files/document-pipeline/master_cv.json`.\n2. Ensure `/opt/n8n/document-pipeline` is available inside the n8n container at the same path.\n3. Install the verified community node `@apify/n8n-nodes-apify`.\n4. Select the Apify actor **LinkedIn Jobs Scraper | Remove Duplicate Jobs | Pay Per Result** in the Apify node.\n5. Attach your existing Baserow, Apify, OpenRouter, Cloudinary, and Baserow Header Auth credentials.\n6. This workflow assumes table IDs:\n   - Jobs: `1098021`\n   - Search Criteria: `1098022`\n   - Prompts: `1098023`\n7. The Jobs REST write uses field names. Add these Baserow columns if they do not exist:\n   - `CV TEX URL`\n   - `Cover Letter TEX URL`\n\nThe four generated files share one application ID:\n- `cv_<application-id>.pdf`\n- `cv_<application-id>.tex`\n- `cover-letter_<application-id>.pdf`\n- `cover-letter_<application-id>.tex`\n\n\n## Baserow file uploads\n\nThe workflow first uploads each Cloudinary secure URL to Baserow through\n`/api/user-files/upload-via-url/`, then inserts the returned Baserow file names\ninto the native Baserow Create Row node.\n\nEach file column receives two attachments:\n- CV: PDF and TEX\n- Cover Letter: PDF and TEX\n\nThe `Baserow API Token` HTTP Header Auth credential must send:\n- Header name: `Authorization`\n- Header value: `Token YOUR_BASEROW_DATABASE_TOKEN`\n\n\n## Fail-soft processing\n\nAfter the initial Baserow row is created, failures in content generation, document rendering, any of the four Baserow file uploads, upload merging, file-update payload construction, or the final Baserow update are routed back to **Loop Over Jobs**. The metadata-only row remains stored and processing continues with the next job.\n",
-        "height": 520,
-        "width": 1700
-      },
-      "id": "da301570-56af-4242-bacf-4aa76054039b",
-      "name": "Setup Notes",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -31792,
-        5296
-      ]
-    },
-    {
-      "parameters": {
         "method": "POST",
-        "url": "https://api.baserow.io/api/user-files/upload-via-url/",
+        "url": "={{ $('Build User Configuration').first().json.config.baserow_upload_url }}",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "contentType": "raw",
         "rawContentType": "application/json",
-        "body": "={{ JSON.stringify({ url: $(\"Generate CV Files\").first().json.pdf_url }) }}",
+        "body": "={{ JSON.stringify({ url: $(\"render-document: cv\").first().json.pdf_url }) }}",
         "options": {}
       },
       "id": "c07bc303-5144-4b6a-92d3-61e5979459e7",
@@ -600,8 +575,8 @@
       ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "sWtOMxT4bDqBr8wI",
-          "name": "Header Auth account"
+          "id": "REPLACE_WITH_BASEROW_HEADER_AUTH_CREDENTIAL_ID",
+          "name": "Baserow Header Auth"
         }
       },
       "onError": "continueRegularOutput"
@@ -609,13 +584,13 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://api.baserow.io/api/user-files/upload-via-url/",
+        "url": "={{ $('Build User Configuration').first().json.config.baserow_upload_url }}",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "contentType": "raw",
         "rawContentType": "application/json",
-        "body": "={{ JSON.stringify({ url: $(\"Generate CV Files\").first().json.tex_url }) }}",
+        "body": "={{ JSON.stringify({ url: $(\"render-document: cv\").first().json.tex_url }) }}",
         "options": {}
       },
       "id": "e4dcd6cc-9d4f-4ef4-a126-8b652982e546",
@@ -628,8 +603,8 @@
       ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "sWtOMxT4bDqBr8wI",
-          "name": "Header Auth account"
+          "id": "REPLACE_WITH_BASEROW_HEADER_AUTH_CREDENTIAL_ID",
+          "name": "Baserow Header Auth"
         }
       },
       "onError": "continueRegularOutput"
@@ -637,13 +612,13 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://api.baserow.io/api/user-files/upload-via-url/",
+        "url": "={{ $('Build User Configuration').first().json.config.baserow_upload_url }}",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "contentType": "raw",
         "rawContentType": "application/json",
-        "body": "={{ JSON.stringify({ url: $(\"Generate Cover Letter Files\").first().json.pdf_url }) }}",
+        "body": "={{ JSON.stringify({ url: $(\"render-document: cover-letter\").first().json.pdf_url }) }}",
         "options": {}
       },
       "id": "06e5ae50-9851-4469-91cc-cb23d9390dc6",
@@ -656,8 +631,8 @@
       ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "sWtOMxT4bDqBr8wI",
-          "name": "Header Auth account"
+          "id": "REPLACE_WITH_BASEROW_HEADER_AUTH_CREDENTIAL_ID",
+          "name": "Baserow Header Auth"
         }
       },
       "onError": "continueRegularOutput"
@@ -665,13 +640,13 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://api.baserow.io/api/user-files/upload-via-url/",
+        "url": "={{ $('Build User Configuration').first().json.config.baserow_upload_url }}",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "contentType": "raw",
         "rawContentType": "application/json",
-        "body": "={{ JSON.stringify({ url: $(\"Generate Cover Letter Files\").first().json.tex_url }) }}",
+        "body": "={{ JSON.stringify({ url: $(\"render-document: cover-letter\").first().json.tex_url }) }}",
         "options": {}
       },
       "id": "3e573218-1192-40b7-b17c-cd06ffc2524f",
@@ -684,8 +659,8 @@
       ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "sWtOMxT4bDqBr8wI",
-          "name": "Header Auth account"
+          "id": "REPLACE_WITH_BASEROW_HEADER_AUTH_CREDENTIAL_ID",
+          "name": "Baserow Header Auth"
         }
       },
       "onError": "continueRegularOutput"
@@ -718,7 +693,7 @@
     },
     {
       "parameters": {
-        "jsCode": "return $input.all().map((item, index) => {\n  const job = item.json;\n  const jobId = Number(job.jobId);\n\n  if (!Number.isInteger(jobId)) {\n    throw new Error(`Job ID at item ${index + 1} must be an integer.`);\n  }\n\n  const dateValue = job.publishedAt\n    ? String(job.publishedAt).slice(0, 10)\n    : new Date().toISOString().slice(0, 10);\n\n  return {\n    json: {\n      \"Job ID\": jobId,\n      \"Date\": dateValue,\n      \"Company Name\": job.companyName ?? \"\",\n      \"Title\": job.jobTitle ?? \"\",\n      \"Location\": job.location ?? \"\",\n      \"Job Description\": job.jobDescription ?? \"\",\n      \"Contract Type\": job.contractType ?? \"\",\n      \"Link\": job.jobUrl ?? \"\",\n      \"Status\": \"New\"\n    },\n    pairedItem: index\n  };\n});"
+        "jsCode": "const newStatusId = Number(\n  $(\"Build User Configuration\").first().json.config.status_option_ids?.new\n);\nif (!Number.isSafeInteger(newStatusId) || newStatusId <= 0) {\n  throw new Error(\"status_option_ids.new must be a safe positive integer.\");\n}\n\nreturn $input.all().map((item, index) => {\n  const job = item.json;\n  const jobId = Number(job.jobId);\n\n  if (!Number.isInteger(jobId)) {\n    throw new Error(`Job ID at item ${index + 1} must be an integer.`);\n  }\n\n  const dateValue = job.publishedAt\n    ? String(job.publishedAt).slice(0, 10)\n    : new Date().toISOString().slice(0, 10);\n\n  return {\n    json: {\n      \"Job ID\": jobId,\n      \"Date\": dateValue,\n      \"Company Name\": job.companyName ?? \"\",\n      \"Title\": job.jobTitle ?? \"\",\n      \"Location\": job.location ?? \"\",\n      \"Job Description\": job.jobDescription ?? \"\",\n      \"Contract Type\": job.contractType ?? \"\",\n      \"Link\": job.jobUrl ?? \"\",\n      \"Status\": newStatusId\n    },\n    pairedItem: index\n  };\n});"
       },
       "id": "fc517e1f-5eba-4a13-abf9-50ee580860f9",
       "name": "Build Initial Job Row",
@@ -744,7 +719,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const qualification = $json;\nconst rowId = Number(qualification.baserow_row_id);\n\nif (!Number.isInteger(rowId) || rowId <= 0) {\n  throw new Error(\"The saved job context does not contain a valid Baserow row ID.\");\n}\nif (!Number.isInteger(qualification.qualification_score)) {\n  throw new Error(\"qualification_score must be an integer.\");\n}\nif (typeof qualification.should_apply !== \"boolean\") {\n  throw new Error(\"should_apply must be a boolean.\");\n}\n\nreturn [{\n  json: {\n    rowId,\n    Apply: qualification.should_apply,\n    Score: qualification.qualification_score\n  }\n}];"
+        "jsCode": "const qualification = $json;\nconst rowId = Number(qualification.baserow_row_id);\n\nif (!Number.isInteger(rowId) || rowId <= 0) {\n  throw new Error(\"The saved job context does not contain a valid Baserow row ID.\");\n}\nif (!Number.isInteger(qualification.qualification_score)) {\n  throw new Error(\"qualification_score must be an integer.\");\n}\nif (typeof qualification.should_apply !== \"boolean\") {\n  throw new Error(\"should_apply must be a boolean.\");\n}\n\nconst config = $('Build User Configuration').first().json.config;\nconst threshold = Number(config.qualification_threshold);\nif (!Number.isFinite(threshold)) {\n  throw new Error(\"qualification_threshold must be a finite number.\");\n}\n\nconst newStatusId = Number(config.status_option_ids?.new);\nconst droppedStatusId = Number(config.status_option_ids?.dropped);\nif (!Number.isSafeInteger(newStatusId) || newStatusId <= 0) {\n  throw new Error(\"status_option_ids.new must be a safe positive integer.\");\n}\nif (!Number.isSafeInteger(droppedStatusId) || droppedStatusId <= 0) {\n  throw new Error(\"status_option_ids.dropped must be a safe positive integer.\");\n}\n\nconst belowDocumentThreshold = qualification.qualification_score < threshold;\n\nreturn [{\n  json: {\n    rowId,\n    Apply: qualification.should_apply,\n    Score: qualification.qualification_score,\n    Status: belowDocumentThreshold ? droppedStatusId : newStatusId\n  }\n}];"
       },
       "id": "9af68cd4-f701-4510-a020-bb0f78506356",
       "name": "Build Qualification Row Update",
@@ -769,7 +744,7 @@
             {
               "id": "fffea99c-10cf-4742-ad5d-3c2ff2990b57",
               "leftValue": "={{ $(\"Restore Scored Job Context\").item.json.qualification_score }}",
-              "rightValue": 33,
+              "rightValue": "={{ $('Build User Configuration').first().json.config.qualification_threshold }}",
               "operator": {
                 "type": "number",
                 "operation": "gte"
@@ -781,7 +756,7 @@
         "options": {}
       },
       "id": "58e0755a-d760-450b-a6d7-ae17199859a0",
-      "name": "Score Is At Least 33?",
+      "name": "Score Meets Qualification Threshold?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
@@ -803,8 +778,8 @@
     {
       "parameters": {
         "operation": "update",
-        "databaseId": 504349,
-        "tableId": 1098021,
+        "databaseId": "={{ $('Build User Configuration').first().json.config.baserow_database_id }}",
+        "tableId": "={{ $('Build User Configuration').first().json.config.baserow_table_ids.jobs }}",
         "rowId": "={{ $json.rowId }}",
         "dataToSend": "autoMapInputData",
         "inputsToIgnore": "rowId"
@@ -819,15 +794,15 @@
       ],
       "credentials": {
         "baserowApi": {
-          "id": "6f5zUFzwe8YPXrNX",
-          "name": "Baserow account"
+          "id": "REPLACE_WITH_BASEROW_CREDENTIAL_ID",
+          "name": "Baserow"
         }
       },
       "onError": "continueErrorOutput"
     },
     {
       "parameters": {
-        "jsCode": "const qualification = $(\"Score Job Qualification\").item.json;\nconst updatedRow = $input.first().json;\n\nif (!updatedRow?.id) {\n  throw new Error(\"The qualification update did not return the Baserow row.\");\n}\n\nreturn [{ json: qualification }];"
+        "jsCode": "const qualification = $(\"score-job-qualification\").item.json;\nconst originalJob = $(\"Restore Job Context\").item.json;\nconst updatedRow = $input.first().json;\nconst config = originalJob.config ?? $(\"Build User Configuration\").first().json.config;\n\nif (!updatedRow?.id) {\n  throw new Error(\"The qualification update did not return the Baserow row.\");\n}\n\nreturn [{\n  json: {\n    ...originalJob,\n    ...qualification,\n    config,\n  },\n}];"
       },
       "id": "8ac92774-0e8a-4b49-8ab4-4bd168dfd92c",
       "name": "Restore Scored Job Context",
@@ -842,8 +817,8 @@
     {
       "parameters": {
         "operation": "update",
-        "databaseId": 504349,
-        "tableId": 1098021,
+        "databaseId": "={{ $('Build User Configuration').first().json.config.baserow_database_id }}",
+        "tableId": "={{ $('Build User Configuration').first().json.config.baserow_table_ids.jobs }}",
         "rowId": "={{ $json.rowId }}",
         "dataToSend": "autoMapInputData",
         "inputsToIgnore": "rowId"
@@ -858,8 +833,8 @@
       ],
       "credentials": {
         "baserowApi": {
-          "id": "6f5zUFzwe8YPXrNX",
-          "name": "Baserow account"
+          "id": "REPLACE_WITH_BASEROW_CREDENTIAL_ID",
+          "name": "Baserow"
         }
       },
       "onError": "continueErrorOutput"
@@ -877,42 +852,10 @@
     },
     {
       "parameters": {
-        "content": "## Fail-soft document processing\n\nThe Baserow metadata row is created before CV and cover-letter generation.\n\nIf any protected content, preparation, or document-rendering node fails, its error output goes to **Skip Failed Document Generation**, which returns to **Loop Over Jobs**. The metadata row remains stored and the next scraped job is processed.\n\nProtected nodes:\n- Create Tailored CV Content\n- Prepare CV Document\n- Generate CV Files\n- Prepare Cover Letter Input\n- Create Cover Letter Content\n- Prepare Cover Letter Document\n- Generate Cover Letter Files",
-        "height": 360,
-        "width": 760
-      },
-      "id": "3040b4f8-4eb7-4e43-b593-e2d994b86964",
-      "name": "Fail-Soft Processing Notes",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -29536,
-        5232
-      ]
-    },
-    {
-      "parameters": {
-        "content": "## Two-phase job processing\n\n### Phase 1 — persist the scrape\n1. Collect and URL-deduplicate the complete Apify result.\n2. Read existing Baserow jobs once.\n3. Keep only postings whose canonical Link is not already stored.\n4. Create every new metadata row in Baserow.\n5. Restore each created row ID onto its corresponding posting.\n\n### Phase 2 — process saved rows\n`Loop Over Jobs` receives the complete saved set. For each row it:\n1. Scores qualification.\n2. Updates `Apply` and `Score` on that row.\n3. Generates and uploads the CV and cover letter.\n4. Updates the same row with its files.\n\nA later processing failure therefore leaves the scraped job safely stored in Baserow.",
-        "height": 416,
-        "width": 544
-      },
-      "id": "4f7be300-05a0-4837-b9c1-9cb78ff1b91c",
-      "name": "Two-Phase Processing Notes",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -30512,
-        5376
-      ]
-    },
-    {
-      "parameters": {
         "workflowId": {
           "__rl": true,
-          "value": "AXQv4kiEndT4qgFf",
-          "mode": "list",
-          "cachedResultUrl": "/workflow/AXQv4kiEndT4qgFf",
-          "cachedResultName": "Score Job Qualification - Baserow Prompt - Structured Output"
+          "value": "={{ $('Build User Configuration').first().json.config.workflow_ids['score-job-qualification'] }}",
+          "mode": "id"
         },
         "workflowInputs": {
           "mappingMode": "defineBelow",
@@ -960,7 +903,7 @@
         "options": {}
       },
       "id": "1973ec94-4a31-4f91-832d-bab6e5ba8c86",
-      "name": "Score Job Qualification",
+      "name": "score-job-qualification",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.2,
       "position": [
@@ -968,22 +911,6 @@
         4560
       ],
       "onError": "continueErrorOutput"
-    },
-    {
-      "parameters": {
-        "content": "### Shared qualification scoring\n\nCalls the reusable scoring subworkflow, writes `Apply` and `Score` to the corresponding Baserow row, then restores the job context. Scores of 33 or higher continue to document generation; lower scores skip directly to the next job. Import `score-job-qualification.json` with this workflow so the referenced workflow ID resolves.",
-        "height": 256,
-        "width": 496,
-        "color": 5
-      },
-      "id": "699d52e1-a106-40f8-bf05-ee27456493be",
-      "name": "Shared Qualification Scoring Notes",
-      "type": "n8n-nodes-base.stickyNote",
-      "typeVersion": 1,
-      "position": [
-        -28944,
-        5504
-      ]
     },
     {
       "parameters": {
@@ -997,7 +924,7 @@
           "conditions": [
             {
               "id": "69a52cfb-f476-4be2-a3e4-cc39de3eecc2",
-              "leftValue": "={{ $(\"Score Job Qualification\").item.json.should_apply }}",
+              "leftValue": "={{ $(\"score-job-qualification\").item.json.should_apply }}",
               "rightValue": true,
               "operator": {
                 "type": "boolean",
@@ -1021,7 +948,7 @@
     },
     {
       "parameters": {
-        "url": "={{ $(\"Generate CV Files\").item.json.pdf_url }}",
+        "url": "={{ $(\"render-document: cv\").item.json.pdf_url }}",
         "options": {
           "response": {
             "response": {
@@ -1046,7 +973,7 @@
     },
     {
       "parameters": {
-        "url": "={{ $(\"Generate CV Files\").item.json.tex_url }}",
+        "url": "={{ $(\"render-document: cv\").item.json.tex_url }}",
         "options": {
           "response": {
             "response": {
@@ -1071,7 +998,7 @@
     },
     {
       "parameters": {
-        "url": "={{ $(\"Generate Cover Letter Files\").item.json.pdf_url }}",
+        "url": "={{ $(\"render-document: cover-letter\").item.json.pdf_url }}",
         "options": {
           "response": {
             "response": {
@@ -1096,7 +1023,7 @@
     },
     {
       "parameters": {
-        "url": "={{ $(\"Generate Cover Letter Files\").item.json.tex_url }}",
+        "url": "={{ $(\"render-document: cover-letter\").item.json.tex_url }}",
         "options": {
           "response": {
             "response": {
@@ -1121,7 +1048,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const input = $input.first();\nconst isTelegramTest = input.json.__telegram_test === true;\nconst inputBinary = input.binary ?? {};\n\nconst sourceFiles = {\n  cv_pdf: inputBinary.cv_pdf ?? $(\"Download CV PDF for Telegram\").first().binary?.cv_pdf,\n  cv_tex: inputBinary.cv_tex ?? $(\"Download CV TEX for Telegram\").first().binary?.cv_tex,\n  cover_letter_pdf: inputBinary.cover_letter_pdf ?? $(\"Download Cover Letter PDF for Telegram\").first().binary?.cover_letter_pdf,\n  cover_letter_tex: inputBinary.cover_letter_tex ?? $(\"Download Cover Letter TEX for Telegram\").first().binary?.cover_letter_tex\n};\n\nconst archiveFiles = {\n  zip_cv_pdf: [sourceFiles.cv_pdf, \"MojtabaKanani_CV.pdf\", \"pdf\", \"application/pdf\"],\n  zip_cv_tex: [sourceFiles.cv_tex, \"MojtabaKanani_CV.tex\", \"tex\", \"text/x-tex\"],\n  zip_cl_pdf: [sourceFiles.cover_letter_pdf, \"MojtabaKanani_CL.pdf\", \"pdf\", \"application/pdf\"],\n  zip_cl_tex: [sourceFiles.cover_letter_tex, \"MojtabaKanani_CL.tex\", \"tex\", \"text/x-tex\"]\n};\n\nconst basename = (value) => {\n  const withoutQuery = String(value ?? \"\").split(/[?#]/)[0];\n  const leaf = withoutQuery.split(/[\\\\/]/).pop() ?? \"\";\n  try {\n    return decodeURIComponent(leaf);\n  } catch {\n    return leaf;\n  }\n};\n\nconst removeDocumentPrefix = (value) =>\n  basename(value)\n    .replace(/\\.[^.]+$/, \"\")\n    .replace(/^(?:cv|cover[-_ ]?letter)[-_ ]+/i, \"\")\n    .trim();\n\nconst fallbackApplicationId = String(\n  input.json.application_id ??\n  (isTelegramTest\n    ? \"telegram_test\"\n    : $(\"Create Tailored CV Content\").first().json.application_id) ??\n  \"application\"\n);\nconst archiveBaseName =\n  removeDocumentPrefix(sourceFiles.cv_pdf?.fileName) ||\n  removeDocumentPrefix(sourceFiles.cv_tex?.fileName) ||\n  removeDocumentPrefix(sourceFiles.cover_letter_pdf?.fileName) ||\n  removeDocumentPrefix(sourceFiles.cover_letter_tex?.fileName) ||\n  fallbackApplicationId;\nconst archiveFileName = `${archiveBaseName}.zip`;\n\nconst binary = {};\nfor (const [propertyName, [source, fileName, fileExtension, mimeType]] of Object.entries(archiveFiles)) {\n  if (!source) {\n    throw new Error(`Missing source file for ZIP entry: ${fileName}`);\n  }\n\n  binary[propertyName] = {\n    ...source,\n    fileName,\n    fileExtension,\n    mimeType\n  };\n}\n\nreturn [{\n  json: {\n    ...input.json,\n    __telegram_test: isTelegramTest,\n    archiveFileName\n  },\n  binary,\n  pairedItem: {\n    item: 0\n  }\n}];"
+        "jsCode": "const input = $input.first();\nconst applicantFilename = $('Build User Configuration').first().json.config.applicant_filename;\nconst isTelegramTest = input.json.__telegram_test === true;\nconst inputBinary = input.binary ?? {};\n\nconst sourceFiles = {\n  cv_pdf: inputBinary.cv_pdf ?? $(\"Download CV PDF for Telegram\").first().binary?.cv_pdf,\n  cv_tex: inputBinary.cv_tex ?? $(\"Download CV TEX for Telegram\").first().binary?.cv_tex,\n  cover_letter_pdf: inputBinary.cover_letter_pdf ?? $(\"Download Cover Letter PDF for Telegram\").first().binary?.cover_letter_pdf,\n  cover_letter_tex: inputBinary.cover_letter_tex ?? $(\"Download Cover Letter TEX for Telegram\").first().binary?.cover_letter_tex\n};\n\nconst archiveFiles = {\n  zip_cv_pdf: [sourceFiles.cv_pdf, `${applicantFilename}_CV.pdf`, \"pdf\", \"application/pdf\"],\n  zip_cv_tex: [sourceFiles.cv_tex, `${applicantFilename}_CV.tex`, \"tex\", \"text/x-tex\"],\n  zip_cl_pdf: [sourceFiles.cover_letter_pdf, `${applicantFilename}_CL.pdf`, \"pdf\", \"application/pdf\"],\n  zip_cl_tex: [sourceFiles.cover_letter_tex, `${applicantFilename}_CL.tex`, \"tex\", \"text/x-tex\"]\n};\n\nconst basename = (value) => {\n  const withoutQuery = String(value ?? \"\").split(/[?#]/)[0];\n  const leaf = withoutQuery.split(/[\\\\/]/).pop() ?? \"\";\n  try {\n    return decodeURIComponent(leaf);\n  } catch {\n    return leaf;\n  }\n};\n\nconst removeDocumentPrefix = (value) =>\n  basename(value)\n    .replace(/\\.[^.]+$/, \"\")\n    .replace(/^(?:cv|cover[-_ ]?letter)[-_ ]+/i, \"\")\n    .trim();\n\nconst fallbackApplicationId = String(\n  input.json.application_id ??\n  (isTelegramTest\n    ? \"telegram_test\"\n    : $(\"create-cv-content\").first().json.application_id) ??\n  \"application\"\n);\nconst archiveBaseName =\n  removeDocumentPrefix(sourceFiles.cv_pdf?.fileName) ||\n  removeDocumentPrefix(sourceFiles.cv_tex?.fileName) ||\n  removeDocumentPrefix(sourceFiles.cover_letter_pdf?.fileName) ||\n  removeDocumentPrefix(sourceFiles.cover_letter_tex?.fileName) ||\n  fallbackApplicationId;\nconst archiveFileName = `${archiveBaseName}.zip`;\n\nconst binary = {};\nfor (const [propertyName, [source, fileName, fileExtension, mimeType]] of Object.entries(archiveFiles)) {\n  if (!source) {\n    throw new Error(`Missing source file for ZIP entry: ${fileName}`);\n  }\n\n  binary[propertyName] = {\n    ...source,\n    fileName,\n    fileExtension,\n    mimeType\n  };\n}\n\nreturn [{\n  json: {\n    ...input.json,\n    __telegram_test: isTelegramTest,\n    archiveFileName\n  },\n  binary,\n  pairedItem: {\n    item: 0\n  }\n}];"
       },
       "id": "810e283a-e66a-4bc8-b2bb-c55fb85d52c5",
       "name": "Prepare Telegram ZIP Contents",
@@ -1153,7 +1080,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const input = $input.first();\nconst isTelegramTest = $(\"TEST — Sample Should-Apply Job\").isExecuted;\nconst testItem = isTelegramTest\n  ? $(\"TEST — Sample Should-Apply Job\").first()\n  : null;\nconst applicationId = String(\n  isTelegramTest\n    ? testItem.json.application_id\n    : $(\"Create Tailored CV Content\").first().json.application_id ?? \"application\"\n);\nconst job = isTelegramTest\n  ? testItem.json\n  : $(\"Score Job Qualification\").first().json;\nconst sourceBinary = testItem?.binary ?? {};\nconst inputBinary = input.binary ?? {};\nconst applicationZip =\n  inputBinary.application_zip ??\n  $(\"Build Telegram Application ZIP\").first().binary?.application_zip;\nconst archiveFileName = applicationZip?.fileName ?? `${applicationId}.zip`;\n\nconst files = [\n  {\n    binaryFile: applicationZip,\n    propertyName: \"application_zip\",\n    fileName: archiveFileName,\n    fileExtension: \"zip\",\n    mimeType: \"application/zip\"\n  },\n  {\n    binaryFile: sourceBinary.cv_pdf ?? $(\"Download CV PDF for Telegram\").first().binary?.cv_pdf,\n    propertyName: \"cv_pdf\",\n    fileName: `cv_${applicationId}.pdf`,\n    fileExtension: \"pdf\",\n    mimeType: \"application/pdf\"\n  },\n  {\n    binaryFile: sourceBinary.cv_tex ?? $(\"Download CV TEX for Telegram\").first().binary?.cv_tex,\n    propertyName: \"cv_tex\",\n    fileName: `cv_${applicationId}.tex`,\n    fileExtension: \"tex\",\n    mimeType: \"text/x-tex\"\n  },\n  {\n    binaryFile: sourceBinary.cover_letter_pdf ?? $(\"Download Cover Letter PDF for Telegram\").first().binary?.cover_letter_pdf,\n    propertyName: \"cover_letter_pdf\",\n    fileName: `cover-letter_${applicationId}.pdf`,\n    fileExtension: \"pdf\",\n    mimeType: \"application/pdf\"\n  },\n  {\n    binaryFile: sourceBinary.cover_letter_tex ?? $(\"Download Cover Letter TEX for Telegram\").first().binary?.cover_letter_tex,\n    propertyName: \"cover_letter_tex\",\n    fileName: `cover-letter_${applicationId}.tex`,\n    fileExtension: \"tex\",\n    mimeType: \"text/x-tex\"\n  }\n];\n\nreturn files.map((file, uploadIndex) => {\n  if (!file.binaryFile) {\n    throw new Error(`Missing Telegram attachment: ${file.propertyName}`);\n  }\n\n  Object.assign(file.binaryFile, {\n    fileName: file.fileName,\n    fileExtension: file.fileExtension,\n    mimeType: file.mimeType\n  });\n\n  return {\n    json: {\n      uploadIndex,\n      fileName: file.fileName,\n      job\n    },\n    binary: {\n      data: file.binaryFile\n    },\n    pairedItem: {\n      item: 0\n    }\n  };\n});"
+        "jsCode": "const input = $input.first();\nconst isTelegramTest = $(\"TEST — Sample Should-Apply Job\").isExecuted;\nconst testItem = isTelegramTest\n  ? $(\"TEST — Sample Should-Apply Job\").first()\n  : null;\nconst applicationId = String(\n  isTelegramTest\n    ? testItem.json.application_id\n    : $(\"create-cv-content\").first().json.application_id ?? \"application\"\n);\nconst job = isTelegramTest\n  ? testItem.json\n  : $(\"score-job-qualification\").first().json;\nconst sourceBinary = testItem?.binary ?? {};\nconst inputBinary = input.binary ?? {};\nconst applicationZip =\n  inputBinary.application_zip ??\n  $(\"Build Telegram Application ZIP\").first().binary?.application_zip;\nconst archiveFileName = applicationZip?.fileName ?? `${applicationId}.zip`;\n\nconst files = [\n  {\n    binaryFile: applicationZip,\n    propertyName: \"application_zip\",\n    fileName: archiveFileName,\n    fileExtension: \"zip\",\n    mimeType: \"application/zip\"\n  },\n  {\n    binaryFile: sourceBinary.cv_pdf ?? $(\"Download CV PDF for Telegram\").first().binary?.cv_pdf,\n    propertyName: \"cv_pdf\",\n    fileName: `cv_${applicationId}.pdf`,\n    fileExtension: \"pdf\",\n    mimeType: \"application/pdf\"\n  },\n  {\n    binaryFile: sourceBinary.cv_tex ?? $(\"Download CV TEX for Telegram\").first().binary?.cv_tex,\n    propertyName: \"cv_tex\",\n    fileName: `cv_${applicationId}.tex`,\n    fileExtension: \"tex\",\n    mimeType: \"text/x-tex\"\n  },\n  {\n    binaryFile: sourceBinary.cover_letter_pdf ?? $(\"Download Cover Letter PDF for Telegram\").first().binary?.cover_letter_pdf,\n    propertyName: \"cover_letter_pdf\",\n    fileName: `cover-letter_${applicationId}.pdf`,\n    fileExtension: \"pdf\",\n    mimeType: \"application/pdf\"\n  },\n  {\n    binaryFile: sourceBinary.cover_letter_tex ?? $(\"Download Cover Letter TEX for Telegram\").first().binary?.cover_letter_tex,\n    propertyName: \"cover_letter_tex\",\n    fileName: `cover-letter_${applicationId}.tex`,\n    fileExtension: \"tex\",\n    mimeType: \"text/x-tex\"\n  }\n];\n\nreturn files.map((file, uploadIndex) => {\n  if (!file.binaryFile) {\n    throw new Error(`Missing Telegram attachment: ${file.propertyName}`);\n  }\n\n  Object.assign(file.binaryFile, {\n    fileName: file.fileName,\n    fileExtension: file.fileExtension,\n    mimeType: file.mimeType\n  });\n\n  return {\n    json: {\n      uploadIndex,\n      fileName: file.fileName,\n      job\n    },\n    binary: {\n      data: file.binaryFile\n    },\n    pairedItem: {\n      item: 0\n    }\n  };\n});"
       },
       "id": "51f3e866-e4a9-4f75-8884-b30182d3e2e3",
       "name": "Prepare Telegram Document Uploads",
@@ -1169,7 +1096,7 @@
       "parameters": {
         "resource": "message",
         "operation": "sendDocument",
-        "chatId": "119184698",
+        "chatId": "={{ $('Build User Configuration').first().json.config.telegram_chat_id }}",
         "binaryData": true,
         "binaryPropertyName": "data",
         "additionalFields": {
@@ -1186,7 +1113,8 @@
       ],
       "credentials": {
         "telegramApi": {
-          "name": "Telegram account"
+          "name": "Telegram",
+          "id": "REPLACE_WITH_TELEGRAM_CREDENTIAL_ID"
         }
       },
       "retryOnFail": true,
@@ -1212,7 +1140,7 @@
       "parameters": {
         "resource": "message",
         "operation": "deleteMessage",
-        "chatId": "119184698",
+        "chatId": "={{ $('Build User Configuration').first().json.config.telegram_chat_id }}",
         "messageId": "={{ $json.messageId }}"
       },
       "id": "05fd0424-31c3-431f-98ef-9bda5031dc64",
@@ -1225,7 +1153,8 @@
       ],
       "credentials": {
         "telegramApi": {
-          "name": "Telegram account"
+          "name": "Telegram",
+          "id": "REPLACE_WITH_TELEGRAM_CREDENTIAL_ID"
         }
       },
       "retryOnFail": true,
@@ -1251,14 +1180,14 @@
       "parameters": {
         "resource": "message",
         "operation": "sendMediaGroup",
-        "chatId": "119184698",
+        "chatId": "={{ $('Build User Configuration').first().json.config.telegram_chat_id }}",
         "media": {
           "media": [
             {
               "type": "document",
               "media": "={{ $json.fileIds[0] }}",
               "additionalFields": {
-                "caption": "={{ (() => {\n  const job = $json.job;\n  const escapeHtml = (value, fallback = \"—\") =>\n    String(value ?? fallback)\n      .replace(/&/g, \"&amp;\")\n      .replace(/</g, \"&lt;\")\n      .replace(/>/g, \"&gt;\")\n      .replace(/\"/g, \"&quot;\")\n      .replace(/'/g, \"&#39;\");\n\n  const formatPublishedDate = (value) => {\n    const raw = String(value ?? \"\").trim();\n    const isoDate = raw.match(/^(\\d{4})-(\\d{2})-(\\d{2})/);\n    const date = isoDate\n      ? new Date(Date.UTC(Number(isoDate[1]), Number(isoDate[2]) - 1, Number(isoDate[3])))\n      : new Date(raw);\n\n    if (Number.isNaN(date.getTime())) {\n      return raw;\n    }\n\n    return new Intl.DateTimeFormat(\"en-US\", {\n      year: \"numeric\",\n      month: \"long\",\n      day: \"numeric\",\n      timeZone: \"UTC\"\n    }).format(date);\n  };\n\n  const jobUrl =\n    job.jobUrl ??\n    job.job_url ??\n    job.source_job?.jobUrl ??\n    job.job_context?.jobUrl ??\n    (job.jobId ? `https://www.linkedin.com/jobs/view/${encodeURIComponent(job.jobId)}/` : \"\");\n\n  const lines = [\n    `<b>${escapeHtml(job.jobTitle)}</b>`,\n    `🏢 <i>${escapeHtml(job.companyName)}</i>`,\n    \"\",\n    `📍 <b>Location:</b> ${escapeHtml(job.location)}`,\n    `💼 <b>Contract:</b> ${escapeHtml(job.contractType)}`,\n    `🎯 <b>Match score:</b> ${escapeHtml(job.qualification_score)}/100`,\n    `🆔 <b>Job ID:</b> <code>${escapeHtml(job.jobId)}</code>`\n  ];\n\n  if (job.publishedAt) {\n    lines.push(`🗓 <b>Published:</b> ${escapeHtml(formatPublishedDate(job.publishedAt))}`);\n  }\n\n  if (jobUrl) {\n    lines.push(\"\", `🔗 <a href=\"${escapeHtml(jobUrl)}\">View LinkedIn posting</a>`);\n  }\n\n  return lines.join(\"\\n\");\n})() }}",
+                "caption": "={{ (() => {\n  const job = $json.job;\n  const escapeHtml = (value, fallback = \"—\") =>\n    String(value ?? fallback)\n      .replace(/&/g, \"&amp;\")\n      .replace(/</g, \"&lt;\")\n      .replace(/>/g, \"&gt;\")\n      .replace(/\"/g, \"&quot;\")\n      .replace(/'/g, \"&#39;\");\n\n  const formatPublishedDate = (value) => {\n    const raw = String(value ?? \"\").trim();\n    const isoDate = raw.match(/^(\\d{4})-(\\d{2})-(\\d{2})/);\n    const date = isoDate\n      ? new Date(Date.UTC(Number(isoDate[1]), Number(isoDate[2]) - 1, Number(isoDate[3])))\n      : new Date(raw);\n\n    if (Number.isNaN(date.getTime())) {\n      return raw;\n    }\n\n    return new Intl.DateTimeFormat(\"en-US\", {\n      year: \"numeric\",\n      month: \"long\",\n      day: \"numeric\",\n      timeZone: \"UTC\"\n    }).format(date);\n  };\n\n  const jobUrl =\n    job.jobUrl ??\n    job.job_url ??\n    job.source_job?.jobUrl ??\n    job.job_context?.jobUrl ??\n    (job.jobId ? $('Build User Configuration').first().json.config.linkedin_job_url_template.replace('{jobId}', encodeURIComponent(job.jobId)) : \"\");\n\n  const lines = [\n    `<b>${escapeHtml(job.jobTitle)}</b>`,\n    `🏢 <i>${escapeHtml(job.companyName)}</i>`,\n    \"\",\n    `📍 <b>Location:</b> ${escapeHtml(job.location)}`,\n    `💼 <b>Contract:</b> ${escapeHtml(job.contractType)}`,\n    `🎯 <b>Match score:</b> ${escapeHtml(job.qualification_score)}/100`,\n    `🆔 <b>Job ID:</b> <code>${escapeHtml(job.jobId)}</code>`\n  ];\n\n  if (job.publishedAt) {\n    lines.push(`🗓 <b>Published:</b> ${escapeHtml(formatPublishedDate(job.publishedAt))}`);\n  }\n\n  if (jobUrl) {\n    lines.push(\"\", `🔗 <a href=\"${escapeHtml(jobUrl)}\">View LinkedIn posting</a>`);\n  }\n\n  return lines.join(\"\\n\");\n})() }}",
                 "parse_mode": "HTML"
               }
             },
@@ -1292,7 +1221,8 @@
       ],
       "credentials": {
         "telegramApi": {
-          "name": "Telegram account"
+          "name": "Telegram",
+          "id": "REPLACE_WITH_TELEGRAM_CREDENTIAL_ID"
         }
       },
       "retryOnFail": true,
@@ -1461,20 +1391,128 @@
       ]
     },
     {
-      "parameters": {
-        "content": "## Disabled Telegram album test\n\nEnable **TEST — Enable Sample Telegram Path**, then click **Execute workflow**.\n\nThis sends one five-document test album to Telegram user `119184698`: the ZIP first, followed by the four individual PDF/TeX files. It uses `should_apply: true` and synthetic files. It does not scrape LinkedIn, call AI workflows, or write to Baserow.\n\nDisable the trigger again after testing.",
-        "height": 352,
-        "width": 752,
-        "color": 5
-      },
-      "id": "bc008476-cc04-48a5-adf2-bcfe5238e729",
-      "name": "Telegram Test Instructions",
-      "type": "n8n-nodes-base.stickyNote",
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
       "position": [
-        -26144,
-        2944
-      ]
+        -2200,
+        -700
+      ],
+      "id": "f6fbb6fe-f5cc-4593-a476-25c4352f233a",
+      "name": "Main Configuration Input"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -2200,
+        900
+      ],
+      "id": "378f77c4-f66d-42cf-a104-051ef22a3c12",
+      "name": "Test Configuration Input"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "n8n user configuration",
+          "mode": "name"
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -2000,
+        -500
+      ],
+      "id": "c1ca4b27-b323-4afb-ac83-4888d60ebc53",
+      "name": "Get User Configuration",
+      "executeOnce": true,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all().map((item) => item.json);\nconst config = {};\nconst seen = new Set();\n\nfor (const row of rows) {\n  const key = String(row.configKey ?? '').trim();\n  if (!key) throw new Error('Configuration row is missing configKey.');\n  if (seen.has(key)) throw new Error(`Duplicate configuration key: ${key}`);\n  seen.add(key);\n  if (row.enabled === false || String(row.enabled).toLowerCase() === 'false') continue;\n\n  const type = String(row.valueType ?? 'text').trim().toLowerCase();\n  const raw = row.value;\n  if (type === 'number') {\n    const value = Number(raw);\n    if (!Number.isFinite(value)) throw new Error(`Configuration ${key} must be a number.`);\n    config[key] = value;\n  } else if (type === 'boolean') {\n    if (typeof raw === 'boolean') config[key] = raw;\n    else if (String(raw).toLowerCase() === 'true') config[key] = true;\n    else if (String(raw).toLowerCase() === 'false') config[key] = false;\n    else throw new Error(`Configuration ${key} must be true or false.`);\n  } else if (type === 'json') {\n    try { config[key] = typeof raw === 'string' ? JSON.parse(raw) : raw; }\n    catch (error) { throw new Error(`Configuration ${key} contains invalid JSON: ${error.message}`); }\n  } else if (type === 'text') {\n    config[key] = String(raw ?? '');\n  } else {\n    throw new Error(`Unsupported valueType \"${type}\" for configuration ${key}.`);\n  }\n}\n\nconst required = [\"tenant_key\",\"tenant_enabled\",\"applicant_filename\",\"baserow_database_id\",\"baserow_table_ids\",\"contract_type_option_ids\",\"status_option_ids\",\"baserow_upload_url\",\"workflow_ids\",\"apify_actor_ids\",\"linkedin_max_items\",\"linkedin_schedule_interval_hours\",\"company_exclusions\",\"title_exclusions\",\"project_selection_count\",\"work_experience_selection_count\",\"qualification_threshold\",\"telegram_chat_id\",\"master_cv_path\",\"linkedin_job_url_template\"];\nconst missing = required.filter((key) => config[key] === undefined || config[key] === null || config[key] === '');\nif (missing.length) throw new Error(`Missing enabled configuration values: ${missing.join(', ')}`);\n\nlet source;\ntry { source = $('Main Configuration Input').first(); } catch (error) {}\n  if (!source) { try { source = $('Test Configuration Input').first(); } catch (error) {} }\nif (!source) throw new Error('Could not resolve the workflow input before configuration loading.');\n\nreturn [{\n  json: {\n    ...source.json,\n    config,\n    project_selection_count: config.project_selection_count,\n    work_experience_selection_count: config.work_experience_selection_count,\n  },\n  binary: source.binary,\n  pairedItem: { item: 0 },\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1800,
+        -500
+      ],
+      "id": "60ee72ee-d31e-4a78-a263-732409dfebfa",
+      "name": "Build User Configuration"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5af7e4b1-f99d-4c71-a36e-898183c3e6eb",
+              "leftValue": "={{ $('Test Configuration Input').isExecuted }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1600,
+        -500
+      ],
+      "id": "f20a3d1b-5ce5-4cb9-ad31-20b9e2f113ea",
+      "name": "Telegram Test Configuration?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "659e6a0d-aac6-4080-a705-56143e53ec7d",
+              "leftValue": "={{ (() => { const config = $('Build User Configuration').first().json.config; const interval = Number(config.linkedin_schedule_interval_hours); if (!Number.isSafeInteger(interval) || interval < 1) throw new Error('linkedin_schedule_interval_hours must be a positive integer.'); const manualRun = $('When clicking ‘Execute workflow’').isExecuted; const epochHour = Math.floor($now.toMillis() / 3600000); return config.tenant_enabled === true && (manualRun || epochHour % interval === 0); })() }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -1400,
+        -700
+      ],
+      "id": "fe2b962b-495f-4a24-ac50-b96932d27170",
+      "name": "Tenant Enabled and Schedule Due?"
     }
   ],
   "pinData": {},
@@ -1483,14 +1521,14 @@
       "main": [
         [
           {
-            "node": "Generate Active LinkedIn URLs",
+            "node": "Main Configuration Input",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Generate Active LinkedIn URLs": {
+    "linkedin-url": {
       "main": [
         [
           {
@@ -1572,7 +1610,7 @@
         [],
         [
           {
-            "node": "Score Job Qualification",
+            "node": "score-job-qualification",
             "type": "main",
             "index": 0
           }
@@ -1617,14 +1655,14 @@
       "main": [
         [
           {
-            "node": "Create Tailored CV Content",
+            "node": "create-cv-content",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Create Tailored CV Content": {
+    "create-cv-content": {
       "main": [
         [
           {
@@ -1646,7 +1684,7 @@
       "main": [
         [
           {
-            "node": "Generate CV Files",
+            "node": "render-document: cv",
             "type": "main",
             "index": 0
           }
@@ -1660,7 +1698,7 @@
         ]
       ]
     },
-    "Generate CV Files": {
+    "render-document: cv": {
       "main": [
         [
           {
@@ -1682,7 +1720,7 @@
       "main": [
         [
           {
-            "node": "Create Cover Letter Content",
+            "node": "create-cover-letter-content",
             "type": "main",
             "index": 0
           }
@@ -1696,7 +1734,7 @@
         ]
       ]
     },
-    "Create Cover Letter Content": {
+    "create-cover-letter-content": {
       "main": [
         [
           {
@@ -1718,7 +1756,7 @@
       "main": [
         [
           {
-            "node": "Generate Cover Letter Files",
+            "node": "render-document: cover-letter",
             "type": "main",
             "index": 0
           }
@@ -1732,7 +1770,7 @@
         ]
       ]
     },
-    "Generate Cover Letter Files": {
+    "render-document: cover-letter": {
       "main": [
         [
           {
@@ -1824,7 +1862,7 @@
       "main": [
         [
           {
-            "node": "Generate Active LinkedIn URLs",
+            "node": "Main Configuration Input",
             "type": "main",
             "index": 0
           }
@@ -1929,7 +1967,7 @@
       "main": [
         [
           {
-            "node": "Score Is At Least 33?",
+            "node": "Score Meets Qualification Threshold?",
             "type": "main",
             "index": 0
           }
@@ -1943,7 +1981,7 @@
         ]
       ]
     },
-    "Score Is At Least 33?": {
+    "Score Meets Qualification Threshold?": {
       "main": [
         [
           {
@@ -2221,7 +2259,7 @@
         ]
       ]
     },
-    "Score Job Qualification": {
+    "score-job-qualification": {
       "main": [
         [
           {
@@ -2243,7 +2281,7 @@
       "main": [
         [
           {
-            "node": "TEST — Sample Should-Apply Job",
+            "node": "Test Configuration Input",
             "type": "main",
             "index": 0
           }
@@ -2314,6 +2352,79 @@
           }
         ]
       ]
+    },
+    "Main Configuration Input": {
+      "main": [
+        [
+          {
+            "node": "Get User Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test Configuration Input": {
+      "main": [
+        [
+          {
+            "node": "Get User Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get User Configuration": {
+      "main": [
+        [
+          {
+            "node": "Build User Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build User Configuration": {
+      "main": [
+        [
+          {
+            "node": "Telegram Test Configuration?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Test Configuration?": {
+      "main": [
+        [
+          {
+            "node": "TEST — Sample Should-Apply Job",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Tenant Enabled and Schedule Due?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tenant Enabled and Schedule Due?": {
+      "main": [
+        [
+          {
+            "node": "linkedin-url",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -2322,12 +2433,6 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "36ed5cb4-4ab0-4f18-bafe-d821f4129662",
-  "meta": {
-    "templateCredsSetupCompleted": true,
-    "instanceId": "2d85b40e2e1a69706b539dc280f2a48f8b70729872141299d251c48887ea4c94"
-  },
   "nodeGroups": [],
-  "id": "MxVJsDcM1ViEMkK3",
   "tags": []
 }

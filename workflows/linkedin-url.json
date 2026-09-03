@@ -1,10 +1,10 @@
 {
-  "name": "LinkedIn URL - Active Baserow Criteria",
+  "name": "linkedin-url",
   "nodes": [
     {
       "parameters": {
-        "databaseId": 504349,
-        "tableId": 1098022,
+        "databaseId": "={{ $('Build User Configuration').first().json.config.baserow_database_id }}",
+        "tableId": "={{ $('Build User Configuration').first().json.config.baserow_table_ids.searchCriteria }}",
         "returnAll": true,
         "additionalOptions": {}
       },
@@ -19,17 +19,16 @@
       "alwaysOutputData": true,
       "credentials": {
         "baserowApi": {
-          "id": "6f5zUFzwe8YPXrNX",
-          "name": "Baserow account"
+          "id": "REPLACE_WITH_BASEROW_CREDENTIAL_ID",
+          "name": "Baserow"
         }
-      },
-      "notes": "Reads all rows from Job Hunt Tracker > Search Criteria. The Build LinkedIn URL node skips rows whose Active field is false."
+      }
     },
     {
       "parameters": {
         "mode": "runOnceForEachItem",
         "language": "python",
-        "pythonCode": "import urllib.parse\n\n_json = _item[\"json\"]\n\nBASE_URL = \"https://www.linkedin.com/jobs/search/\"\n\nEXPERIENCE_LEVELS = {\n    \"internship\": \"1\",\n    \"entry level\": \"2\",\n    \"associate\": \"3\",\n    \"mid-senior\": \"4\",\n    \"director\": \"5\",\n    \"executive\": \"6\",\n}\n\nJOB_TYPES = {\n    \"full-time\": \"F\",\n    \"part-time\": \"P\",\n    \"contract\": \"C\",\n    \"temporary\": \"T\",\n    \"volunteer\": \"V\",\n    \"internship\": \"I\",\n    \"other\": \"O\",\n}\n\nWORKPLACE_TYPES = {\n    \"on-site\": \"1\",\n    \"remote\": \"2\",\n    \"hybrid\": \"3\",\n}\n\nDATE_POSTED_PRESETS = {\n    \"day\": \"r86400\",\n    \"week\": \"r604800\",\n    \"month\": \"r2592000\",\n    \"any\": None,\n}\n\nSORT_BY = {\n    \"relevance\": \"R\",\n    \"date\": \"DD\",\n}\n\n\ndef resolve_posted(value):\n    if not value:\n        return None\n    key = str(value).strip().lower()\n    if key in DATE_POSTED_PRESETS:\n        return DATE_POSTED_PRESETS[key]\n    try:\n        hours = float(key)\n    except ValueError:\n        return None\n    if hours <= 0:\n        return None\n    return f\"r{int(hours * 3600)}\"\n\n\ndef codes_from_list(values, mapping):\n    if not values:\n        return None\n    codes = []\n    for v in values:\n        key = str(v).strip().lower()\n        if key in mapping:\n            codes.append(mapping[key])\n    return \",\".join(codes) if codes else None\n\n\ndef baserow_value(value):\n    if isinstance(value, dict):\n        return value.get(\"value\") or value.get(\"name\") or value.get(\"id\")\n    return value\n\n\ndef baserow_list(value):\n    if value is None:\n        return []\n    if not isinstance(value, list):\n        value = [value]\n    return [baserow_value(item) for item in value if baserow_value(item) not in (None, \"\")]\n\n\nf = _json\nrecord_id = f.get(\"id\")\nparams = {}\n\nif f.get(\"Keywords\"):\n    params[\"keywords\"] = f[\"Keywords\"]\nif f.get(\"Location\"):\n    params[\"location\"] = f[\"Location\"]\n\nexp = codes_from_list(baserow_list(f.get(\"Experience Level\")), EXPERIENCE_LEVELS)\nif exp:\n    params[\"f_E\"] = exp\n\njt = codes_from_list(baserow_list(f.get(\"Job Type\")), JOB_TYPES)\nif jt:\n    params[\"f_JT\"] = jt\n\nwt = codes_from_list(baserow_list(f.get(\"Workplace Type\")), WORKPLACE_TYPES)\nif wt:\n    params[\"f_WT\"] = wt\n\ntpr = resolve_posted(f.get(\"Date Posted\"))\nif tpr:\n    params[\"f_TPR\"] = tpr\n\nsort_key = str(baserow_value(f.get(\"Sort By\")) or \"relevance\").strip().lower()\nparams[\"sortBy\"] = SORT_BY.get(sort_key, \"R\")\n\nif f.get(\"Distance\"):\n    params[\"distance\"] = f[\"Distance\"]\n\nif f.get(\"Company ID\"):\n    params[\"f_C\"] = f[\"Company ID\"]\n\nif f.get(\"Easy Apply\"):\n    params[\"f_AL\"] = \"true\"\n\nquery = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)\nurl = f\"{BASE_URL}?{query}\" if query else BASE_URL\n\nreturn {\n    \"json\": {\n        \"id\": record_id,\n        \"Generated URL\": url\n    }\n}"
+        "pythonCode": "import urllib.parse\n\n_json = _item[\"json\"]\n\nBASE_URL = _json[\"config\"][\"linkedin_base_search_url\"]\n\nEXPERIENCE_LEVELS = {\n    \"internship\": \"1\",\n    \"entry level\": \"2\",\n    \"associate\": \"3\",\n    \"mid-senior\": \"4\",\n    \"director\": \"5\",\n    \"executive\": \"6\",\n}\n\nJOB_TYPES = {\n    \"full-time\": \"F\",\n    \"part-time\": \"P\",\n    \"contract\": \"C\",\n    \"temporary\": \"T\",\n    \"volunteer\": \"V\",\n    \"internship\": \"I\",\n    \"other\": \"O\",\n}\n\nWORKPLACE_TYPES = {\n    \"on-site\": \"1\",\n    \"remote\": \"2\",\n    \"hybrid\": \"3\",\n}\n\nDATE_POSTED_PRESETS = {\n    \"day\": \"r86400\",\n    \"week\": \"r604800\",\n    \"month\": \"r2592000\",\n    \"any\": None,\n}\n\nSORT_BY = {\n    \"relevance\": \"R\",\n    \"date\": \"DD\",\n}\n\n\ndef resolve_posted(value):\n    if not value:\n        return None\n    key = str(value).strip().lower()\n    if key in DATE_POSTED_PRESETS:\n        return DATE_POSTED_PRESETS[key]\n    try:\n        hours = float(key)\n    except ValueError:\n        return None\n    if hours <= 0:\n        return None\n    return f\"r{int(hours * 3600)}\"\n\n\ndef codes_from_list(values, mapping):\n    if not values:\n        return None\n    codes = []\n    for v in values:\n        key = str(v).strip().lower()\n        if key in mapping:\n            codes.append(mapping[key])\n    return \",\".join(codes) if codes else None\n\n\ndef baserow_value(value):\n    if isinstance(value, dict):\n        return value.get(\"value\") or value.get(\"name\") or value.get(\"id\")\n    return value\n\n\ndef baserow_list(value):\n    if value is None:\n        return []\n    if not isinstance(value, list):\n        value = [value]\n    return [baserow_value(item) for item in value if baserow_value(item) not in (None, \"\")]\n\n\nf = _json\nrecord_id = f.get(\"id\")\nparams = {}\n\nif f.get(\"Keywords\"):\n    params[\"keywords\"] = f[\"Keywords\"]\nif f.get(\"Location\"):\n    params[\"location\"] = f[\"Location\"]\n\nexp = codes_from_list(baserow_list(f.get(\"Experience Level\")), EXPERIENCE_LEVELS)\nif exp:\n    params[\"f_E\"] = exp\n\njt = codes_from_list(baserow_list(f.get(\"Job Type\")), JOB_TYPES)\nif jt:\n    params[\"f_JT\"] = jt\n\nwt = codes_from_list(baserow_list(f.get(\"Workplace Type\")), WORKPLACE_TYPES)\nif wt:\n    params[\"f_WT\"] = wt\n\ntpr = resolve_posted(f.get(\"Date Posted\"))\nif tpr:\n    params[\"f_TPR\"] = tpr\n\nsort_key = str(baserow_value(f.get(\"Sort By\")) or \"relevance\").strip().lower()\nparams[\"sortBy\"] = SORT_BY.get(sort_key, \"R\")\n\nif f.get(\"Distance\"):\n    params[\"distance\"] = f[\"Distance\"]\n\nif f.get(\"Company ID\"):\n    params[\"f_C\"] = f[\"Company ID\"]\n\nif f.get(\"Easy Apply\"):\n    params[\"f_AL\"] = \"true\"\n\nquery = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)\nurl = f\"{BASE_URL}?{query}\" if query else BASE_URL\n\nreturn {\n    \"json\": {\n        \"id\": record_id,\n        \"Generated URL\": url\n    }\n}"
       },
       "id": "fe95efd4-3903-494f-a863-917c99706888",
       "name": "Build LinkedIn URL",
@@ -38,19 +37,18 @@
       "position": [
         3296,
         368
-      ],
-      "notes": "Builds the LinkedIn URL for an active Search Criteria row. Inactive rows are filtered by the preceding IF node."
+      ]
     },
     {
       "parameters": {
         "operation": "update",
-        "databaseId": 504349,
-        "tableId": 1098022,
+        "databaseId": "={{ $('Build User Configuration').first().json.config.baserow_database_id }}",
+        "tableId": "={{ $('Build User Configuration').first().json.config.baserow_table_ids.searchCriteria }}",
         "rowId": "={{ $json.id }}",
         "fieldsUi": {
           "fieldValues": [
             {
-              "fieldId": 9743529,
+              "fieldId": "={{ $('Build User Configuration').first().json.config.search_criteria_field_ids.generatedUrl }}",
               "fieldValue": "={{ $json[\"Generated URL\"] }}"
             }
           ]
@@ -66,11 +64,10 @@
       ],
       "credentials": {
         "baserowApi": {
-          "id": "6f5zUFzwe8YPXrNX",
-          "name": "Baserow account"
+          "id": "REPLACE_WITH_BASEROW_CREDENTIAL_ID",
+          "name": "Baserow"
         }
-      },
-      "notes": "Updates the Generated URL field on the matching Baserow row in Search Criteria."
+      }
     },
     {
       "parameters": {
@@ -131,6 +128,64 @@
       ],
       "id": "2b20ea9a-2bbf-46cb-b55e-7285696d3fdc",
       "name": "Is Search Criterion Active?"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -1800,
+        -600
+      ],
+      "id": "51c86dc3-d4b2-4790-ac5d-9cc06d133f51",
+      "name": "Configuration Input"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "n8n user configuration",
+          "mode": "name"
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -1600,
+        -600
+      ],
+      "id": "8d245ef9-cb43-4061-a9d3-2bda81eef626",
+      "name": "Get User Configuration",
+      "executeOnce": true,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all().map((item) => item.json);\nconst config = {};\nconst seen = new Set();\n\nfor (const row of rows) {\n  const key = String(row.configKey ?? '').trim();\n  if (!key) throw new Error('Configuration row is missing configKey.');\n  if (seen.has(key)) throw new Error(`Duplicate configuration key: ${key}`);\n  seen.add(key);\n  if (row.enabled === false || String(row.enabled).toLowerCase() === 'false') continue;\n\n  const type = String(row.valueType ?? 'text').trim().toLowerCase();\n  const raw = row.value;\n  if (type === 'number') {\n    const value = Number(raw);\n    if (!Number.isFinite(value)) throw new Error(`Configuration ${key} must be a number.`);\n    config[key] = value;\n  } else if (type === 'boolean') {\n    if (typeof raw === 'boolean') config[key] = raw;\n    else if (String(raw).toLowerCase() === 'true') config[key] = true;\n    else if (String(raw).toLowerCase() === 'false') config[key] = false;\n    else throw new Error(`Configuration ${key} must be true or false.`);\n  } else if (type === 'json') {\n    try { config[key] = typeof raw === 'string' ? JSON.parse(raw) : raw; }\n    catch (error) { throw new Error(`Configuration ${key} contains invalid JSON: ${error.message}`); }\n  } else if (type === 'text') {\n    config[key] = String(raw ?? '');\n  } else {\n    throw new Error(`Unsupported valueType \"${type}\" for configuration ${key}.`);\n  }\n}\n\nconst required = [\"tenant_key\",\"tenant_enabled\",\"baserow_database_id\",\"baserow_table_ids\",\"search_criteria_field_ids\",\"linkedin_base_search_url\"];\nconst missing = required.filter((key) => config[key] === undefined || config[key] === null || config[key] === '');\nif (missing.length) throw new Error(`Missing enabled configuration values: ${missing.join(', ')}`);\n\nlet source;\ntry { source = $('Configuration Input').first(); } catch (error) {}\nif (!source) throw new Error('Could not resolve the workflow input before configuration loading.');\n\nreturn [{\n  json: {\n    ...source.json,\n    config,\n    project_selection_count: config.project_selection_count,\n    work_experience_selection_count: config.work_experience_selection_count,\n  },\n  binary: source.binary,\n  pairedItem: { item: 0 },\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1400,
+        -600
+      ],
+      "id": "ef3207f3-befe-4f45-a98a-5e54aaeee3bf",
+      "name": "Build User Configuration"
+    },
+    {
+      "parameters": {
+        "jsCode": "const config = $('Build User Configuration').first().json.config;\nreturn $input.all().map((item, index) => ({\n  json: { ...item.json, config },\n  pairedItem: { item: index },\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -900,
+        -400
+      ],
+      "id": "dba689bb-897f-4eb3-a98f-188b1e467366",
+      "name": "Attach User Configuration"
     }
   ],
   "pinData": {},
@@ -139,7 +194,7 @@
       "main": [
         [
           {
-            "node": "Loop Over Items",
+            "node": "Attach User Configuration",
             "type": "main",
             "index": 0
           }
@@ -161,7 +216,7 @@
       "main": [
         [
           {
-            "node": "Read Search Criteria from Baserow",
+            "node": "Configuration Input",
             "type": "main",
             "index": 0
           }
@@ -208,6 +263,50 @@
           }
         ]
       ]
+    },
+    "Configuration Input": {
+      "main": [
+        [
+          {
+            "node": "Get User Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get User Configuration": {
+      "main": [
+        [
+          {
+            "node": "Build User Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build User Configuration": {
+      "main": [
+        [
+          {
+            "node": "Read Search Criteria from Baserow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach User Configuration": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
@@ -216,12 +315,6 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "349eab86-f068-4d38-993c-5bb38fd445c5",
-  "meta": {
-    "templateCredsSetupCompleted": true,
-    "instanceId": "2d85b40e2e1a69706b539dc280f2a48f8b70729872141299d251c48887ea4c94"
-  },
   "nodeGroups": [],
-  "id": "ih8KVW6xFuMKHhCS",
   "tags": []
 }

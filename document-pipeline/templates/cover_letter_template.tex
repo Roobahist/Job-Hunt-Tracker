@@ -1,0 +1,148 @@
+\documentclass[10pt]{article}
+
+% =========================================================
+% FIXED A4 WIDTH WITH CONTENT-BASED HEIGHT
+% =========================================================
+
+\usepackage[active,tightpage]{preview}
+\setlength{\PreviewBorder}{0pt}
+
+% =========================================================
+% PACKAGES
+% =========================================================
+
+\usepackage[english]{babel}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{charter}
+\usepackage{etoolbox}
+\usepackage{fancyhdr}
+\usepackage[hidelinks]{hyperref}
+
+\input{glyphtounicode}
+
+% =========================================================
+% PAGE LAYOUT
+% =========================================================
+
+\pagestyle{empty}
+
+\raggedbottom
+\raggedright
+\hyphenpenalty=10000
+\exhyphenpenalty=10000
+
+\pdfgentounicode=1
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1.2em}
+
+% =========================================================
+% PARAGRAPH COMMAND
+% =========================================================
+
+\newcommand{\CLParagraph}[1]{%
+  {\small #1\par}
+}
+
+% =========================================================
+% DOCUMENT
+% =========================================================
+
+\begin{document}
+
+\begin{preview}
+\noindent
+\begin{minipage}{210mm}
+
+% Force the cropped PDF width to exactly 210 mm.
+\makebox[210mm][l]{\rule{210mm}{0pt}}
+
+\vspace*{15mm}
+
+\noindent
+\hspace*{15mm}%
+\begin{minipage}{180mm}
+
+% =========================================================
+% RECIPIENT + DATE
+% =========================================================
+
+\noindent
+\begin{tabular*}{\textwidth}{@{}l@{\extracolsep{\fill}}r@{}}
+Hiring Manager & %%__DATE__%% \\
+%%__COMPANY_NAME__%% &
+\end{tabular*}
+
+\vspace{1em}
+
+Dear Hiring Manager,
+
+\vspace{1em}
+
+% =========================================================
+% PARAGRAPH 1
+% =========================================================
+
+%%__PARAGRAPH_1__%%
+
+% Example:
+%
+% \CLParagraph{
+% I am writing to apply for the Data Scientist position at Example Company.
+% My background in statistics, machine learning, and software development
+% has prepared me to contribute to projects involving data analysis,
+% predictive modelling, and production-oriented analytical workflows.
+% }
+\vspace{1em}
+% =========================================================
+% PARAGRAPH 2
+% =========================================================
+
+%%__PARAGRAPH_2__%%
+
+% Example:
+%
+% \CLParagraph{
+% Through my academic research and technical projects, I have developed
+% end-to-end workflows using Python, R, SQL, machine learning frameworks,
+% APIs, automation tools, and reproducible data pipelines. My experience
+% includes data preprocessing, statistical modelling, model evaluation,
+% reporting, and communicating technical results to different audiences.
+% }
+
+\vspace{1em}
+% =========================================================
+% PARAGRAPH 3
+% =========================================================
+
+%%__PARAGRAPH_3__%%
+
+% Example:
+%
+% \CLParagraph{
+% I would welcome the opportunity to contribute these skills to Example
+% Company and support the team's technical and business objectives. Thank
+% you for considering my application. I look forward to the opportunity
+% to discuss how my experience aligns with this position.
+% }
+
+\vspace{1.2em}
+
+Sincerely,
+
+\vspace{0.5em}
+
+Example Applicant
+
+\end{minipage}%
+\hspace*{15mm}
+
+\vspace*{15mm}
+
+% Preserve the exact 210 mm page width at the bottom.
+\makebox[210mm][l]{\rule{210mm}{0pt}}
+
+\end{minipage}
+\end{preview}
+
+\end{document}

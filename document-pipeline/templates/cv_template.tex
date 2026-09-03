@@ -1,0 +1,483 @@
+\documentclass[10pt]{article}
+
+% =========================================================
+% AUTOMATIC PAGE SIZE
+% =========================================================
+
+% The content area is 180 mm wide.
+% Preview adds a 15 mm border around every side.
+%
+% Final PDF width:
+% 180 mm + 15 mm + 15 mm = 210 mm
+%
+% The PDF height is calculated automatically from the
+% total height of the document content.
+
+\usepackage[active,tightpage]{preview}
+\setlength{\PreviewBorder}{15mm}
+
+% =========================================================
+% PACKAGES
+% =========================================================
+
+\usepackage[empty]{fullpage}
+\usepackage[english]{babel}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{charter}
+\usepackage{enumitem}
+\usepackage{etoolbox}
+\usepackage{fancyhdr}
+\usepackage{fontawesome5}
+\usepackage[hidelinks]{hyperref}
+\usepackage{tabularx}
+\usepackage{titlesec}
+
+\input{glyphtounicode}
+
+% =========================================================
+% PAGE LAYOUT
+% =========================================================
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot{}
+\setlength{\footskip}{3.60004pt}
+
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\raggedbottom
+\raggedright
+
+\setlength{\tabcolsep}{0pt}
+\urlstyle{same}
+
+\pdfgentounicode=1
+
+% =========================================================
+% GLOBAL SPACING
+% =========================================================
+
+\newlength{\CVSectionBeforeSpace}
+\newlength{\CVSectionAfterSpace}
+
+\newlength{\CVEntryBeforeSpace}
+\newlength{\CVEntryAfterSpace}
+
+\newlength{\CVContentAfterSpace}
+
+\newlength{\CVHeaderAfterSpace}
+
+\newlength{\CVSkillGap}
+\newlength{\CVSkillRowSpace}
+
+\setlength{\CVSectionBeforeSpace}{-12pt}
+\setlength{\CVSectionAfterSpace}{0pt}
+
+\setlength{\CVEntryBeforeSpace}{0pt}
+\setlength{\CVEntryAfterSpace}{0pt}
+
+\setlength{\CVContentAfterSpace}{0pt}
+
+\setlength{\CVHeaderAfterSpace}{0pt}
+
+\setlength{\CVSkillGap}{12pt}
+\setlength{\CVSkillRowSpace}{2pt}
+
+% =========================================================
+% SECTION STYLE
+% =========================================================
+
+\titleformat{\section}
+  {\vspace{\CVSectionBeforeSpace}\scshape\raggedright\LARGE\bfseries}
+  {}
+  {0em}
+  {}
+  [\color{black}\titlerule\vspace{\CVSectionAfterSpace}]
+
+% =========================================================
+% LINKS
+% =========================================================
+
+\newcommand{\CVLink}[3][blue]{%
+  \href{#2}{\color{#1}{#3}}%
+}
+
+\newcommand{\CVUnderlinedLink}[3][blue]{%
+  \CVLink[#1]{#2}{\underline{#3}}%
+}
+
+% =========================================================
+% HEADER
+% =========================================================
+
+\newcommand{\CVHeader}[2]{%
+  \begin{center}
+    {\Huge\bfseries #1}\\[5pt]
+    #2
+  \end{center}
+  \vspace{\CVHeaderAfterSpace}
+}
+
+\newcommand{\CVHeaderLink}[2]{%
+  \CVUnderlinedLink{#1}{\normalsize #2}%
+}
+
+\newcommand{\CVHeaderText}[1]{%
+  {\large #1}%
+}
+
+\newcommand{\CVHeaderSeparator}{%
+  \enspace$|$\enspace
+}
+
+% =========================================================
+% SECTIONS
+% =========================================================
+
+\newcommand{\CVSection}[1]{%
+  \section{#1}
+}
+
+% =========================================================
+% LAYOUT 1: TEXT
+% =========================================================
+
+% Argument:
+% 1: Text content
+
+\newcommand{\CVText}[1]{%
+  \ifblank{#1}
+    {}
+    {%
+      \noindent
+      {\small #1\par}%
+    }%
+}
+
+% =========================================================
+% LAYOUT 2: LABEL AND VALUE ROWS
+% =========================================================
+
+% The left column automatically takes the width required by
+% the longest label in the current block.
+%
+% \CVSkillGap controls the distance between the label and
+% value columns.
+
+\newcommand{\CVLabelRows}[1]{%
+  \ifblank{#1}
+    {}
+    {%
+      \begin{tabularx}{\textwidth}{%
+        @{}
+        >{\bfseries}l
+        @{\hspace{\CVSkillGap}}
+        X
+        @{}
+      }
+        #1%
+      \end{tabularx}
+      \par
+    }%
+}
+
+% Arguments:
+% 1: Label
+% 2: Value
+
+\newcommand{\CVLabelRow}[2]{%
+  \ifblank{#1#2}
+    {}
+    {%
+      #1 & #2 \\[\CVSkillRowSpace]%
+    }%
+}
+
+% =========================================================
+% ENTRY LIST
+% =========================================================
+
+\newcommand{\CVEntries}[1]{%
+  \ifblank{#1}
+    {}
+    {%
+      \begin{itemize}[
+        leftmargin=0.15in,
+        label={},
+        itemsep=0pt,
+        topsep=0pt,
+        parsep=0pt,
+        partopsep=0pt
+      ]
+        #1%
+      \end{itemize}
+    }%
+}
+
+% =========================================================
+% LAYOUT 3: UNIVERSAL ENTRY
+% =========================================================
+
+\newcommand{\CVEntrySeparator}{%
+  \enspace$|$\enspace
+}
+
+% Arguments:
+%
+% 1: Main title
+% 2: Secondary left-side text
+% 3: URL
+% 4: Font Awesome icon name
+% 5: Organization or location
+% 6: Date
+% 7: Full-width body
+%
+% Empty arguments are omitted automatically.
+% Separators are inserted only between populated fields.
+
+\newcommand{\CVEntry}[7]{%
+  \ifblank{#1#2#3#5#6#7}
+    {}
+    {%
+      \vspace{\CVEntryBeforeSpace}
+      \item
+
+      \ifblank{#1#2#3#5#6}
+        {}
+        {%
+          \begin{tabular*}{0.97\textwidth}[t]{%
+            @{}l@{\extracolsep{\fill}}r@{}
+          }
+
+            % Top-left content
+
+            \ifblank{#1}
+              {}
+              {\textbf{#1}}%
+
+            \ifblank{#2}
+              {}
+              {%
+                \ifblank{#1}
+                  {}
+                  {\CVEntrySeparator}%
+                #2%
+              }%
+
+            \ifblank{#3}
+              {}
+              {%
+                \ifblank{#1#2}
+                  {}
+                  {\CVEntrySeparator}%
+                \href{#3}{%
+                  \color{blue}%
+                  \ifblank{#4}
+                    {\faIcon{link}}
+                    {\faIcon{#4}}%
+                }%
+              }%
+
+            &
+
+            % Top-right content
+
+            \ifblank{#5}
+              {}
+              {#5}%
+
+            \ifblank{#6}
+              {}
+              {%
+                \ifblank{#5}
+                  {}
+                  {\CVEntrySeparator}%
+                #6%
+              }%
+
+            \\%
+          \end{tabular*}%
+        }%
+      
+      \CVSmallGap
+      
+      \ifblank{#7}
+        {}
+        {#7}%
+
+      \vspace{\CVEntryAfterSpace}
+    }%
+}
+
+% =========================================================
+% UNIVERSAL ENTRY CONTENT
+% =========================================================
+
+% Optional argument:
+% true  = show bullet, default
+% false = no bullet
+%
+% Examples:
+%
+% \CVContent{
+%   \textbf{Technologies:} Python, TensorFlow, and R
+% }
+%
+% \CVContent[false]{
+%   Supporting text without a bullet.
+% }
+
+\newcommand{\CVContent}[2][true]{%
+  \ifblank{#2}
+    {}
+    {%
+      \ifstrequal{#1}{false}
+        {%
+          \noindent
+          \hspace{0.15in}%
+          {\small #2\par}%
+          \vspace{\CVContentAfterSpace}%
+        }
+        {%
+          \begin{itemize}[
+            leftmargin=0.3in,
+            label=\textbullet,
+            itemsep=0pt,
+            topsep=0pt,
+            parsep=0pt,
+            partopsep=0pt
+          ]
+            \item
+            \small
+            #2%
+          \end{itemize}
+          \vspace{\CVContentAfterSpace}%
+        }%
+    }%
+}
+
+% =========================================================
+% SPACING HELPERS
+% =========================================================
+
+\newcommand{\CVSmallGap}{\vspace{3pt}}
+\newcommand{\CVMediumGap}{\vspace{6pt}}
+\newcommand{\CVLargeGap}{\vspace{10pt}}
+
+% =========================================================
+% DOCUMENT
+% =========================================================
+
+\begin{document}
+
+\begin{preview}
+\noindent
+\begin{minipage}{180mm}
+
+% =========================================================
+% HEADER
+% =========================================================
+
+\CVHeader
+  {Example Applicant}
+  {
+    % \CVHeaderLink
+    %   {https://example.com}
+    %   {\faGlobe\ example.com}
+    % \CVHeaderSeparator
+    \CVHeaderLink
+      {https://github.com/example-user}
+      {\faGithub\ github.com/example-user}
+    \CVHeaderSeparator
+    \CVHeaderLink
+      {mailto:applicant@example.com}
+      {\faAt\ applicant@example.com}
+    \CVHeaderSeparator
+    \CVHeaderLink
+      {tel:+15555550123}
+      {\faPhone\ +1 555 555 0123}
+  }
+
+% =========================================================
+% SUMMARY
+% =========================================================
+
+\CVSection{Summary}
+
+%%__SUMMARY__%%
+
+% =========================================================
+% SKILLS
+% =========================================================
+
+\CVSection{Skills}
+
+%%__SKILLS__%%
+
+% =========================================================
+% PROJECTS
+% =========================================================
+
+\CVSection{Projects}
+
+%%__PROJECTS__%%
+
+% =========================================================
+% WORK EXPERIENCE
+% =========================================================
+
+\CVSection{Work Experience}
+
+%%__WORK_EXPERIENCE__%%
+
+% =========================================================
+% EDUCATION
+% =========================================================
+
+\CVSection{Education}
+
+\CVEntries{
+
+  \CVEntry
+    {Master of Science in Data Science}
+    {}
+    {}
+    {link}
+    {Example University}
+    {2024 -- 2026}
+    {
+      \CVContent{
+        Focus: machine learning, statistics, and data engineering.
+      }
+    }
+
+  \CVMediumGap
+
+  \CVEntry
+    {Bachelor of Science in Computer Science}
+    {}
+    {}
+    {link}
+    {Example Institute of Technology}
+    {2020 -- 2024}
+    {
+      \CVContent{
+        Coursework included algorithms, databases, and software engineering.
+      }
+    }
+
+}
+
+% =========================================================
+% AWARDS AND HONORS
+% =========================================================
+
+\CVSection{Awards \& Honors}
+
+%%__AWARDS__%%
+
+\end{minipage}
+\end{preview}
+
+\end{document}

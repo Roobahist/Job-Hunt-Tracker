@@ -1,0 +1,64 @@
+{
+  "summary": [
+    "Software and data professional with experience building automation, analytics, and backend systems."
+  ],
+  "skills": [
+    {
+      "label": "Programming",
+      "value": "Python, SQL, JavaScript"
+    },
+    {
+      "label": "Data",
+      "value": "pandas, relational databases, ETL"
+    },
+    {
+      "label": "Tools",
+      "value": "Docker, Git, REST APIs, workflow automation"
+    }
+  ],
+  "work_experience": [
+    {
+      "title": "Data Analyst",
+      "secondary": "Analytics and Automation",
+      "organization": "Example Company",
+      "date": "2024 -- 2026",
+      "content": [
+        "Automated recurring data preparation and reporting workflows.",
+        "Worked with stakeholders to validate metrics and reporting requirements."
+      ]
+    },
+    {
+      "title": "Software Developer",
+      "secondary": "Backend Systems",
+      "organization": "Example Studio",
+      "date": "2022 -- 2024",
+      "content": [
+        "Developed API integrations and internal automation tools.",
+        "Improved reliability with testing and structured error handling."
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "title": "Automated Reporting Pipeline",
+      "secondary": "Python, SQL, APIs",
+      "organization": "Independent Project",
+      "date": "2026",
+      "content": [
+        "Built a scheduled pipeline that validates source data and publishes structured reports.",
+        "Added retries, logging, and automated quality checks."
+      ]
+    },
+    {
+      "title": "Document Processing Service",
+      "secondary": "Python, FastAPI, Docker",
+      "organization": "Independent Project",
+      "date": "2025",
+      "content": [
+        "Created an API for transforming structured data into generated documents.",
+        "Containerized the service for reproducible deployment."
+      ]
+    }
+  ],
+  "awards": []
+}

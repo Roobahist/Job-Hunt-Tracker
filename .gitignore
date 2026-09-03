@@ -1,4 +1,4 @@
-# Operating-system and editor files
+# OS / editor
 .DS_Store
 Thumbs.db
 .idea/
@@ -7,7 +7,7 @@ Thumbs.db
 *.swo
 *~
 
-# Local configuration, credentials, and secrets
+# Secrets and local deployment configuration
 .env
 .env.*
 !.env.example
@@ -16,25 +16,27 @@ secrets/
 *.pem
 *.key
 
-# Temporary and generated files
-tmp/
-temp/
-*.tmp
+# Personal applicant data
+document-pipeline/master_cv.json
+
+# Generated document-worker artifacts
+document-pipeline/runs/
+*.aux
+*.fdb_latexmk
+*.fls
 *.log
-*.zip
+*.out
+*.pdf
+*.synctex.gz
+
+# Python / Node / temp
 __pycache__/
 *.py[cod]
 node_modules/
-
-# Export backups (canonical JSON sources remain tracked)
-backups/
-exports/
-source-exports/
-/final/
-/*.json
-/*.py
-/README 2.md
-/README (1).md
+tmp/
+temp/
+*.tmp
+*.zip
 *.bak
 *.backup
 *.orig
