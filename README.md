@@ -4,6 +4,25 @@ A reusable n8n workflow for discovering job postings, normalizing manual submiss
 
 This branch is intentionally **public-safe**. Personal applicant data, Telegram destinations, credential object IDs, Baserow IDs, Fillout form IDs, workflow IDs, generated files, local `.env` values, and private CV content have been removed or replaced with examples. The checked-in master CV and LaTeX templates contain fictional placeholder data only.
 
+## Architecture
+
+<a href="https://roobahist.github.io/Job-Hunt-Tracker/architecture/job-hunt-tracker.html">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/architecture/job-hunt-tracker.visual-check.1440x900.dark.png">
+    <img alt="Job Hunt Tracker runtime architecture" src="docs/architecture/job-hunt-tracker.visual-check.1440x900.light.png">
+  </picture>
+</a>
+
+The README uses a static light/dark preview because GitHub does not run embedded HTML or JavaScript. Select the diagram to open the [interactive runtime architecture](https://roobahist.github.io/Job-Hunt-Tracker/architecture/job-hunt-tracker.html), including its guided views.
+
+Focused interactive views:
+
+- [Scheduled job discovery](https://roobahist.github.io/Job-Hunt-Tracker/architecture/scheduled-job-discovery.html)
+- [Manual job entry](https://roobahist.github.io/Job-Hunt-Tracker/architecture/manual-job-entry.html)
+- [Qualification and application](https://roobahist.github.io/Job-Hunt-Tracker/architecture/qualification-and-application.html)
+- [Document generation](https://roobahist.github.io/Job-Hunt-Tracker/architecture/document-generation.html)
+- [Configuration and data](https://roobahist.github.io/Job-Hunt-Tracker/architecture/configuration-and-data.html)
+
 ## What the workflow does
 
 ```text
@@ -50,6 +69,10 @@ The workflow currently uses Apify for LinkedIn discovery and single-job retrieva
 │   ├── app.py
 │   ├── generate.py
 │   └── requirements.txt
+├── docs/
+│   └── architecture/
+│       ├── job-hunt-tracker.architecture.json
+│       └── job-hunt-tracker.html
 ├── forms/
 │   └── job-hunt.json
 └── workflows/
