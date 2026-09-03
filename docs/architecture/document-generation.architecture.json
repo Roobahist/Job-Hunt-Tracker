@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": { "title": "Document Generation", "locale": "en", "quality_profile": "showcase" },
+  "layout": { "mode": "grid", "origin": [36, 82], "cols": 7, "gapX": 34, "gapY": 44, "cellW": 124, "cellH": 64 },
+  "components": [
+    { "id": "inputs", "type": "security", "label": "Job + Master CV", "size": [124, 64], "row": 0, "col": 0 },
+    { "id": "cv", "type": "backend", "label": "CV Content", "size": [124, 64], "row": 0, "col": 1 },
+    { "id": "cv_render", "type": "backend", "label": "Render CV", "size": [124, 64], "row": 0, "col": 2 },
+    { "id": "letter", "type": "backend", "label": "Cover Letter", "size": [124, 64], "row": 0, "col": 3 },
+    { "id": "letter_render", "type": "backend", "label": "Render Letter", "size": [124, 64], "row": 0, "col": 4 },
+    { "id": "cloudinary", "type": "cloud", "label": "Cloudinary", "size": [124, 64], "row": 0, "col": 5 },
+    { "id": "tracking", "type": "database", "label": "Baserow + Telegram", "size": [124, 64], "row": 0, "col": 6 },
+    { "id": "cv_ai", "type": "external", "label": "CV Prompts + Gemini", "size": [124, 64], "row": 1, "col": 1 },
+    { "id": "letter_ai", "type": "external", "label": "Letter Prompt + AI", "size": [124, 64], "row": 1, "col": 3 },
+    { "id": "worker", "type": "backend", "label": "Document Worker", "size": [124, 64], "row": 1, "col": 4 },
+    { "id": "templates", "type": "backend", "label": "LaTeX Templates", "size": [124, 64], "row": 2, "col": 4 }
+  ],
+  "connections": [
+    { "id": "d1", "from": "inputs", "to": "cv", "variant": "emphasis", "route": "straight" },
+    { "id": "d2", "from": "cv_ai", "to": "cv", "variant": "dashed" },
+    { "id": "d3", "from": "cv", "to": "cv_render", "variant": "emphasis", "route": "straight" },
+    { "id": "d4", "from": "cv_render", "to": "letter", "variant": "emphasis", "route": "straight" },
+    { "id": "d5", "from": "letter_ai", "to": "letter", "variant": "dashed" },
+    { "id": "d6", "from": "letter", "to": "letter_render", "variant": "emphasis", "route": "straight" },
+    { "id": "d8", "from": "letter_render", "to": "worker", "variant": "dashed" },
+    { "id": "d9", "from": "templates", "to": "worker", "variant": "dashed" },
+    { "id": "d10", "from": "letter_render", "to": "cloudinary", "variant": "emphasis", "route": "straight" },
+    { "id": "d11", "from": "cloudinary", "to": "tracking", "variant": "emphasis", "route": "straight" }
+  ],
+  "cards": [
+    { "dot": "violet", "title": "Content generation", "items": ["create-cv-content uses six active prompts to select/rewrite projects and work, tailor skills, then rewrite the summary.", "After the CV render, create-cover-letter-content reads its active prompt and generates the letter with Gemini structured output."] },
+    { "dot": "emerald", "title": "Rendering and artifacts", "items": ["render-document calls the internal FastAPI /generate endpoint for CV and cover-letter runs.", "The worker fills checked-in LaTeX templates, runs pdflatex, and exposes TeX/PDF downloads; Cloudinary stores both formats."] }
+  ]
+}

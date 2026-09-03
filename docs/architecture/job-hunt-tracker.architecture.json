@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Job Hunt Tracker · Runtime Architecture",
+    "locale": "en",
+    "output": "job-hunt-tracker.html",
+    "quality_profile": "showcase",
+    "repository": { "url": "https://github.com/Roobahist/Job-Hunt-Tracker", "revision": "0ef578cca0a37cfed529a2e8100aabb3d5e618ee" },
+    "views": [
+      { "id": "scheduled", "label": "Scheduled discovery", "focus": ["criteria", "scheduled", "normalize", "jobs"], "note": "Active criteria drive LinkedIn discovery before URL-based deduplication." },
+      { "id": "manual", "label": "Manual intake", "focus": ["fillout", "manual", "normalize", "jobs"], "note": "LinkedIn, External, AI, and URL modes converge at the same normalized job shape." },
+      { "id": "qualification", "label": "Qualification", "focus": ["jobs", "qualification", "dropped", "documents"], "note": "Scheduled jobs must meet the threshold; manual jobs continue after scoring." },
+      { "id": "documents", "label": "Document generation", "focus": ["documents", "doc_inputs", "worker", "delivery"], "note": "Master CV, prompts, Gemini, and LaTeX produce TeX/PDF application artifacts." },
+      { "id": "tracking", "label": "Delivery & tracking", "focus": ["documents", "delivery", "jobs"], "note": "Cloudinary stores artifacts; Baserow is updated and eligible applications reach Telegram." }
+    ]
+  },
+  "layout": { "mode": "grid", "origin": [36, 82], "cols": 7, "gapX": 34, "gapY": 50, "cellW": 124, "cellH": 64 },
+  "components": [
+    { "id": "criteria", "type": "database", "label": "Baserow Criteria", "size": [124, 64], "row": 0, "col": 0 },
+    { "id": "scheduled", "type": "backend", "label": "Scheduled Search", "sources": [{ "path": "workflows/linkedin-url.json" }, { "path": "workflows/hourly-linkedin-job-hunt.json" }], "size": [124, 64], "row": 0, "col": 1 },
+    { "id": "fillout", "type": "external", "label": "Fillout", "size": [124, 64], "row": 2, "col": 0 },
+    { "id": "manual", "type": "backend", "label": "Manual Intake", "sources": [{ "path": "workflows/unified-job-entry.json" }, { "path": "forms/job-hunt.json" }], "size": [124, 64], "row": 2, "col": 1 },
+    { "id": "normalize", "type": "backend", "label": "Normalize + Dedupe", "sources": [{ "path": "workflows/hourly-linkedin-job-hunt.json" }, { "path": "workflows/unified-job-entry.json" }], "size": [124, 64], "row": 1, "col": 2 },
+    { "id": "jobs", "type": "database", "label": "Baserow Jobs", "size": [124, 64], "row": 1, "col": 3 },
+    { "id": "qualification", "type": "security", "label": "Qualification Gate", "sources": [{ "path": "workflows/score-job-qualification.json" }, { "path": "workflows/hourly-linkedin-job-hunt.json" }], "size": [124, 64], "row": 1, "col": 4 },
+    { "id": "dropped", "type": "external", "label": "Dropped", "size": [124, 64], "row": 3, "col": 4 },
+    { "id": "documents", "type": "backend", "label": "Application Docs", "sources": [{ "path": "workflows/create-cv-content.json" }, { "path": "workflows/create-cover-letter-content.json" }, { "path": "workflows/render-document.json" }], "size": [124, 64], "row": 1, "col": 5 },
+    { "id": "delivery", "type": "cloud", "label": "Deliver + Track", "size": [124, 64], "row": 1, "col": 6 },
+    { "id": "doc_inputs", "type": "security", "label": "Private CV + AI", "size": [124, 64], "row": 3, "col": 5 },
+    { "id": "worker", "type": "backend", "label": "Worker + LaTeX", "sources": [{ "path": "document-worker/app.py" }, { "path": "document-worker/generate.py" }, { "path": "document-pipeline/templates/cv_template.tex" }], "size": [124, 64], "row": 3, "col": 6 }
+  ],
+  "connections": [
+    { "id": "criteria_search", "from": "criteria", "to": "scheduled", "variant": "emphasis", "route": "straight" },
+    { "id": "scheduled_normalize", "from": "scheduled", "to": "normalize", "variant": "emphasis" },
+    { "id": "fillout_manual", "from": "fillout", "to": "manual", "variant": "emphasis", "route": "straight" },
+    { "id": "manual_normalize", "from": "manual", "to": "normalize", "variant": "emphasis" },
+    { "id": "normalize_jobs", "from": "normalize", "to": "jobs", "variant": "emphasis", "route": "straight" },
+    { "id": "jobs_qualification", "from": "jobs", "to": "qualification", "variant": "emphasis", "route": "straight" },
+    { "id": "qualification_documents", "from": "qualification", "to": "documents", "variant": "emphasis", "route": "straight" },
+    { "id": "qualification_dropped", "from": "qualification", "to": "dropped", "variant": "dashed" },
+    { "id": "documents_delivery", "from": "documents", "to": "delivery", "variant": "emphasis", "route": "straight" },
+    { "id": "inputs_documents", "from": "doc_inputs", "to": "documents", "variant": "security" },
+    { "id": "worker_documents", "from": "worker", "to": "documents", "variant": "dashed" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Two entries, one pipeline", "items": ["Scheduled: Baserow criteria → LinkedIn URL → Apify search.", "Manual: Fillout routes LinkedIn, External, AI, or URL input.", "Both converge at normalized job data; scheduled dedupes by URL and manual upserts by Job ID."] },
+    { "dot": "amber", "title": "Qualification policy", "items": ["Gemini scoring and an active Baserow prompt produce score + should_apply.", "Scheduled jobs below qualification_threshold are Dropped; manual submissions always continue after scoring."] },
+    { "dot": "emerald", "title": "Documents, delivery, and trust", "items": ["CV → render → cover letter → render.", "Worker + LaTeX creates TeX/PDF; Cloudinary stores, Baserow tracks, and Telegram delivers eligible files. Private CV data and credentials stay outside Git."] }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": { "title": "Manual Job Entry", "locale": "en", "quality_profile": "showcase" },
+  "layout": { "mode": "grid", "origin": [36, 72], "cols": 7, "gapX": 34, "gapY": 42, "cellW": 124, "cellH": 64 },
+  "components": [
+    { "id": "fillout", "type": "external", "label": "Fillout", "size": [124, 64], "row": 1, "col": 0 },
+    { "id": "router", "type": "backend", "label": "Entry-Type Router", "size": [124, 64], "row": 1, "col": 1 },
+    { "id": "linkedin", "type": "external", "label": "LinkedIn Retrieval", "size": [124, 64], "row": 0, "col": 2 },
+    { "id": "external", "type": "backend", "label": "External Fields", "size": [124, 64], "row": 1, "col": 2 },
+    { "id": "ai", "type": "backend", "label": "AI Extraction", "size": [124, 64], "row": 2, "col": 2 },
+    { "id": "url", "type": "backend", "label": "URL Page Fetch", "size": [124, 64], "row": 3, "col": 2 },
+    { "id": "normalize", "type": "backend", "label": "Normalized Job", "size": [124, 64], "row": 1, "col": 3 },
+    { "id": "upsert", "type": "database", "label": "Job-ID Upsert", "size": [124, 64], "row": 1, "col": 4 },
+    { "id": "score", "type": "backend", "label": "Qualification", "size": [124, 64], "row": 1, "col": 5 },
+    { "id": "documents", "type": "backend", "label": "Application Docs", "size": [124, 64], "row": 1, "col": 6 },
+    { "id": "extraction_ai", "type": "external", "label": "Gemini + Prompt", "size": [124, 64], "row": 3, "col": 3 }
+  ],
+  "connections": [
+    { "id": "m1", "from": "fillout", "to": "router", "variant": "emphasis", "route": "straight" },
+    { "id": "m2", "from": "router", "to": "linkedin" },
+    { "id": "m3", "from": "router", "to": "external" },
+    { "id": "m4", "from": "router", "to": "ai" },
+    { "id": "m5", "from": "router", "to": "url" },
+    { "id": "m6", "from": "linkedin", "to": "normalize" },
+    { "id": "m7", "from": "external", "to": "normalize" },
+    { "id": "m8", "from": "ai", "to": "normalize" },
+    { "id": "m9", "from": "url", "to": "ai" },
+    { "id": "m10", "from": "extraction_ai", "to": "ai", "variant": "dashed" },
+    { "id": "m11", "from": "normalize", "to": "upsert", "variant": "emphasis", "route": "straight" },
+    { "id": "m12", "from": "upsert", "to": "score", "variant": "emphasis", "route": "straight" },
+    { "id": "m13", "from": "score", "to": "documents", "variant": "emphasis", "route": "straight" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Four supported modes", "items": ["LinkedIn uses the Apify single-job actor; External trusts supplied structured fields.", "AI extracts pasted content; URL fetches readable content and then joins that same Gemini extraction path."] },
+    { "dot": "amber", "title": "Manual processing policy", "items": ["The normalized Job ID selects update-versus-create; existing file fields are cleared before regeneration.", "Qualification is stored, but manual submissions continue to document generation without the scheduled threshold gate."] }
+  ]
+}

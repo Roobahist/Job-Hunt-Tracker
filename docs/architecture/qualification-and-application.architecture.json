@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": { "title": "Qualification and Application Processing", "locale": "en", "quality_profile": "showcase" },
+  "layout": { "mode": "grid", "origin": [36, 82], "cols": 7, "gapX": 34, "gapY": 54, "cellW": 124, "cellH": 64 },
+  "components": [
+    { "id": "job", "type": "backend", "label": "Normalized Job", "size": [124, 64], "row": 1, "col": 0 },
+    { "id": "jobs", "type": "database", "label": "Baserow Jobs", "size": [124, 64], "row": 1, "col": 1 },
+    { "id": "score", "type": "backend", "label": "Gemini Scoring", "size": [124, 64], "row": 1, "col": 2 },
+    { "id": "persist", "type": "database", "label": "Score + Apply", "size": [124, 64], "row": 1, "col": 3 },
+    { "id": "policy", "type": "security", "label": "Processing Policy", "size": [124, 64], "row": 1, "col": 4 },
+    { "id": "documents", "type": "backend", "label": "Generate Docs", "size": [124, 64], "row": 1, "col": 5 },
+    { "id": "delivery", "type": "cloud", "label": "Store + Deliver", "size": [124, 64], "row": 1, "col": 6 },
+    { "id": "prompt", "type": "database", "label": "Active Prompt", "size": [124, 64], "row": 3, "col": 2 },
+    { "id": "threshold", "type": "security", "label": "Configured Threshold", "size": [124, 64], "row": 3, "col": 4 },
+    { "id": "dropped", "type": "external", "label": "Dropped", "size": [124, 64], "row": 3, "col": 5 }
+  ],
+  "connections": [
+    { "id": "q1", "from": "job", "to": "jobs", "variant": "emphasis", "route": "straight" },
+    { "id": "q2", "from": "jobs", "to": "score", "variant": "emphasis", "route": "straight" },
+    { "id": "q3", "from": "prompt", "to": "score", "variant": "dashed" },
+    { "id": "q4", "from": "score", "to": "persist", "variant": "emphasis", "route": "straight" },
+    { "id": "q5", "from": "persist", "to": "policy", "variant": "emphasis", "route": "straight" },
+    { "id": "q6", "from": "threshold", "to": "policy", "variant": "security" },
+    { "id": "q7", "from": "policy", "to": "documents", "variant": "emphasis", "route": "straight" },
+    { "id": "q8", "from": "policy", "to": "dropped", "variant": "dashed" },
+    { "id": "q9", "from": "documents", "to": "delivery", "variant": "emphasis", "route": "straight" }
+  ],
+  "cards": [
+    { "dot": "amber", "title": "Decision semantics", "items": ["score-job-qualification reads the active Baserow prompt and uses primary/backup Gemini models with structured output.", "Scheduled: score below threshold → Dropped; score at/above threshold → documents. Manual: record the score and always continue."] },
+    { "dot": "emerald", "title": "Delivery condition", "items": ["After documents update Baserow, scheduled Telegram delivery occurs only when should_apply is true.", "Manual entry sends its generated document album after the Baserow file update."] }
+  ]
+}

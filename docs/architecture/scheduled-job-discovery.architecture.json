@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": { "title": "Scheduled Job Discovery", "locale": "en", "quality_profile": "showcase" },
+  "layout": { "mode": "grid", "origin": [36, 82], "cols": 7, "gapX": 34, "gapY": 54, "cellW": 124, "cellH": 64 },
+  "components": [
+    { "id": "criteria", "type": "database", "label": "Search Criteria", "size": [124, 64], "row": 1, "col": 0 },
+    { "id": "url", "type": "backend", "label": "LinkedIn URL", "size": [124, 64], "row": 1, "col": 1 },
+    { "id": "apify", "type": "external", "label": "Apify Search", "size": [124, 64], "row": 1, "col": 2 },
+    { "id": "dedupe", "type": "backend", "label": "URL Deduplication", "size": [124, 64], "row": 1, "col": 3 },
+    { "id": "jobs", "type": "database", "label": "Baserow Job", "size": [124, 64], "row": 1, "col": 4 },
+    { "id": "score", "type": "backend", "label": "Qualification", "size": [124, 64], "row": 1, "col": 5 },
+    { "id": "gate", "type": "security", "label": "Threshold Gate", "size": [124, 64], "row": 1, "col": 6 },
+    { "id": "existing", "type": "database", "label": "Existing Job URLs", "size": [124, 64], "row": 3, "col": 3 },
+    { "id": "dropped", "type": "external", "label": "Dropped", "size": [124, 64], "row": 3, "col": 6 }
+  ],
+  "connections": [
+    { "id": "c1", "from": "criteria", "to": "url", "variant": "emphasis", "route": "straight" },
+    { "id": "c2", "from": "url", "to": "apify", "variant": "emphasis", "route": "straight" },
+    { "id": "c3", "from": "apify", "to": "dedupe", "variant": "emphasis", "route": "straight" },
+    { "id": "c4", "from": "existing", "to": "dedupe", "variant": "dashed" },
+    { "id": "c5", "from": "dedupe", "to": "jobs", "variant": "emphasis", "route": "straight" },
+    { "id": "c6", "from": "jobs", "to": "score", "variant": "emphasis", "route": "straight" },
+    { "id": "c7", "from": "score", "to": "gate", "variant": "emphasis", "route": "straight" },
+    { "id": "c8", "from": "gate", "to": "dropped", "variant": "dashed" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Discovery path", "items": ["Every-hour trigger loads user configuration and runs only when the tenant is enabled and the configured interval is due.", "Active Baserow criteria become LinkedIn URLs; Apify returns discovered jobs."] },
+    { "dot": "amber", "title": "Persistence and gate", "items": ["Canonicalized job URLs are compared with existing Baserow Jobs before a new row is created.", "The saved job is scored; below-threshold jobs become Dropped and skip document generation."] }
+  ]
+}

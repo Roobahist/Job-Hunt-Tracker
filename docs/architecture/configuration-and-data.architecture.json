@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": { "title": "Configuration and Data", "locale": "en", "quality_profile": "showcase" },
+  "layout": { "mode": "grid", "origin": [52, 82], "cols": 5, "gapX": 62, "gapY": 54, "cellW": 132, "cellH": 64 },
+  "components": [
+    { "id": "public", "type": "backend", "label": "Public Examples", "size": [132, 64], "row": 0, "col": 0 },
+    { "id": "private", "type": "security", "label": "Private User Data", "size": [132, 64], "row": 2, "col": 0 },
+    { "id": "config", "type": "security", "label": "n8n User Config", "size": [132, 64], "row": 1, "col": 1 },
+    { "id": "runners", "type": "backend", "label": "Task Runners", "size": [132, 64], "row": 3, "col": 1 },
+    { "id": "workflows", "type": "backend", "label": "n8n Workflows", "size": [132, 64], "row": 1, "col": 2 },
+    { "id": "postgres", "type": "database", "label": "PostgreSQL", "size": [132, 64], "row": 3, "col": 2 },
+    { "id": "services", "type": "external", "label": "External Services", "size": [132, 64], "row": 1, "col": 3 },
+    { "id": "worker", "type": "backend", "label": "Document Worker", "size": [132, 64], "row": 3, "col": 3 },
+    { "id": "baserow", "type": "database", "label": "Baserow State", "size": [132, 64], "row": 0, "col": 4 },
+    { "id": "artifacts", "type": "cloud", "label": "Cloudinary Files", "size": [132, 64], "row": 2, "col": 4 }
+  ],
+  "connections": [
+    { "id": "x1", "from": "public", "to": "config", "variant": "dashed" },
+    { "id": "x2", "from": "private", "to": "config", "variant": "security" },
+    { "id": "x3", "from": "config", "to": "workflows", "variant": "security", "route": "straight" },
+    { "id": "x4", "from": "workflows", "to": "services", "variant": "emphasis", "route": "straight" },
+    { "id": "x5", "from": "baserow", "to": "services", "variant": "dashed" },
+    { "id": "x6", "from": "services", "to": "artifacts", "variant": "emphasis" },
+    { "id": "x7", "from": "workflows", "to": "runners", "variant": "dashed" },
+    { "id": "x8", "from": "workflows", "to": "postgres", "variant": "dashed" },
+    { "id": "x9", "from": "workflows", "to": "worker", "variant": "dashed" }
+  ],
+  "cards": [
+    { "dot": "rose", "title": "Private runtime configuration", "items": ["Real master_cv.json, personal LaTeX contact/header data, Telegram destination, credentials, service IDs, and local .env values remain uncommitted.", "The n8n Data Table holds non-secret operational IDs, workflow mappings, thresholds, paths, model choice, and delivery settings."] },
+    { "dot": "cyan", "title": "Public project material", "items": ["Workflow definitions, Docker deployment, fictional master CV, example configuration, Fillout form export, and LaTeX templates are project-owned.", "Checked-in examples define structure without reconstructing personal or secret values."] },
+    { "dot": "emerald", "title": "Durable and generated data", "items": ["Baserow stores Jobs, Search Criteria, and active Prompts; PostgreSQL stores n8n persistence.", "Cloudinary stores tailored CV and cover-letter TeX/PDF artifacts; worker run files are generated runtime data."] }
+  ]
+}
